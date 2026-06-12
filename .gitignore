@@ -1,0 +1,28 @@
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+
+# Logs and generated validation output
+*.log
+logs/
+tmp/
+temp/
+.tmp/
+coverage/
+validation-output/
+test-results/
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

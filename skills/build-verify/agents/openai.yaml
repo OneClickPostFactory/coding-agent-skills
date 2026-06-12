@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build Verify"
+  short_description: "Run project-native validation without installing or deploying"
+  default_prompt: "Discover and run approved local lint, typecheck, test, and build checks, then report evidence without installing dependencies or changing external systems."

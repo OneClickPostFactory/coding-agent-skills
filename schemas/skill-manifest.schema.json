@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://coding-agent-skills.local/schemas/skill-manifest.schema.json",
+  "title": "Coding Agent Skill Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "version", "mode", "evidenceContract", "commandPolicy"],
+  "properties": {
+    "name": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "mode": {"type": "string", "enum": ["audit-only", "action-capable"]},
+    "evidenceContract": {"type": "string", "minLength": 1},
+    "commandPolicy": {"type": "string", "minLength": 1},
+    "adapterInterface": {"type": ["string", "null"]},
+    "description": {"type": "string"}
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://coding-agent-skills.local/schemas/evidence-pack.schema.json",
+  "title": "Coding Agent Evidence Pack",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "skill",
+    "invocation",
+    "repository",
+    "userIntent",
+    "declaredScope",
+    "projectAdapter",
+    "environmentSummary",
+    "status",
+    "confidence",
+    "commands",
+    "skippedChecks",
+    "findings",
+    "risks",
+    "failures",
+    "unresolvedQuestions",
+    "changedState",
+    "handoffSummary",
+    "recommendedNextAction"
+  ],
+  "properties": {
+    "contractVersion": {"type": "string", "const": "1.0.0"},
+    "skill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"}
+      }
+    },
+    "invocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "startedAt", "endedAt"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "startedAt": {"type": "string", "format": "date-time"},
+        "endedAt": {"type": "string", "format": "date-time"}
+      }
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["root", "branch", "head", "workingTreeState"],
+      "properties": {
+        "root": {"type": ["string", "null"]},
+        "branch": {"type": ["string", "null"]},
+        "head": {"type": ["string", "null"]},
+        "workingTreeState": {
+          "type": "string",
+          "enum": ["clean", "dirty", "not-git", "unknown"]
+        }
+      }
+    },
+    "userIntent": {"type": "string", "minLength": 1},
+    "declaredScope": {"type": "array", "items": {"type": "string"}},
+    "projectAdapter": {"type": ["string", "null"]},
+    "environmentSummary": {"type": "object"},
+    "status": {
+      "type": "string",
+      "enum": ["complete", "partial", "failed", "blocked"]
+    },
+    "confidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "reason"],
+      "properties": {
+        "level": {"type": "string", "enum": ["high", "medium", "low"]},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
+    "commands": {"type": "array", "items": {"$ref": "#/$defs/commandRecord"}},
+    "skippedChecks": {"type": "array", "items": {"$ref": "#/$defs/skippedCheck"}},
+    "findings": {"type": "array", "items": {"$ref": "#/$defs/note"}},
+    "risks": {"type": "array", "items": {"$ref": "#/$defs/note"}},
+    "failures": {"type": "array", "items": {"$ref": "#/$defs/note"}},
+    "unresolvedQuestions": {"type": "array", "items": {"type": "string"}},
+    "changedState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["changed", "summary"],
+      "properties": {
+        "changed": {"type": "boolean"},
+        "summary": {"type": "string", "minLength": 1}
+      }
+    },
+    "handoffSummary": {"type": "string"},
+    "recommendedNextAction": {"type": ["string", "null"]}
+  },
+  "$defs": {
+    "commandRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "command",
+        "family",
+        "workingDirectory",
+        "startedAt",
+        "endedAt",
+        "exitStatus",
+        "resultStatus",
+        "safetyClass",
+        "approvalReference",
+        "purpose",
+        "outputSummary"
+      ],
+      "properties": {
+        "command": {"type": "string"},
+        "family": {"type": "string"},
+        "workingDirectory": {"type": "string"},
+        "startedAt": {"type": "string", "format": "date-time"},
+        "endedAt": {"type": "string", "format": "date-time"},
+        "exitStatus": {"type": ["integer", "null"]},
+        "resultStatus": {
+          "type": "string",
+          "enum": ["success", "failure", "running", "unknown"]
+        },
+        "safetyClass": {
+          "type": "string",
+          "enum": ["allowed", "approved-exception", "rejected"]
+        },
+        "approvalReference": {"type": ["string", "null"]},
+        "purpose": {"type": "string"},
+        "outputSummary": {"type": "string"}
+      }
+    },
+    "skippedCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "reason", "consequence", "completionPermitted"],
+      "properties": {
+        "name": {"type": "string"},
+        "reason": {"type": "string"},
+        "consequence": {"type": "string"},
+        "completionPermitted": {"type": "boolean"}
+      }
+    },
+    "note": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "evidence"],
+      "properties": {
+        "summary": {"type": "string"},
+        "evidence": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

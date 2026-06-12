@@ -1,0 +1,4 @@
+interface:
+  display_name: "LLM Drift Control"
+  short_description: "Reconcile project claims against repository evidence"
+  default_prompt: "Classify project claims against documentation, source, tests, Git, and runtime evidence without rewriting code or documentation."

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://coding-agent-skills.local/schemas/command-policy.schema.json",
+  "title": "Coding Agent Command Policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "mode", "allowedFamilies", "restrictedCategories"],
+  "properties": {
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "mode": {"type": "string", "enum": ["audit-only", "action-capable"]},
+    "allowedFamilies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "executables", "constraints"],
+        "properties": {
+          "name": {"type": "string"},
+          "executables": {"type": "array", "items": {"type": "string"}},
+          "constraints": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "restrictedCategories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "file-write",
+          "package-install",
+          "deployment",
+          "git-mutation",
+          "unrestricted-scan",
+          "secret-read",
+          "process-mutation",
+          "service-mutation",
+          "migration-apply",
+          "privileged-api"
+        ]
+      }
+    },
+    "approvalExceptions": {"type": "array", "items": {"type": "string"}}
+  }
+}

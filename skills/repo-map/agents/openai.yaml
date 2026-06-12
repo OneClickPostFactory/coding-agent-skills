@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repository Map"
+  short_description: "Map an unfamiliar repository without changing it"
+  default_prompt: "Inspect this repository and produce an evidence-backed map without modifying project or runtime state."

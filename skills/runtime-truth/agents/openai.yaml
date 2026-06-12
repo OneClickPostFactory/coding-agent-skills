@@ -1,0 +1,4 @@
+interface:
+  display_name: "Runtime Truth"
+  short_description: "Verify process, listener, and health state without mutation"
+  default_prompt: "Inspect process managers, listeners, and unauthenticated health endpoints to report what is actually running without changing runtime state."

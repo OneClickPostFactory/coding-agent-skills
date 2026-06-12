@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Preflight"
+  short_description: "Inspect Git handoff readiness without changing Git state"
+  default_prompt: "Inspect branch, HEAD, staged, unstaged, untracked, and whitespace state without modifying Git history or the working tree."

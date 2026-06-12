@@ -1,0 +1,60 @@
+{
+  "contractVersion": "1.0.0",
+  "skill": {"name": "repo-map", "version": "0.1.0"},
+  "invocation": {
+    "id": "example-repo-map-001",
+    "startedAt": "2026-01-01T12:00:00Z",
+    "endedAt": "2026-01-01T12:02:00Z"
+  },
+  "repository": {
+    "root": "/workspace/example-project",
+    "branch": "main",
+    "head": "0123456789abcdef",
+    "workingTreeState": "dirty"
+  },
+  "userIntent": "Map the repository before changing its API layer.",
+  "declaredScope": ["/workspace/example-project"],
+  "projectAdapter": null,
+  "environmentSummary": {"shell": "bash", "platform": "linux"},
+  "status": "complete",
+  "confidence": {
+    "level": "high",
+    "reason": "Repository identity, manifests, entry points, tests, CI, and documentation were inspected."
+  },
+  "commands": [
+    {
+      "command": "git status --short --branch",
+      "family": "git-status",
+      "workingDirectory": "/workspace/example-project",
+      "startedAt": "2026-01-01T12:00:10Z",
+      "endedAt": "2026-01-01T12:00:11Z",
+      "exitStatus": 0,
+      "resultStatus": "success",
+      "safetyClass": "allowed",
+      "approvalReference": null,
+      "purpose": "Record branch and working-tree state.",
+      "outputSummary": "Branch main; existing user changes present."
+    }
+  ],
+  "skippedChecks": [],
+  "findings": [
+    {
+      "summary": "The repository contains separate web and API packages.",
+      "evidence": ["package.json", "apps/web/package.json", "apps/api/package.json"]
+    }
+  ],
+  "risks": [
+    {
+      "summary": "The working tree contains pre-existing changes.",
+      "evidence": ["git status --short --branch"]
+    }
+  ],
+  "failures": [],
+  "unresolvedQuestions": [],
+  "changedState": {
+    "changed": false,
+    "summary": "The audit-only skill made no intentional project, Git, runtime, or remote changes."
+  },
+  "handoffSummary": "Repository boundaries and primary validation entry points are mapped.",
+  "recommendedNextAction": "Trace the requested API route before editing."
+}
