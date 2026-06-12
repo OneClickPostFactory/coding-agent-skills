@@ -1,0 +1,55 @@
+{
+  "contractVersion": "1.0.0",
+  "skill": {"name": "runtime-truth", "version": "0.1.0"},
+  "invocation": {
+    "id": "example-runtime-truth",
+    "startedAt": "2026-06-12T13:00:00Z",
+    "endedAt": "2026-06-12T13:01:30Z"
+  },
+  "repository": {
+    "root": "/workspace/example-project",
+    "branch": "main",
+    "head": "3456789012abcdef",
+    "workingTreeState": "clean"
+  },
+  "userIntent": "Determine whether the local service is running and healthy.",
+  "declaredScope": ["local process", "TCP port 3000", "local health endpoint"],
+  "projectAdapter": null,
+  "environmentSummary": {"platform": "linux", "environment": "local"},
+  "status": "complete",
+  "confidence": {
+    "level": "high",
+    "reason": "Process, listener, and unauthenticated health evidence agreed."
+  },
+  "commands": [
+    {
+      "command": "curl -sS http://127.0.0.1:3000/health",
+      "family": "safe-health-check",
+      "workingDirectory": "/workspace/example-project",
+      "startedAt": "2026-06-12T13:00:50Z",
+      "endedAt": "2026-06-12T13:00:51Z",
+      "exitStatus": 0,
+      "resultStatus": "success",
+      "safetyClass": "allowed",
+      "approvalReference": null,
+      "purpose": "Check the unauthenticated local health endpoint.",
+      "outputSummary": "Endpoint returned a healthy status."
+    }
+  ],
+  "skippedChecks": [],
+  "findings": [
+    {
+      "summary": "The intended process owns the expected listener and reports healthy.",
+      "evidence": ["process inspection", "listener inspection", "local health response"]
+    }
+  ],
+  "risks": [],
+  "failures": [],
+  "unresolvedQuestions": [],
+  "changedState": {
+    "changed": false,
+    "summary": "No process, service, secret, repository, or remote state changed."
+  },
+  "handoffSummary": "The local service is running, reachable, and healthy.",
+  "recommendedNextAction": null
+}

@@ -1,0 +1,55 @@
+{
+  "contractVersion": "1.0.0",
+  "skill": {"name": "git-preflight", "version": "0.1.0"},
+  "invocation": {
+    "id": "example-git-preflight",
+    "startedAt": "2026-06-12T12:00:00Z",
+    "endedAt": "2026-06-12T12:01:00Z"
+  },
+  "repository": {
+    "root": "/workspace/example-project",
+    "branch": "feature/example",
+    "head": "2345678901abcdef",
+    "workingTreeState": "dirty"
+  },
+  "userIntent": "Assess whether the working tree is ready for handoff.",
+  "declaredScope": ["src/example.js", "test/example.test.js"],
+  "projectAdapter": null,
+  "environmentSummary": {"platform": "linux", "git": "available"},
+  "status": "complete",
+  "confidence": {
+    "level": "high",
+    "reason": "Branch, HEAD, staged state, file scope, and whitespace were inspected."
+  },
+  "commands": [
+    {
+      "command": "git diff --check",
+      "family": "git-read-only",
+      "workingDirectory": "/workspace/example-project",
+      "startedAt": "2026-06-12T12:00:20Z",
+      "endedAt": "2026-06-12T12:00:21Z",
+      "exitStatus": 0,
+      "resultStatus": "success",
+      "safetyClass": "allowed",
+      "approvalReference": null,
+      "purpose": "Check whitespace and patch formatting.",
+      "outputSummary": "No whitespace errors."
+    }
+  ],
+  "skippedChecks": [],
+  "findings": [
+    {
+      "summary": "Observed files match the declared task scope.",
+      "evidence": ["src/example.js", "test/example.test.js"]
+    }
+  ],
+  "risks": [],
+  "failures": [],
+  "unresolvedQuestions": [],
+  "changedState": {
+    "changed": false,
+    "summary": "No Git or working-tree state changed."
+  },
+  "handoffSummary": "Git state is understood and no scope mismatch was found.",
+  "recommendedNextAction": "Proceed to a separately approved handoff workflow."
+}

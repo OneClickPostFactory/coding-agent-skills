@@ -29,3 +29,12 @@ See [architecture](docs/architecture/README.md), [safety](docs/safety/README.md)
 ## Completion Standard
 
 Every skill emits the evidence-pack contract. A command being attempted is never enough to claim success. Required checks, skipped checks, failures, confidence, unresolved questions, and state changes must all be represented.
+
+## Use And Validate
+
+- Read [usage guidance](docs/usage/README.md) before selecting a skill.
+- Browse [safe examples](examples/README.md) for manifests, policies, evidence packs, and workflows.
+- Run `node scripts/validate-pack.mjs .` for structural validation.
+- Run `node scripts/test-pack.mjs` for executable release tests.
+
+Governance lives in [CONTRIBUTING.md](CONTRIBUTING.md), [ROADMAP.md](ROADMAP.md), and the [release policy](docs/release/README.md).

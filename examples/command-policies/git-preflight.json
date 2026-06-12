@@ -1,0 +1,27 @@
+{
+  "version": "0.1.0",
+  "mode": "audit-only",
+  "allowedFamilies": [
+    {
+      "name": "git-read-only",
+      "executables": ["git"],
+      "constraints": [
+        "Allow rev-parse, remote -v, branch --show-current, bounded log, status, and diff inspection.",
+        "Reject configuration changes and every worktree, index, history, or remote mutation."
+      ]
+    }
+  ],
+  "restrictedCategories": [
+    "file-write",
+    "package-install",
+    "deployment",
+    "git-mutation",
+    "unrestricted-scan",
+    "secret-read",
+    "process-mutation",
+    "service-mutation",
+    "migration-apply",
+    "privileged-api"
+  ],
+  "approvalExceptions": []
+}

@@ -1,0 +1,35 @@
+{
+  "version": "0.1.0",
+  "mode": "action-capable",
+  "allowedFamilies": [
+    {
+      "name": "manifest-inspection",
+      "executables": ["sed", "head", "jq"],
+      "constraints": [
+        "Read only known project manifests and CI configuration."
+      ]
+    },
+    {
+      "name": "project-native-validation",
+      "executables": ["npm", "pnpm", "yarn", "node"],
+      "constraints": [
+        "Run only scripts discovered in project manifests.",
+        "Allow lint without fix mode, typecheck, targeted tests, tests, and build.",
+        "Reject watch mode, installation, snapshot updates, and unknown scripts."
+      ]
+    }
+  ],
+  "restrictedCategories": [
+    "file-write",
+    "package-install",
+    "deployment",
+    "git-mutation",
+    "unrestricted-scan",
+    "secret-read",
+    "process-mutation",
+    "service-mutation",
+    "migration-apply",
+    "privileged-api"
+  ],
+  "approvalExceptions": []
+}

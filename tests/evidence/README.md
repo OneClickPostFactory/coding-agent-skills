@@ -1,15 +1,15 @@
 # Evidence Tests
 
-Validate every emitted evidence pack against the shared schema.
+The release suite validates all five example evidence packs against the shared schema and applies semantic completion rules.
 
-Test that:
+Current checks confirm:
 
 - Required identity and invocation fields exist.
-- Commands are sanitized and include results.
-- Skipped checks include consequences.
+- Command records satisfy the contract.
+- Skipped checks include consequences and completion permission.
 - Failures and unresolved questions prevent unsupported completion.
 - `changedState.changed` remains `false` for every audit-only skill.
-- `build-verify` records any local artifacts created by approved validation commands.
 - Confidence includes a reason.
-- The handoff distinguishes verified facts from uncertainty.
-- No secret or private fixture value appears in output.
+- A schema-valid fixture with a completion-blocking skipped check cannot claim `complete`.
+
+Future invocation tests should verify artifact reporting for `build-verify`, handoff wording, and end-to-end output sanitization.

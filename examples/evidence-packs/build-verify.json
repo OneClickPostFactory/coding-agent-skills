@@ -1,0 +1,68 @@
+{
+  "contractVersion": "1.0.0",
+  "skill": {"name": "build-verify", "version": "0.1.0"},
+  "invocation": {
+    "id": "example-build-verify",
+    "startedAt": "2026-06-12T11:00:00Z",
+    "endedAt": "2026-06-12T11:04:00Z"
+  },
+  "repository": {
+    "root": "/workspace/example-project",
+    "branch": "feature/example",
+    "head": "1234567890abcdef",
+    "workingTreeState": "dirty"
+  },
+  "userIntent": "Run the project's existing local validation checks.",
+  "declaredScope": ["src/", "test/"],
+  "projectAdapter": null,
+  "environmentSummary": {"platform": "linux", "runtime": "node"},
+  "status": "complete",
+  "confidence": {
+    "level": "high",
+    "reason": "All required discovered checks completed successfully."
+  },
+  "commands": [
+    {
+      "command": "npm run typecheck",
+      "family": "project-native-validation",
+      "workingDirectory": "/workspace/example-project",
+      "startedAt": "2026-06-12T11:00:30Z",
+      "endedAt": "2026-06-12T11:01:10Z",
+      "exitStatus": 0,
+      "resultStatus": "success",
+      "safetyClass": "allowed",
+      "approvalReference": null,
+      "purpose": "Validate static types.",
+      "outputSummary": "Typecheck completed successfully."
+    },
+    {
+      "command": "npm run test",
+      "family": "project-native-validation",
+      "workingDirectory": "/workspace/example-project",
+      "startedAt": "2026-06-12T11:01:20Z",
+      "endedAt": "2026-06-12T11:03:40Z",
+      "exitStatus": 0,
+      "resultStatus": "success",
+      "safetyClass": "allowed",
+      "approvalReference": null,
+      "purpose": "Run the project's existing test suite.",
+      "outputSummary": "All tests passed."
+    }
+  ],
+  "skippedChecks": [],
+  "findings": [
+    {
+      "summary": "Required local validation passed.",
+      "evidence": ["typecheck exit 0", "test exit 0"]
+    }
+  ],
+  "risks": [],
+  "failures": [],
+  "unresolvedQuestions": [],
+  "changedState": {
+    "changed": false,
+    "summary": "Validation produced no observed tracked or untracked file changes."
+  },
+  "handoffSummary": "The changed scope passed required local validation.",
+  "recommendedNextAction": "Run Git preflight before handoff."
+}

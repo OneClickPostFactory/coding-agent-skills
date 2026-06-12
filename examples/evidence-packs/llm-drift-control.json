@@ -1,0 +1,55 @@
+{
+  "contractVersion": "1.0.0",
+  "skill": {"name": "llm-drift-control", "version": "0.1.0"},
+  "invocation": {
+    "id": "example-llm-drift-control",
+    "startedAt": "2026-06-12T14:00:00Z",
+    "endedAt": "2026-06-12T14:03:00Z"
+  },
+  "repository": {
+    "root": "/workspace/example-project",
+    "branch": "main",
+    "head": "4567890123abcdef",
+    "workingTreeState": "clean"
+  },
+  "userIntent": "Verify the claim that the API capability is implemented.",
+  "declaredScope": ["README.md", "src/api/", "test/api/"],
+  "projectAdapter": null,
+  "environmentSummary": {"platform": "linux", "evidenceWindow": "current branch"},
+  "status": "complete",
+  "confidence": {
+    "level": "high",
+    "reason": "Documentation, source, and tests consistently support the classified claim."
+  },
+  "commands": [
+    {
+      "command": "rg -n \"exampleCapability\" README.md src test",
+      "family": "bounded-evidence-read",
+      "workingDirectory": "/workspace/example-project",
+      "startedAt": "2026-06-12T14:00:30Z",
+      "endedAt": "2026-06-12T14:00:31Z",
+      "exitStatus": 0,
+      "resultStatus": "success",
+      "safetyClass": "allowed",
+      "approvalReference": null,
+      "purpose": "Locate claim evidence in documentation, source, and tests.",
+      "outputSummary": "The capability appears in all three source types."
+    }
+  ],
+  "skippedChecks": [],
+  "findings": [
+    {
+      "summary": "Claim classified as confirmed.",
+      "evidence": ["README.md", "src/api/example.js", "test/api/example.test.js"]
+    }
+  ],
+  "risks": [],
+  "failures": [],
+  "unresolvedQuestions": [],
+  "changedState": {
+    "changed": false,
+    "summary": "No documentation, source, test, Git, runtime, or remote state changed."
+  },
+  "handoffSummary": "The scoped capability claim is confirmed on the current branch.",
+  "recommendedNextAction": null
+}

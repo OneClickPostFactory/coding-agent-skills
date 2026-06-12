@@ -1,0 +1,51 @@
+{
+  "contractVersion": "1.0.0",
+  "skill": {
+    "name": "repo-map",
+    "version": "0.1.0"
+  },
+  "invocation": {
+    "id": "fixture-false-complete",
+    "startedAt": "2026-06-12T10:00:00Z",
+    "endedAt": "2026-06-12T10:01:00Z"
+  },
+  "repository": {
+    "root": "/workspace/example-project",
+    "branch": "main",
+    "head": "0123456789abcdef0123456789abcdef01234567",
+    "workingTreeState": "unknown"
+  },
+  "userIntent": "Map the repository without changing it.",
+  "declaredScope": [
+    "repository structure",
+    "project metadata"
+  ],
+  "projectAdapter": null,
+  "environmentSummary": {
+    "fixture": true
+  },
+  "status": "complete",
+  "confidence": {
+    "level": "high",
+    "reason": "The agent incorrectly claimed completion."
+  },
+  "commands": [],
+  "skippedChecks": [
+    {
+      "name": "repository root verification",
+      "reason": "The check was not run.",
+      "consequence": "The target repository was not established.",
+      "completionPermitted": false
+    }
+  ],
+  "findings": [],
+  "risks": [],
+  "failures": [],
+  "unresolvedQuestions": [],
+  "changedState": {
+    "changed": false,
+    "summary": "No state was changed."
+  },
+  "handoffSummary": "The map is complete.",
+  "recommendedNextAction": null
+}

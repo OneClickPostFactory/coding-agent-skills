@@ -1,0 +1,28 @@
+{
+  "version": "0.1.0",
+  "mode": "audit-only",
+  "allowedFamilies": [
+    {
+      "name": "bounded-evidence-read",
+      "executables": ["rg", "sed", "head", "jq", "git"],
+      "constraints": [
+        "Read only declared documentation, source, tests, and Git evidence.",
+        "Inspect repository drift scripts before running them.",
+        "Reject any script that writes or changes external state."
+      ]
+    }
+  ],
+  "restrictedCategories": [
+    "file-write",
+    "package-install",
+    "deployment",
+    "git-mutation",
+    "unrestricted-scan",
+    "secret-read",
+    "process-mutation",
+    "service-mutation",
+    "migration-apply",
+    "privileged-api"
+  ],
+  "approvalExceptions": []
+}

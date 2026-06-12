@@ -1,0 +1,9 @@
+{
+  "name": "llm-drift-control",
+  "version": "0.1.0",
+  "mode": "audit-only",
+  "evidenceContract": "../../contracts/evidence-pack/evidence-pack.schema.json",
+  "commandPolicy": "../command-policies/llm-drift-control.json",
+  "adapterInterface": "../../skills/llm-drift-control/adapter-interface.md",
+  "description": "Classify project claims against bounded repository evidence."
+}

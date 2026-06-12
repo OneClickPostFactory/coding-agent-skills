@@ -1,0 +1,9 @@
+{
+  "name": "build-verify",
+  "version": "0.1.0",
+  "mode": "action-capable",
+  "evidenceContract": "../../contracts/evidence-pack/evidence-pack.schema.json",
+  "commandPolicy": "../command-policies/build-verify.json",
+  "adapterInterface": "../../skills/build-verify/adapter-interface.md",
+  "description": "Run discovered project-native local validation commands."
+}

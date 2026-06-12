@@ -1,0 +1,14 @@
+{
+  "adapterVersion": "1.0.0",
+  "skill": "repo-map",
+  "project": "unsafe-sample",
+  "repositoryMarkers": [
+    "package.json"
+  ],
+  "boundedReadPaths": [
+    "."
+  ],
+  "restrictedCategories": [
+    "deployment"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "adapterVersion": "1.0.0",
+  "skill": "repo-map",
+  "project": "sample-repo",
+  "repositoryMarkers": [
+    "package.json",
+    "src",
+    "test"
+  ],
+  "boundedReadPaths": [
+    "README.md",
+    "package.json",
+    "docs/architecture.md"
+  ],
+  "restrictedCategories": [
+    "file-write",
+    "package-install",
+    "deployment",
+    "git-mutation",
+    "unrestricted-scan",
+    "secret-read",
+    "process-mutation",
+    "service-mutation",
+    "migration-apply",
+    "privileged-api"
+  ]
+}

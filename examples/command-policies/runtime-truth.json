@@ -1,0 +1,37 @@
+{
+  "version": "0.1.0",
+  "mode": "audit-only",
+  "allowedFamilies": [
+    {
+      "name": "runtime-status",
+      "executables": ["ps", "ss", "systemctl", "pm2", "docker"],
+      "constraints": [
+        "Use status and inspection forms only.",
+        "Filter output to the named process, service, container, or port."
+      ]
+    },
+    {
+      "name": "safe-health-check",
+      "executables": ["curl"],
+      "constraints": [
+        "Use only unauthenticated local or explicitly approved public health endpoints.",
+        "Do not send credentials, cookies, or mutation methods."
+      ]
+    }
+  ],
+  "restrictedCategories": [
+    "file-write",
+    "package-install",
+    "deployment",
+    "git-mutation",
+    "unrestricted-scan",
+    "secret-read",
+    "process-mutation",
+    "service-mutation",
+    "migration-apply",
+    "privileged-api"
+  ],
+  "approvalExceptions": [
+    "A named public health endpoint or bounded non-secret log may be approved."
+  ]
+}

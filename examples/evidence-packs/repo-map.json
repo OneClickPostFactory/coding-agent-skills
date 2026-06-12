@@ -1,0 +1,55 @@
+{
+  "contractVersion": "1.0.0",
+  "skill": {"name": "repo-map", "version": "0.1.0"},
+  "invocation": {
+    "id": "example-repo-map",
+    "startedAt": "2026-06-12T10:00:00Z",
+    "endedAt": "2026-06-12T10:02:00Z"
+  },
+  "repository": {
+    "root": "/workspace/example-project",
+    "branch": "main",
+    "head": "0123456789abcdef",
+    "workingTreeState": "clean"
+  },
+  "userIntent": "Map the repository before planning an API change.",
+  "declaredScope": ["/workspace/example-project"],
+  "projectAdapter": null,
+  "environmentSummary": {"platform": "linux", "shell": "bash"},
+  "status": "complete",
+  "confidence": {
+    "level": "high",
+    "reason": "Repository identity, structure, manifests, tests, CI, and documentation were inspected."
+  },
+  "commands": [
+    {
+      "command": "git status --short --branch",
+      "family": "git-identity-inspection",
+      "workingDirectory": "/workspace/example-project",
+      "startedAt": "2026-06-12T10:00:20Z",
+      "endedAt": "2026-06-12T10:00:21Z",
+      "exitStatus": 0,
+      "resultStatus": "success",
+      "safetyClass": "allowed",
+      "approvalReference": null,
+      "purpose": "Record branch and working-tree state.",
+      "outputSummary": "Branch main; working tree clean."
+    }
+  ],
+  "skippedChecks": [],
+  "findings": [
+    {
+      "summary": "The project has separate application, test, and documentation areas.",
+      "evidence": ["package.json", "src/", "test/", "docs/"]
+    }
+  ],
+  "risks": [],
+  "failures": [],
+  "unresolvedQuestions": [],
+  "changedState": {
+    "changed": false,
+    "summary": "No project, Git, dependency, runtime, or remote state changed."
+  },
+  "handoffSummary": "Repository identity and major structural boundaries are mapped.",
+  "recommendedNextAction": "Trace the affected API route before editing."
+}
