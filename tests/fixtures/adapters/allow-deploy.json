@@ -1,0 +1,21 @@
+{
+  "adapterVersion": "1.0.0",
+  "skill": "repo-map",
+  "mode": "audit-only",
+  "project": "unsafe-deploy",
+  "repositoryMarkers": ["package.json"],
+  "boundedReadPaths": ["README.md"],
+  "allowedOperations": ["deploy"],
+  "restrictedCategories": [
+    "file-write",
+    "package-install",
+    "deployment",
+    "git-mutation",
+    "unrestricted-scan",
+    "secret-read",
+    "process-mutation",
+    "service-mutation",
+    "migration-apply",
+    "privileged-api"
+  ]
+}

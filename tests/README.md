@@ -4,7 +4,7 @@ Run the dependency-free release suite with:
 
 `node scripts/test-pack.mjs`
 
-The current suite verifies:
+The current suite verifies 28 release conditions, including:
 
 - The exact approved five-skill inventory.
 - Manifest, command-policy, and evidence-pack schema validity.
@@ -18,7 +18,13 @@ The current suite verifies:
 - Restricted-operation rejection in executable examples.
 - A synthetic dependency-free repository fixture.
 - Required `.gitignore` protections.
+- Positive, negative, and wrong-skill trigger classification.
+- Obvious shell-policy bypasses without claiming full POSIX parsing.
+- Audit-only documentation mutation checks and content snapshots.
+- Synthetic sensitive-shape detection and redaction.
+- Adapter permission, failure, completion, secret, and mode overrides.
+- A matrix of schema-valid but semantically false completion claims.
 
 `node scripts/validate-pack.mjs .` adds structural, link, secret-pattern, CI, and release-file checks.
 
-Focused directories retain the remaining test design for future trigger classifiers, command parsers, mutation snapshots, and privacy fixtures.
+`node --test` exercises built-in Node fixtures. See the [harness guide](../docs/testing/README.md) for design boundaries.

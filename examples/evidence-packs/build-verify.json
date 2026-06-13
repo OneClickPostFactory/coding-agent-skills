@@ -1,6 +1,6 @@
 {
   "contractVersion": "1.0.0",
-  "skill": {"name": "build-verify", "version": "0.1.0"},
+  "skill": {"name": "build-verify", "version": "0.1.1"},
   "invocation": {
     "id": "example-build-verify",
     "startedAt": "2026-06-12T11:00:00Z",

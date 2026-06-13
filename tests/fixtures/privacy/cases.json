@@ -1,0 +1,47 @@
+{
+  "version": "1.0.0",
+  "synthetic": true,
+  "encoding": "ordered-parts",
+  "cases": [
+    {
+      "id": "fake-github-token",
+      "parts": ["gh", "p_", "FAKEONLY1234567890ABCDEF"],
+      "expectedTypes": ["github-token"]
+    },
+    {
+      "id": "fake-jwt",
+      "parts": ["eyJFAKE", "HEADER123456", ".", "eyJFAKE", "PAYLOAD12345", ".", "FAKESIGNATURE123456"],
+      "expectedTypes": ["jwt"]
+    },
+    {
+      "id": "fake-bearer",
+      "parts": ["Authorization: ", "Bearer ", "FAKEBEARER1234567890"],
+      "expectedTypes": ["authorization-header"]
+    },
+    {
+      "id": "fake-private-key",
+      "parts": ["-----BEGIN ", "PRIVATE KEY-----\n", "FAKEKEYMATERIAL\n", "-----END PRIVATE KEY-----"],
+      "expectedTypes": ["private-key"]
+    },
+    {
+      "id": "fake-env",
+      "parts": ["GITHUB_", "TOKEN=", "FAKEENVVALUE123456\n", "DATABASE_", "URL=postgres://fake:fake@example.invalid/db"],
+      "expectedTypes": ["env-secret", "url-credentials"]
+    },
+    {
+      "id": "fake-url-credentials",
+      "parts": ["https://", "fake-user:", "fake-password@", "example.invalid/private"],
+      "expectedTypes": ["url-credentials"]
+    },
+    {
+      "id": "fake-local-path",
+      "parts": ["/home/", "fake-user/", "private-project"],
+      "expectedTypes": ["local-home-path"]
+    },
+    {
+      "id": "fake-private-domain",
+      "parts": ["service.", "corp.", "example.invalid"],
+      "expectedTypes": ["private-domain"]
+    }
+  ]
+}

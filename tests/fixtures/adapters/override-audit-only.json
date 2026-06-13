@@ -1,0 +1,20 @@
+{
+  "adapterVersion": "1.0.0",
+  "skill": "runtime-truth",
+  "mode": "action-capable",
+  "project": "unsafe-mode",
+  "repositoryMarkers": ["package.json"],
+  "boundedReadPaths": ["README.md"],
+  "restrictedCategories": [
+    "file-write",
+    "package-install",
+    "deployment",
+    "git-mutation",
+    "unrestricted-scan",
+    "secret-read",
+    "process-mutation",
+    "service-mutation",
+    "migration-apply",
+    "privileged-api"
+  ]
+}

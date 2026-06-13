@@ -36,5 +36,7 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 - Browse [safe examples](examples/README.md) for manifests, policies, evidence packs, and workflows.
 - Run `node scripts/validate-pack.mjs .` for structural validation.
 - Run `node scripts/test-pack.mjs` for executable release tests.
+- Run `node --test` for built-in Node fixture tests.
 
 Governance lives in [CONTRIBUTING.md](CONTRIBUTING.md), [ROADMAP.md](ROADMAP.md), and the [release policy](docs/release/README.md).
+The [harness guide](docs/testing/README.md) explains trigger, command, mutation, privacy, adapter, and completion checks.

@@ -1,0 +1,101 @@
+{
+  "version": "1.0.0",
+  "cases": [
+    {
+      "id": "repo-map-unfamiliar",
+      "prompt": "Map this unfamiliar repository and identify its entry points before I change anything.",
+      "expectedSkill": "repo-map",
+      "notSkills": ["build-verify", "runtime-truth"]
+    },
+    {
+      "id": "repo-map-ambiguous-root",
+      "prompt": "Determine which nested directory is the canonical repository root and summarize its structure.",
+      "expectedSkill": "repo-map",
+      "notSkills": ["git-preflight"]
+    },
+    {
+      "id": "repo-map-stale-context",
+      "prompt": "The inherited repository context is stale; relocate the canonical repo and map the current packages.",
+      "expectedSkill": "repo-map",
+      "notSkills": ["llm-drift-control"]
+    },
+    {
+      "id": "build-after-implementation",
+      "prompt": "The implementation is finished. Run the existing typecheck, tests, and build.",
+      "expectedSkill": "build-verify",
+      "notSkills": ["repo-map", "git-preflight"]
+    },
+    {
+      "id": "build-before-handoff",
+      "prompt": "Before handoff, validate the changed code with the project-native test and build scripts.",
+      "expectedSkill": "build-verify",
+      "notSkills": ["runtime-truth"]
+    },
+    {
+      "id": "git-before-commit",
+      "prompt": "Before I commit, inspect the branch, staged files, untracked files, and whitespace state.",
+      "expectedSkill": "git-preflight",
+      "notSkills": ["build-verify"]
+    },
+    {
+      "id": "git-before-push",
+      "prompt": "Check whether the Git working tree is understood and ready for push or handoff.",
+      "expectedSkill": "git-preflight",
+      "notSkills": ["repo-map"]
+    },
+    {
+      "id": "runtime-live-claim",
+      "prompt": "The API is claimed to be live. Verify the process, listener, and health endpoint.",
+      "expectedSkill": "runtime-truth",
+      "notSkills": ["build-verify"]
+    },
+    {
+      "id": "runtime-running-state",
+      "prompt": "Is the local worker actually running and listening on the expected port?",
+      "expectedSkill": "runtime-truth",
+      "notSkills": ["git-preflight"]
+    },
+    {
+      "id": "drift-doc-code-disagreement",
+      "prompt": "The README says the feature exists, but the code and tests disagree. Reconcile the claim.",
+      "expectedSkill": "llm-drift-control",
+      "notSkills": ["repo-map"]
+    },
+    {
+      "id": "drift-runtime-disagreement",
+      "prompt": "The handoff says phase 8 is complete, while runtime evidence contradicts it. Classify the claim.",
+      "expectedSkill": "llm-drift-control",
+      "notSkills": ["runtime-truth"]
+    },
+    {
+      "id": "negative-deploy",
+      "prompt": "Deploy this application to production.",
+      "expectedSkill": null,
+      "notSkills": ["repo-map", "build-verify", "git-preflight", "runtime-truth", "llm-drift-control"]
+    },
+    {
+      "id": "negative-install",
+      "prompt": "Install all missing dependencies and update the lockfile.",
+      "expectedSkill": null,
+      "notSkills": ["build-verify"]
+    },
+    {
+      "id": "negative-publish",
+      "prompt": "Commit these files and publish the branch.",
+      "expectedSkill": null,
+      "notSkills": ["git-preflight"]
+    },
+    {
+      "id": "negative-restart",
+      "prompt": "Restart the unhealthy service and enable it at boot.",
+      "expectedSkill": null,
+      "notSkills": ["runtime-truth"]
+    },
+    {
+      "id": "negative-rewrite",
+      "prompt": "Rewrite the documentation so it agrees with the project claim.",
+      "expectedSkill": null,
+      "notSkills": ["llm-drift-control"]
+    }
+  ]
+}

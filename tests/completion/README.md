@@ -11,3 +11,5 @@ Verify that no skill reports `complete` when:
 - Required evidence fields are missing.
 
 Passing a subset of checks must not imply overall success.
+
+The executable matrix additionally rejects missing skipped-check consequences, command failures, material unresolved risks, unknown state-change status, blank confidence reasons, absent repository identity, and unsupported final status.

@@ -1,0 +1,21 @@
+{
+  "adapterVersion": "1.0.0",
+  "skill": "git-preflight",
+  "mode": "audit-only",
+  "project": "unsafe-push",
+  "repositoryMarkers": [".git"],
+  "boundedReadPaths": ["README.md"],
+  "allowedOperations": ["git-push"],
+  "restrictedCategories": [
+    "file-write",
+    "package-install",
+    "deployment",
+    "git-mutation",
+    "unrestricted-scan",
+    "secret-read",
+    "process-mutation",
+    "service-mutation",
+    "migration-apply",
+    "privileged-api"
+  ]
+}

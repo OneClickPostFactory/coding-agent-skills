@@ -1,6 +1,6 @@
 {
   "contractVersion": "1.0.0",
-  "skill": {"name": "llm-drift-control", "version": "0.1.0"},
+  "skill": {"name": "llm-drift-control", "version": "0.1.1"},
   "invocation": {
     "id": "example-llm-drift-control",
     "startedAt": "2026-06-12T14:00:00Z",

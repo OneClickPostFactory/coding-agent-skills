@@ -1,6 +1,6 @@
 # Command Policy Tests
 
-Validate allowed command families with safe arguments and reject:
+`tests/fixtures/policy/commands.json` validates safe single commands, safe composition, multiline commands, and rejection of:
 
 - Shell chains containing any restricted segment.
 - Validation scripts whose definitions contain installs, fixes, deploys, or migrations.
@@ -10,3 +10,5 @@ Validate allowed command families with safe arguments and reject:
 - Secret-file reads and authenticated APIs.
 
 Validate representative skill manifests and policies against the schemas in `schemas/`.
+
+The analyzer is deliberately bounded. It rejects obvious bypasses and unknown execution rather than claiming full POSIX shell parsing.

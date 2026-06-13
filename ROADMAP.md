@@ -2,6 +2,13 @@
 
 The pilot release remains limited to five approved skills. Future work requires separate design and approval.
 
+## Released Harness Milestones
+
+- `v0.1.0`: schemas, examples, dependency-free validation, CI, and governance.
+- `v0.1.1`: trigger, command-policy, mutation, privacy, adapter, and false-completion harnesses.
+
+The next v0.1.x milestone should formalize the project-adapter schema and add property-style command-policy fixtures before any new skill is approved.
+
 | Candidate | Scope | Mode | Current gate |
 |---|---|---|---|
 | `route-trace-skill` | General | Audit-only | Needs design review |

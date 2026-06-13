@@ -1,0 +1,87 @@
+{
+  "version": "1.0.0",
+  "cases": [
+    {
+      "id": "safe-read-only-procedure",
+      "document": "# Audit\n\n## Procedure\n\nRun `git status --short --branch` and record the result.",
+      "issues": 0
+    },
+    {
+      "id": "denied-command-is-documentation",
+      "document": "# Audit\n\n## Unsafe And Denied\n\nDo not run `git push origin main`.",
+      "issues": 0
+    },
+    {
+      "id": "file-write",
+      "category": "file-write",
+      "document": "# Audit\n\n## Procedure\n\nRun `touch report.txt` before collecting evidence.",
+      "issues": 1
+    },
+    {
+      "id": "package-install",
+      "category": "package-install",
+      "document": "# Audit\n\n## Procedure\n\nRun `npm install` when dependencies are missing.",
+      "issues": 1
+    },
+    {
+      "id": "deployment",
+      "category": "deployment",
+      "document": "# Audit\n\n## Procedure\n\nRun `wrangler deploy` after inspection.",
+      "issues": 1
+    },
+    {
+      "id": "migration",
+      "category": "migration-apply",
+      "document": "# Audit\n\n## Procedure\n\nRun `prisma migrate deploy` to verify the database.",
+      "issues": 1
+    },
+    {
+      "id": "git-mutation",
+      "category": "git-mutation",
+      "document": "# Audit\n\n## Procedure\n\nRun `git add .` after checking the tree.",
+      "issues": 1
+    },
+    {
+      "id": "git-publication",
+      "category": "git-mutation",
+      "document": "# Audit\n\n## Procedure\n\nRun `git push origin main` to finish.",
+      "issues": 1
+    },
+    {
+      "id": "process-mutation",
+      "category": "process-mutation",
+      "document": "# Audit\n\n## Procedure\n\nRun `kill 1234` if the process is stale.",
+      "issues": 1
+    },
+    {
+      "id": "service-mutation",
+      "category": "service-mutation",
+      "document": "# Audit\n\n## Procedure\n\nRun `systemctl restart example.service` before checking health.",
+      "issues": 1
+    },
+    {
+      "id": "plain-language-service-mutation",
+      "category": "service-mutation",
+      "document": "# Audit\n\n## Procedure\n\nRestart the service before checking health.",
+      "issues": 1
+    },
+    {
+      "id": "secret-read",
+      "category": "secret-read",
+      "document": "# Audit\n\n## Procedure\n\nRun `cat .env` to inspect configuration.",
+      "issues": 1
+    },
+    {
+      "id": "privileged-api",
+      "category": "privileged-api",
+      "document": "# Audit\n\n## Procedure\n\nRun `gh api /user` to confirm identity.",
+      "issues": 1
+    },
+    {
+      "id": "unbounded-scan",
+      "category": "unrestricted-scan",
+      "document": "# Audit\n\n## Procedure\n\nRun `find /home -type f` to locate the project.",
+      "issues": 1
+    }
+  ]
+}

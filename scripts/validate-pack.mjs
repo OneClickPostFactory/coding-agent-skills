@@ -3,8 +3,11 @@ import path from "node:path";
 
 import {
   AUDIT_ONLY_SKILLS,
+  auditOnlyDocumentIssues,
   completionIssues,
+  detectSensitiveValues,
   PILOT_SKILLS,
+  PILOT_VERSION,
   RESTRICTED_CATEGORIES,
   restrictedShellReason,
 } from "./lib/pack-rules.mjs";
@@ -44,6 +47,7 @@ const requiredRootFiles = [
   "docs/adapters/README.md",
   "docs/usage/README.md",
   "docs/release/README.md",
+  "docs/testing/README.md",
   "contracts/evidence-pack/README.md",
   "contracts/evidence-pack/evidence-pack.schema.json",
   "contracts/evidence-pack/evidence-pack.example.json",
@@ -56,6 +60,20 @@ const requiredRootFiles = [
   "tests/fixtures/README.md",
   "tests/safety/README.md",
   "tests/evidence/README.md",
+  "tests/fixtures/triggers/cases.json",
+  "tests/fixtures/policy/commands.json",
+  "tests/fixtures/mutation/cases.json",
+  "tests/fixtures/privacy/cases.json",
+  "tests/fixtures/completion/cases.json",
+  "tests/fixtures/adapters/valid-narrowing.json",
+  "tests/fixtures/adapters/allow-deploy.json",
+  "tests/fixtures/adapters/allow-git-push.json",
+  "tests/fixtures/adapters/suppress-failures.json",
+  "tests/fixtures/adapters/redefine-completion.json",
+  "tests/fixtures/adapters/expose-secrets.json",
+  "tests/fixtures/adapters/override-audit-only.json",
+  "tests/fixtures/mutation/snapshot-target/README.md",
+  "tests/fixtures/mutation/snapshot-target/state.json",
   "examples/README.md",
 ];
 
@@ -158,8 +176,13 @@ if (manifestSchema && policySchema && evidenceSchema) {
     if (!manifest || !policy || !evidence) continue;
 
     if (manifest.name !== skill) failures.push(`${skill}: manifest name mismatch`);
+    if (manifest.version !== PILOT_VERSION) failures.push(`${skill}: stale manifest version`);
+    if (policy.version !== PILOT_VERSION) failures.push(`${skill}: stale policy version`);
     if (manifest.mode !== policy.mode) failures.push(`${skill}: manifest/policy mode mismatch`);
     if (evidence.skill.name !== skill) failures.push(`${skill}: evidence skill mismatch`);
+    if (evidence.skill.version !== PILOT_VERSION) {
+      failures.push(`${skill}: stale evidence example version`);
+    }
     if (evidence.skill.version !== manifest.version) {
       failures.push(`${skill}: evidence/manifest version mismatch`);
     }
@@ -174,6 +197,11 @@ if (manifestSchema && policySchema && evidenceSchema) {
       failures.push(`${skill}: ${issue}`);
     }
   }
+}
+
+const contractExample = readJson("contracts/evidence-pack/evidence-pack.example.json");
+if (contractExample?.skill?.version !== PILOT_VERSION) {
+  failures.push("evidence-pack contract example has a stale skill version");
 }
 
 const allFiles = walk(root);
@@ -236,6 +264,32 @@ for (const skill of AUDIT_ONLY_SKILLS) {
   if (!/without (?:modifying|changing|rewriting)/i.test(metadata)) {
     failures.push(`${skill}: agent prompt does not preserve audit-only behavior`);
   }
+  for (const file of allFiles.filter(
+    (candidate) =>
+      candidate.startsWith(path.join(root, "skills", skill)) &&
+      candidate.endsWith(".md"),
+  )) {
+    for (const issue of auditOnlyDocumentIssues(fs.readFileSync(file, "utf8"))) {
+      failures.push(
+        `${path.relative(root, file)}:${issue.line}: audit-only mutation guidance: ${issue.reasons.join(", ")}`,
+      );
+    }
+  }
+}
+
+for (const directory of ["skills", "examples"]) {
+  for (const file of allFiles.filter(
+    (candidate) =>
+      candidate.startsWith(path.join(root, directory)) &&
+      /\.(?:md|json|yaml|yml)$/.test(candidate),
+  )) {
+    const sensitiveTypes = detectSensitiveValues(fs.readFileSync(file, "utf8"));
+    if (sensitiveTypes.length) {
+      failures.push(
+        `${path.relative(root, file)}: sensitive-looking reusable content: ${sensitiveTypes.join(", ")}`,
+      );
+    }
+  }
 }
 
 const executableExampleFiles = [
@@ -257,6 +311,7 @@ for (const expected of [
   "permissions:\n  contents: read",
   "node scripts/validate-pack.mjs .",
   "node scripts/test-pack.mjs",
+  "node --test",
 ]) {
   if (!ci.includes(expected)) failures.push(`CI missing safe validation step: ${expected}`);
 }

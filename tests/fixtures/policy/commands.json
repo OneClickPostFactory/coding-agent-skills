@@ -1,0 +1,164 @@
+{
+  "version": "1.0.0",
+  "cases": [
+    {
+      "id": "safe-pwd",
+      "command": "pwd",
+      "allowed": true
+    },
+    {
+      "id": "safe-git-status",
+      "command": "git status --short --branch",
+      "allowed": true
+    },
+    {
+      "id": "safe-chain",
+      "command": "pwd && git status --short --branch",
+      "allowed": true
+    },
+    {
+      "id": "safe-pipeline",
+      "command": "rg --files | head -n 20",
+      "allowed": true
+    },
+    {
+      "id": "unsafe-pipeline",
+      "command": "rg --files | git push origin main",
+      "allowed": false,
+      "reason": "Git mutation"
+    },
+    {
+      "id": "heredoc",
+      "command": "node <<'SCRIPT'\nconsole.log('fixture')\nSCRIPT",
+      "allowed": false,
+      "reason": "heredoc"
+    },
+    {
+      "id": "safe-multiline",
+      "command": "pwd\ngit status --short --branch",
+      "allowed": true
+    },
+    {
+      "id": "unsafe-multiline",
+      "command": "pwd\ngit push origin main",
+      "allowed": false,
+      "reason": "Git mutation"
+    },
+    {
+      "id": "safe-npm-script",
+      "command": "npm run typecheck",
+      "scripts": {
+        "typecheck": "node --check src/index.js"
+      },
+      "allowed": true
+    },
+    {
+      "id": "unsafe-npm-script-definition",
+      "command": "npm run validate",
+      "scripts": {
+        "validate": "npm install && node --check src/index.js"
+      },
+      "allowed": false,
+      "reason": "script definition"
+    },
+    {
+      "id": "unsafe-npm-fix",
+      "command": "npm run lint:fix",
+      "allowed": false,
+      "reason": "unsafe npm script"
+    },
+    {
+      "id": "npx-command",
+      "command": "npx tool-name check",
+      "allowed": false,
+      "reason": "npx"
+    },
+    {
+      "id": "safe-local-curl",
+      "command": "curl -sS http://127.0.0.1:3000/health",
+      "allowed": true
+    },
+    {
+      "id": "curl-authorization",
+      "command": "curl --user fake-user:fake-password https://example.invalid/admin",
+      "allowed": false,
+      "reason": "authenticated"
+    },
+    {
+      "id": "curl-data",
+      "command": "curl --data 'mode=change' https://example.invalid/api",
+      "allowed": false,
+      "reason": "mutating HTTP"
+    },
+    {
+      "id": "curl-url-credentials",
+      "command": "curl https://user:password@example.invalid/private",
+      "allowed": false,
+      "reason": "URL credentials"
+    },
+    {
+      "id": "git-push",
+      "command": "git push origin main",
+      "allowed": false,
+      "reason": "Git mutation"
+    },
+    {
+      "id": "git-unsafe-argument",
+      "command": "git config --global user.name Example",
+      "allowed": false,
+      "reason": "Git command"
+    },
+    {
+      "id": "mixed-chain",
+      "command": "git status --short && npm install",
+      "allowed": false,
+      "reason": "package installation"
+    },
+    {
+      "id": "shell-wrapper",
+      "command": "bash -c 'git push origin main'",
+      "allowed": false,
+      "reason": "shell wrapper"
+    },
+    {
+      "id": "file-redirection",
+      "command": "printf fixture > result.txt",
+      "allowed": false,
+      "reason": "redirection"
+    },
+    {
+      "id": "bounded-find",
+      "command": "find . -maxdepth 3 -type f",
+      "allowed": true
+    },
+    {
+      "id": "unbounded-find",
+      "command": "find /home -type f",
+      "allowed": false,
+      "reason": "unbounded"
+    },
+    {
+      "id": "service-status",
+      "command": "systemctl --user status example.service --no-pager",
+      "allowed": true
+    },
+    {
+      "id": "service-restart",
+      "command": "systemctl --user restart example.service",
+      "allowed": false,
+      "reason": "service mutation"
+    },
+    {
+      "id": "migration-apply",
+      "command": "npx supabase db push",
+      "allowed": false,
+      "reason": "migration"
+    },
+    {
+      "id": "privileged-api",
+      "command": "gh api /user",
+      "allowed": false,
+      "reason": "privileged API"
+    }
+  ]
+}

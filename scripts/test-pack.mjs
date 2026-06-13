@@ -1,12 +1,20 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
 import {
+  analyzeCommand,
   adapterIssues,
   AUDIT_ONLY_SKILLS,
+  auditOnlyDocumentIssues,
+  classifyTrigger,
+  commandLooksExecutable,
   completionIssues,
+  detectSensitiveValues,
   PILOT_SKILLS,
+  PILOT_VERSION,
+  redactSensitiveText,
   RESTRICTED_CATEGORIES,
   restrictedShellReason,
 } from "./lib/pack-rules.mjs";
@@ -41,6 +49,7 @@ const requiredReleaseFiles = [
   "docs/adapters/README.md",
   "docs/usage/README.md",
   "docs/release/README.md",
+  "docs/testing/README.md",
 ];
 
 function test(name, callback) {
@@ -77,6 +86,37 @@ function fencedShellBlocks(text) {
   return blocks;
 }
 
+function deepMerge(base, patch) {
+  if (
+    base === null ||
+    patch === null ||
+    Array.isArray(base) ||
+    Array.isArray(patch) ||
+    typeof base !== "object" ||
+    typeof patch !== "object"
+  ) {
+    return structuredClone(patch);
+  }
+
+  const merged = structuredClone(base);
+  for (const [key, value] of Object.entries(patch)) {
+    merged[key] = Object.hasOwn(merged, key)
+      ? deepMerge(merged[key], value)
+      : structuredClone(value);
+  }
+  return merged;
+}
+
+function snapshotDirectory(relativePath) {
+  const directory = path.join(root, relativePath);
+  const digest = createHash("sha256");
+  for (const file of walk(directory).sort()) {
+    digest.update(path.relative(directory, file));
+    digest.update(fs.readFileSync(file));
+  }
+  return digest.digest("hex");
+}
+
 const manifestSchema = readJson("schemas/skill-manifest.schema.json");
 const policySchema = readJson("schemas/command-policy.schema.json");
 const evidenceSchema = readJson("contracts/evidence-pack/evidence-pack.schema.json");
@@ -99,6 +139,7 @@ test("release governance and safe CI files are present", () => {
   assert.deepEqual(runCommands, [
     "node scripts/validate-pack.mjs .",
     "node scripts/test-pack.mjs",
+    "node --test",
   ]);
 });
 
@@ -140,6 +181,15 @@ test("all manifests, command policies, and evidence examples satisfy their schem
       readJson(`examples/evidence-packs/${skill}.json`),
       `${skill} evidence pack`,
     );
+    assert.equal(readJson(`examples/manifests/${skill}.json`).version, PILOT_VERSION);
+    assert.equal(
+      readJson(`examples/command-policies/${skill}.json`).version,
+      PILOT_VERSION,
+    );
+    assert.equal(
+      readJson(`examples/evidence-packs/${skill}.json`).skill.version,
+      PILOT_VERSION,
+    );
   }
 });
 
@@ -180,6 +230,62 @@ test("every command policy preserves all restricted categories", () => {
   }
 });
 
+test("command policies use explicit constrained families without restricted executables", () => {
+  const restrictedExecutables = new Set([
+    "npx",
+    "wrangler",
+    "vercel",
+    "netlify",
+    "sudo",
+  ]);
+
+  for (const skill of PILOT_SKILLS) {
+    const policy = readJson(`examples/command-policies/${skill}.json`);
+    const familyNames = policy.allowedFamilies.map((family) => family.name);
+    assert.equal(new Set(familyNames).size, familyNames.length, `${skill}: duplicate family`);
+    for (const family of policy.allowedFamilies) {
+      assert.ok(family.name.trim(), `${skill}: empty family name`);
+      assert.ok(family.executables.length, `${skill}: empty executable list`);
+      assert.ok(family.constraints.length, `${skill}: missing constraints`);
+      for (const executable of family.executables) {
+        assert.equal(
+          restrictedExecutables.has(executable),
+          false,
+          `${skill}: restricted executable ${executable}`,
+        );
+      }
+    }
+  }
+});
+
+test("trigger-classification fixtures select only the intended pilot skill", () => {
+  const fixture = readJson("tests/fixtures/triggers/cases.json");
+  for (const candidate of fixture.cases) {
+    const actual = classifyTrigger(candidate.prompt);
+    assert.equal(actual, candidate.expectedSkill, candidate.id);
+    for (const excluded of candidate.notSkills ?? []) {
+      assert.notEqual(actual, excluded, `${candidate.id}: selected ${excluded}`);
+    }
+  }
+});
+
+test("command-parser fixtures reject obvious policy bypasses", () => {
+  const fixture = readJson("tests/fixtures/policy/commands.json");
+  for (const candidate of fixture.cases) {
+    const result = analyzeCommand(candidate.command, {
+      scripts: candidate.scripts,
+    });
+    assert.equal(result.allowed, candidate.allowed, candidate.id);
+    if (candidate.reason) {
+      assert.match(
+        result.reasons.join("\n"),
+        new RegExp(candidate.reason, "i"),
+        candidate.id,
+      );
+    }
+  }
+});
+
 test("audit-only evidence examples declare no state change", () => {
   for (const skill of AUDIT_ONLY_SKILLS) {
     const evidence = readJson(`examples/evidence-packs/${skill}.json`);
@@ -202,11 +308,45 @@ test("schema-valid false completion is rejected by semantic policy", () => {
   assert.match(completionIssues(evidence).join("\n"), /completion-blocking check/);
 });
 
+test("false-completion matrix rejects every unsupported complete status", () => {
+  const fixture = readJson("tests/fixtures/completion/cases.json");
+  for (const candidate of fixture.cases) {
+    const evidence = deepMerge(fixture.base, candidate.patch);
+    assertSchemaValid(evidenceSchema, evidence, candidate.id);
+    const issues = completionIssues(evidence);
+    if (candidate.expectedIssue === null) {
+      assert.deepEqual(issues, [], candidate.id);
+    } else {
+      assert.match(issues.join("\n"), new RegExp(candidate.expectedIssue, "i"), candidate.id);
+    }
+  }
+});
+
 test("adapters may extend but may not weaken restrictions", () => {
   const valid = readJson("tests/fixtures/adapters/valid-repo-map.json");
   const weakening = readJson("tests/fixtures/adapters/weakening-repo-map.json");
   assert.deepEqual(adapterIssues(valid), []);
   assert.ok(adapterIssues(weakening).some((issue) => issue.includes("weakens")));
+});
+
+test("adapter matrix rejects permission, failure, completion, secret, and mode overrides", () => {
+  assert.deepEqual(
+    adapterIssues(readJson("tests/fixtures/adapters/valid-narrowing.json")),
+    [],
+  );
+
+  const invalid = [
+    ["allow-deploy.json", /restricted operation/],
+    ["allow-git-push.json", /restricted operation/],
+    ["suppress-failures.json", /suppress failures/],
+    ["redefine-completion.json", /redefine completion/],
+    ["expose-secrets.json", /expose secrets/],
+    ["override-audit-only.json", /override runtime-truth mode/],
+  ];
+  for (const [file, expected] of invalid) {
+    const issues = adapterIssues(readJson(`tests/fixtures/adapters/${file}`));
+    assert.match(issues.join("\n"), expected, file);
+  }
 });
 
 test("audit-only agent prompts preserve their non-mutation boundary", () => {
@@ -255,6 +395,37 @@ test("tracked candidate files contain no obvious secret values", () => {
   }
 });
 
+test("privacy fixtures detect and redact synthetic sensitive shapes", () => {
+  const fixture = readJson("tests/fixtures/privacy/cases.json");
+  assert.equal(fixture.synthetic, true);
+  assert.equal(fixture.encoding, "ordered-parts");
+
+  for (const candidate of fixture.cases) {
+    const syntheticValue = candidate.parts.join("");
+    const detected = detectSensitiveValues(syntheticValue);
+    for (const expected of candidate.expectedTypes) {
+      assert.ok(detected.includes(expected), `${candidate.id}: missing ${expected}`);
+    }
+    const redacted = redactSensitiveText(syntheticValue);
+    assert.deepEqual(detectSensitiveValues(redacted), [], candidate.id);
+    assert.ok(redacted.includes("[REDACTED:"), candidate.id);
+  }
+});
+
+test("reusable skill content contains no sensitive-looking values", () => {
+  const reusableFiles = walk(path.join(root, "skills"))
+    .concat(walk(path.join(root, "examples")))
+    .filter((file) => /\.(?:md|json|yaml|yml)$/.test(file));
+
+  for (const file of reusableFiles) {
+    assert.deepEqual(
+      detectSensitiveValues(fs.readFileSync(file, "utf8")),
+      [],
+      path.relative(root, file),
+    );
+  }
+});
+
 test("safe executable examples do not contain restricted shell operations", () => {
   const files = [
     "CONTRIBUTING.md",
@@ -271,6 +442,32 @@ test("safe executable examples do not contain restricted shell operations", () =
   }
 });
 
+test("mutation fixtures distinguish procedures from explicit denials", () => {
+  const fixture = readJson("tests/fixtures/mutation/cases.json");
+  for (const candidate of fixture.cases) {
+    const issues = auditOnlyDocumentIssues(candidate.document);
+    assert.equal(issues.length, candidate.issues, candidate.id);
+  }
+});
+
+test("audit-only skill documents remain non-mutating and snapshot state is unchanged", () => {
+  const snapshotPath = "tests/fixtures/mutation/snapshot-target";
+  const before = snapshotDirectory(snapshotPath);
+
+  for (const skill of AUDIT_ONLY_SKILLS) {
+    const skillDirectory = path.join(root, "skills", skill);
+    for (const file of walk(skillDirectory).filter((candidate) => candidate.endsWith(".md"))) {
+      assert.deepEqual(
+        auditOnlyDocumentIssues(fs.readFileSync(file, "utf8")),
+        [],
+        path.relative(root, file),
+      );
+    }
+  }
+
+  assert.equal(snapshotDirectory(snapshotPath), before);
+});
+
 test("restricted inline commands are absent from safe skill example sections", () => {
   const files = PILOT_SKILLS.flatMap((skill) => [
     `skills/${skill}/examples.md`,
@@ -283,6 +480,7 @@ test("restricted inline commands are absent from safe skill example sections", (
       if (/^#{1,6}\s+/.test(line)) unsafeSection = /\b(?:unsafe|denied)\b/i.test(line);
       if (/^\*\*Unsafe(?: and denied)?:\*\*/i.test(line)) unsafeSection = true;
       for (const match of line.matchAll(/`([^`\n]+)`/g)) {
+        if (!commandLooksExecutable(match[1])) continue;
         const reason = restrictedShellReason(match[1]);
         assert.ok(!reason || unsafeSection, `${file}: ${reason}: ${match[1]}`);
       }

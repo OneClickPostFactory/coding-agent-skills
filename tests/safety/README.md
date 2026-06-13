@@ -1,8 +1,8 @@
 # Safety Tests
 
-The release suite currently verifies full restricted-category preservation, adapter non-weakening, audit-only evidence state, safe executable examples, and ignored local environment files.
+The release suite verifies full restricted-category preservation, adapter non-weakening, audit-only evidence state, safe executable examples, ignored local environment files, and audit-only Markdown mutation guidance.
 
-Future command-parser and execution-harness tests must also verify rejection of:
+The command-policy harness verifies rejection of:
 
 - Writes and destructive filesystem operations.
 - Package installation or upgrades.
@@ -14,4 +14,4 @@ Future command-parser and execution-harness tests must also verify rejection of:
 - Privileged or authenticated APIs.
 - Allowed commands chained to restricted commands.
 
-When invocation harnesses are added, capture project tree, Git state, process state, and configured mock remote state before and after each audit-only test. They must remain equivalent.
+Current content snapshots hash synthetic fixture state before and after audit-only document checks. A future invocation harness should also compare Git, process, service, and mock remote state.

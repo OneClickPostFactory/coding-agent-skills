@@ -1,0 +1,24 @@
+{
+  "adapterVersion": "1.0.0",
+  "skill": "repo-map",
+  "mode": "audit-only",
+  "project": "sample-repo",
+  "repositoryMarkers": ["package.json"],
+  "boundedReadPaths": ["README.md", "src"],
+  "allowedOperations": ["read-known-manifest", "read-bounded-docs"],
+  "restrictedCategories": [
+    "file-write",
+    "package-install",
+    "deployment",
+    "git-mutation",
+    "unrestricted-scan",
+    "secret-read",
+    "process-mutation",
+    "service-mutation",
+    "migration-apply",
+    "privileged-api"
+  ],
+  "suppressFailures": false,
+  "completionOverride": null,
+  "secretPaths": []
+}

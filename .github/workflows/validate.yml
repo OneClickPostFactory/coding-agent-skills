@@ -24,3 +24,6 @@ jobs:
 
       - name: Run release tests
         run: node scripts/test-pack.mjs
+
+      - name: Run built-in Node tests
+        run: node --test
