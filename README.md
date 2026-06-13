@@ -37,6 +37,8 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 - Validate project adapters against [the formal adapter schema](schemas/project-adapter.schema.json).
 - Review [external adapter discovery](docs/adapters/discovery.md).
 - Run `node scripts/validate-adapters.mjs <adapter-root>` for a disposable external root.
+- Review [project-owned installation and pinning](docs/adapters/project-installation.md).
+- Run `node scripts/validate-project-adapters.mjs <project-root>` for a declared project root.
 - Run `node scripts/validate-pack.mjs .` for structural validation.
 - Run `node scripts/test-pack.mjs` for executable release tests.
 - Run `node --test` for built-in Node fixture tests.

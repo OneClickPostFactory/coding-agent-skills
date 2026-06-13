@@ -5,6 +5,7 @@ The v0.1.x harness is dependency-free and runs through:
 - `node scripts/validate-pack.mjs .`
 - `node scripts/test-pack.mjs`
 - `node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic`
+- `node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin`
 - `node --test`
 
 ## Trigger Classification
@@ -38,6 +39,14 @@ roots and rejects malformed JSON, unknown manifests, incompatible skills and ver
 restriction weakening, mixed roots, traversal, and symlink escapes. Missing roots fail;
 empty roots return a clear zero-adapter result. CLI tests also confirm stable exit codes and
 that summaries do not echo manifest commands or identifiers.
+
+## Project Installation And Pins
+
+Disposable project roots cover exact pins, compatible ranges, multiple adapters, missing or
+ambiguous declarations, unsupported old and future cores, malformed semver, unknown skills,
+adapter version mismatch, invalid locations, restriction weakening, secret exposure, scope
+expansion, traversal, and symlink escape. Privacy tests verify that unrelated `.env` files
+are ignored and secret-like declaration content is rejected without appearing in summaries.
 
 ## False Completion
 

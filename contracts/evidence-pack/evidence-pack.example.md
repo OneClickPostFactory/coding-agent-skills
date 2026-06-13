@@ -2,7 +2,7 @@
 
 ## Scope
 
-- Skill: `repo-map` `0.1.3`
+- Skill: `repo-map` `0.1.4`
 - Intent: Map the repository before changing its API layer.
 - Scope: `/workspace/example-project`
 - Status: `complete`

@@ -10,6 +10,7 @@ Current synthetic fixtures include:
 - `privacy/cases.json`: split synthetic sensitive shapes.
 - `adapters/`: valid contract fixtures plus distinct schema and compatibility failures.
 - `external-adapters/`: disposable project roots for bounded discovery and rejection tests.
+- `project-adapter-installation/`: disposable repositories with declarations and version pins.
 - `completion/`: single and matrix-style schema-valid false completions.
 
 Future fixtures may cover dirty monorepos, non-Git projects, nested repositories, malformed manifests, bounded large trees, and secret-like filenames.

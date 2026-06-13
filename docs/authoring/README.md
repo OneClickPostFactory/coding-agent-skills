@@ -26,3 +26,8 @@ directory containing `adapter.json`. Keep manifests synthetic during shared-core
 Run `node scripts/validate-adapters.mjs <adapter-root>` before proposing a real project
 adapter. Passing schema validation alone is insufficient; compatibility, path safety,
 command aliases, evidence additions, and inherited restrictions must also pass.
+
+A future project adoption must also add exactly one supported skills declaration, pin the
+released shared core, list every adapter ID/version/skill set, retain `noSecrets: true`, and
+pass `node scripts/validate-project-adapters.mjs <project-root>`. A project declaration may
+narrow compatibility but cannot replace the shared schema, policy, mode, or completion rules.

@@ -36,3 +36,7 @@ input, traversal, and temporary symlink escapes. Fixtures contain no real projec
 Real project adapters remain deferred. When approved later, they should be owned by their
 project repository, declare compatibility with a released shared core, and pass this
 validator without changing shared restrictions.
+
+Manifest-only validation does not prove that a project has declared or pinned the shared
+core. Use the [project installation validator](project-installation.md) for that stronger
+workflow.

@@ -9,3 +9,7 @@ Executable fixtures validate the formal adapter schema and cover valid narrowing
 External fixture roots additionally test bounded location discovery, exact manifest naming,
 valid and invalid mixed roots, empty and missing roots, malformed JSON, traversal, symlink
 escape, adapter and skill versions, unsupported skill IDs, and safe CLI summaries.
+
+Project installation fixtures add declaration discovery, exact and ranged core pins,
+adapter-record matching, multiple installed adapters, unsupported core versions, invalid
+locations, inherited-policy weakening, `.env` avoidance, and secret-safe summaries.

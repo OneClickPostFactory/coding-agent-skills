@@ -25,7 +25,13 @@ import {
   RESTRICTED_CATEGORIES,
   restrictedShellReason,
 } from "./lib/pack-rules.mjs";
+import {
+  formatProjectAdapterSummary,
+  projectAdapterCliResult,
+  validateProjectAdapters,
+} from "./lib/project-adapter-installation.mjs";
 import { validateValue } from "./lib/schema-validator.mjs";
+import { parseSemver, parseVersionPin, satisfiesVersionPin } from "./lib/semver.mjs";
 
 const root = path.resolve(process.argv[2] ?? ".");
 const tests = [];
@@ -127,6 +133,9 @@ function snapshotDirectory(relativePath) {
 const manifestSchema = readJson("schemas/skill-manifest.schema.json");
 const policySchema = readJson("schemas/command-policy.schema.json");
 const adapterSchema = readJson("schemas/project-adapter.schema.json");
+const projectInstallationSchema = readJson(
+  "schemas/project-adapter-installation.schema.json",
+);
 const evidenceSchema = readJson("contracts/evidence-pack/evidence-pack.schema.json");
 const policiesBySkill = Object.fromEntries(
   PILOT_SKILLS.map((skill) => [
@@ -154,6 +163,7 @@ test("release governance and safe CI files are present", () => {
     "node scripts/validate-pack.mjs .",
     "node scripts/test-pack.mjs",
     "node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic",
+    "node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin",
     "node --test",
   ]);
 });
@@ -689,6 +699,227 @@ test("external adapter CLI uses stable exit codes and safe summaries", () => {
     validateExternalAdapters(path.join(fixtureRoot, "mixed"), { coreRoot: root }),
   ).join("\n");
   assert.doesNotMatch(summary, /git push|fixture-mixed|adapterId/i);
+});
+
+test("project adapter declarations satisfy schema and supported pin forms", () => {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-installation",
+  );
+  const declarations = [
+    ["valid-exact-pin", ".coding-agent/skills.json"],
+    ["valid-compatible-range", "coding-agent.skills.json"],
+    ["valid-multiple-adapters", ".coding-agent/skills.json"],
+  ];
+
+  for (const [fixture, relative] of declarations) {
+    assertSchemaValid(
+      projectInstallationSchema,
+      JSON.parse(fs.readFileSync(path.join(fixtureRoot, fixture, relative), "utf8")),
+      fixture,
+    );
+  }
+
+  assert.deepEqual(parseSemver("0.1.4"), [0, 1, 4]);
+  assert.equal(parseSemver("v0.1.4"), null);
+  assert.equal(parseSemver("00.1.4"), null);
+  assert.ok(parseVersionPin("0.1.4"));
+  assert.ok(parseVersionPin(">=0.1.3 <0.2.0"));
+  assert.equal(parseVersionPin("^0.1.4"), null);
+  assert.equal(satisfiesVersionPin("0.1.4", "0.1.4"), true);
+  assert.equal(satisfiesVersionPin("0.1.4", ">=0.1.3 <0.2.0"), true);
+  assert.equal(satisfiesVersionPin("0.1.4", "<0.1.4"), false);
+  assert.equal(satisfiesVersionPin("0.1.4", ">=0.2.0"), false);
+});
+
+test("project adapter installation accepts exact, range, and multiple adapters", () => {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-installation",
+  );
+  const valid = [
+    ["valid-exact-pin", 1, ["repo-map"]],
+    ["valid-compatible-range", 1, ["llm-drift-control"]],
+    ["valid-multiple-adapters", 2, ["repo-map", "runtime-truth"]],
+  ];
+
+  for (const [fixture, adapterCount, skills] of valid) {
+    const result = validateProjectAdapters(path.join(fixtureRoot, fixture), {
+      coreRoot: root,
+    });
+    assert.equal(result.ok, true, fixture);
+    assert.equal(result.acceptedAdapters, adapterCount, fixture);
+    assert.deepEqual(result.acceptedSkills, skills, fixture);
+  }
+});
+
+test("project adapter installation rejects invalid pins, declarations, and adapters", () => {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-installation",
+  );
+  const invalid = [
+    ["invalid-missing-declaration", "missing-project-declaration"],
+    ["invalid-unsupported-core-version", "unsupported-core-version"],
+    ["invalid-bad-semver", "invalid-semver"],
+    ["invalid-unknown-skill", "unsupported-skill-id"],
+    ["invalid-adapter-version-mismatch", "adapter-version-mismatch"],
+    ["invalid-adapter-schema-version", "unsupported-adapter-version"],
+    ["invalid-adapter-location", "invalid-adapter-location"],
+    ["invalid-skill-mismatch", "adapter-skill-mismatch"],
+    ["invalid-mode-escalation", "mode-override"],
+    ["invalid-failure-suppression", "failure-suppression"],
+    ["invalid-completion-override", "completion-override"],
+    ["invalid-weakens-restrictions", "restriction-weakening"],
+    ["invalid-secret-exposure", "secret-exposure"],
+    ["invalid-scope-expansion", "scope-expansion"],
+    ["invalid-path-traversal", "unsafe-project-path"],
+  ];
+
+  for (const [fixture, expectedCode] of invalid) {
+    const result = validateProjectAdapters(path.join(fixtureRoot, fixture), {
+      coreRoot: root,
+    });
+    assert.equal(result.ok, false, fixture);
+    assert.ok(result.codes.includes(expectedCode), `${fixture}: ${result.codes}`);
+  }
+});
+
+test("project adapter installation rejects old core pins, ambiguity, and symlink escape", () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "project-adapter-"));
+  const source = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-installation",
+    "valid-exact-pin",
+  );
+
+  try {
+    const oldCore = path.join(temporaryRoot, "old-core");
+    fs.cpSync(source, oldCore, { recursive: true });
+    const oldDeclarationPath = path.join(oldCore, ".coding-agent", "skills.json");
+    const oldDeclaration = JSON.parse(fs.readFileSync(oldDeclarationPath, "utf8"));
+    oldDeclaration.core.expectedVersion = "0.1.0";
+    oldDeclaration.core.versionPin = "0.1.0";
+    fs.writeFileSync(oldDeclarationPath, JSON.stringify(oldDeclaration));
+    const oldResult = validateProjectAdapters(oldCore, { coreRoot: root });
+    assert.equal(oldResult.ok, false);
+    assert.ok(oldResult.codes.includes("unsupported-core-version"));
+
+    const missingVersion = path.join(temporaryRoot, "missing-version");
+    fs.cpSync(source, missingVersion, { recursive: true });
+    const missingVersionPath = path.join(
+      missingVersion,
+      ".coding-agent",
+      "skills.json",
+    );
+    const missingDeclaration = JSON.parse(
+      fs.readFileSync(missingVersionPath, "utf8"),
+    );
+    delete missingDeclaration.core.versionPin;
+    fs.writeFileSync(missingVersionPath, JSON.stringify(missingDeclaration));
+    const missingVersionResult = validateProjectAdapters(missingVersion, {
+      coreRoot: root,
+    });
+    assert.equal(missingVersionResult.ok, false);
+    assert.ok(missingVersionResult.codes.includes("declaration-schema"));
+    assert.ok(missingVersionResult.codes.includes("invalid-semver"));
+
+    const ambiguous = path.join(temporaryRoot, "ambiguous");
+    fs.cpSync(source, ambiguous, { recursive: true });
+    fs.copyFileSync(
+      path.join(ambiguous, ".coding-agent", "skills.json"),
+      path.join(ambiguous, "coding-agent.skills.json"),
+    );
+    const ambiguousResult = validateProjectAdapters(ambiguous, { coreRoot: root });
+    assert.equal(ambiguousResult.ok, false);
+    assert.deepEqual(ambiguousResult.codes, ["ambiguous-project-declaration"]);
+
+    const symlinkRoot = path.join(temporaryRoot, "symlink");
+    fs.mkdirSync(path.join(symlinkRoot, ".coding-agent"), { recursive: true });
+    fs.symlinkSync(
+      path.join(source, ".coding-agent", "skills.json"),
+      path.join(symlinkRoot, ".coding-agent", "skills.json"),
+    );
+    const symlinkResult = validateProjectAdapters(symlinkRoot, { coreRoot: root });
+    assert.equal(symlinkResult.ok, false);
+    assert.deepEqual(symlinkResult.codes, ["symlink-escape"]);
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test("project adapter installation ignores .env and keeps summaries secret-safe", () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "project-privacy-"));
+  const source = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-installation",
+    "valid-exact-pin",
+  );
+  const syntheticValue = readJson("tests/fixtures/privacy/cases.json")
+    .cases.find((candidate) => candidate.id === "fake-github-token")
+    .parts.join("");
+
+  try {
+    const safe = path.join(temporaryRoot, "safe");
+    fs.cpSync(source, safe, { recursive: true });
+    fs.writeFileSync(path.join(safe, ".env"), `SYNTHETIC=${syntheticValue}\n`);
+    assert.equal(validateProjectAdapters(safe, { coreRoot: root }).ok, true);
+
+    const rejected = path.join(temporaryRoot, "rejected");
+    fs.cpSync(source, rejected, { recursive: true });
+    const declarationPath = path.join(rejected, ".coding-agent", "skills.json");
+    const declaration = JSON.parse(fs.readFileSync(declarationPath, "utf8"));
+    declaration.syntheticNote = syntheticValue;
+    fs.writeFileSync(declarationPath, JSON.stringify(declaration));
+    const rejectedResult = validateProjectAdapters(rejected, { coreRoot: root });
+    assert.equal(rejectedResult.ok, false);
+    assert.deepEqual(rejectedResult.codes, ["secret-like-content"]);
+    assert.doesNotMatch(
+      formatProjectAdapterSummary(rejectedResult).join("\n"),
+      new RegExp(syntheticValue),
+    );
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test("project adapter CLI uses stable exit codes and safe summaries", () => {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-installation",
+  );
+  const valid = projectAdapterCliResult(path.join(fixtureRoot, "valid-exact-pin"), {
+    coreRoot: root,
+  });
+  assert.equal(valid.exitCode, 0);
+  assert.equal(valid.stream, "stdout");
+  assert.match(valid.lines.join("\n"), /core pin accepted/);
+
+  const invalid = projectAdapterCliResult(
+    path.join(fixtureRoot, "invalid-secret-exposure"),
+    { coreRoot: root },
+  );
+  assert.equal(invalid.exitCode, 1);
+  assert.equal(invalid.stream, "stderr");
+  assert.match(invalid.lines.join("\n"), /secret-exposure/);
+  assert.doesNotMatch(invalid.lines.join("\n"), /fixture-project|adapterId/i);
+
+  const usage = projectAdapterCliResult(undefined, { coreRoot: root });
+  assert.equal(usage.exitCode, 2);
+  assert.equal(usage.stream, "stderr");
+  assert.match(usage.lines.join("\n"), /usage:/i);
 });
 
 test("audit-only agent prompts preserve their non-mutation boundary", () => {

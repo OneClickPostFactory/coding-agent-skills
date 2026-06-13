@@ -1,0 +1,28 @@
+{
+  "declarationVersion": "1.0.0",
+  "projectId": "fixture-multiple-project",
+  "adapterRoot": "adapters/coding-agent",
+  "adapterSchemaVersion": "1.0.0",
+  "core": {
+    "id": "coding-agent-skills",
+    "expectedVersion": "0.1.4",
+    "versionPin": ">=0.1.4 <0.2.0"
+  },
+  "compatibleSkillIds": ["repo-map", "runtime-truth"],
+  "adapters": [
+    {
+      "id": "fixture-project-repo",
+      "version": "1.0.0",
+      "skillIds": ["repo-map"]
+    },
+    {
+      "id": "fixture-project-runtime",
+      "version": "1.0.0",
+      "skillIds": ["runtime-truth"]
+    }
+  ],
+  "validationCommand": "node <shared-core>/scripts/validate-project-adapters.mjs <project-root>",
+  "evidenceOutput": "validation-output/project-adapters.json",
+  "approvalPolicyReference": "docs/coding-agent-approval-policy.md",
+  "noSecrets": true
+}

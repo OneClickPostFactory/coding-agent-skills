@@ -33,6 +33,11 @@ filename. It rejects traversal, symlink escapes, non-regular manifests, oversize
 malformed JSON, secret-like content, and mixed roots containing any rejection. The validator
 does not execute adapter commands or read unrelated project files.
 
+Project installation adds a declaration but no new permissions. Exact or ranged core pins,
+adapter records, and skill IDs must agree with discovered manifests. Declaration paths remain
+repository-relative, `.env` files remain outside discovery, and the declared validation
+command is metadata rather than executable input.
+
 ## Command Policy Limits
 
 Command policies declare executable families, argument strategy, parser invariants, composition rules, and denied categories. Property-style tests exercise obvious bypass combinations, but the parser is not a complete shell implementation. Unsupported syntax fails closed.

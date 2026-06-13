@@ -13,6 +13,7 @@ import {
   RESTRICTED_CATEGORIES,
   restrictedShellReason,
 } from "./lib/pack-rules.mjs";
+import { validateProjectAdapters } from "./lib/project-adapter-installation.mjs";
 import { validateValue } from "./lib/schema-validator.mjs";
 
 const root = path.resolve(process.argv[2] ?? ".");
@@ -49,6 +50,7 @@ const requiredRootFiles = [
   "docs/adapters/README.md",
   "docs/adapters/discovery.md",
   "docs/adapters/external-adapters.md",
+  "docs/adapters/project-installation.md",
   "docs/usage/README.md",
   "docs/release/README.md",
   "docs/testing/README.md",
@@ -58,9 +60,13 @@ const requiredRootFiles = [
   "schemas/skill-manifest.schema.json",
   "schemas/command-policy.schema.json",
   "schemas/project-adapter.schema.json",
+  "schemas/project-adapter-installation.schema.json",
   "scripts/test-pack.mjs",
   "scripts/validate-adapters.mjs",
+  "scripts/validate-project-adapters.mjs",
   "scripts/lib/adapter-discovery.mjs",
+  "scripts/lib/project-adapter-installation.mjs",
+  "scripts/lib/semver.mjs",
   "scripts/lib/schema-validator.mjs",
   "scripts/lib/pack-rules.mjs",
   "tests/README.md",
@@ -90,6 +96,25 @@ const requiredRootFiles = [
   "tests/fixtures/external-adapters/invalid-deploy/.coding-agent/adapters/deploy/adapter.json",
   "tests/fixtures/external-adapters/invalid-git-push/.coding-agent/adapters/publish/adapter.json",
   "tests/fixtures/external-adapters/invalid-path-traversal/.coding-agent/adapters/path/adapter.json",
+  "tests/fixtures/project-adapter-installation/valid-exact-pin/.coding-agent/skills.json",
+  "tests/fixtures/project-adapter-installation/valid-exact-pin/.coding-agent/adapters/basic/adapter.json",
+  "tests/fixtures/project-adapter-installation/valid-compatible-range/coding-agent.skills.json",
+  "tests/fixtures/project-adapter-installation/valid-multiple-adapters/.coding-agent/skills.json",
+  "tests/fixtures/project-adapter-installation/invalid-missing-declaration/.coding-agent/adapters/basic/adapter.json",
+  "tests/fixtures/project-adapter-installation/invalid-unsupported-core-version/.coding-agent/skills.json",
+  "tests/fixtures/project-adapter-installation/invalid-bad-semver/.coding-agent/skills.json",
+  "tests/fixtures/project-adapter-installation/invalid-unknown-skill/.coding-agent/skills.json",
+  "tests/fixtures/project-adapter-installation/invalid-adapter-version-mismatch/.coding-agent/skills.json",
+  "tests/fixtures/project-adapter-installation/invalid-adapter-schema-version/.coding-agent/skills.json",
+  "tests/fixtures/project-adapter-installation/invalid-adapter-location/.coding-agent/skills.json",
+  "tests/fixtures/project-adapter-installation/invalid-skill-mismatch/.coding-agent/skills.json",
+  "tests/fixtures/project-adapter-installation/invalid-mode-escalation/.coding-agent/skills.json",
+  "tests/fixtures/project-adapter-installation/invalid-failure-suppression/.coding-agent/skills.json",
+  "tests/fixtures/project-adapter-installation/invalid-completion-override/.coding-agent/skills.json",
+  "tests/fixtures/project-adapter-installation/invalid-weakens-restrictions/.coding-agent/skills.json",
+  "tests/fixtures/project-adapter-installation/invalid-secret-exposure/.coding-agent/skills.json",
+  "tests/fixtures/project-adapter-installation/invalid-scope-expansion/.coding-agent/skills.json",
+  "tests/fixtures/project-adapter-installation/invalid-path-traversal/.coding-agent/skills.json",
   "tests/fixtures/mutation/snapshot-target/README.md",
   "tests/fixtures/mutation/snapshot-target/state.json",
   "examples/README.md",
@@ -206,12 +231,61 @@ for (const fixture of [
   }
 }
 
+for (const fixture of [
+  "valid-exact-pin",
+  "valid-compatible-range",
+  "valid-multiple-adapters",
+]) {
+  const result = validateProjectAdapters(
+    path.join(root, "tests", "fixtures", "project-adapter-installation", fixture),
+    { coreRoot: root },
+  );
+  if (!result.ok) {
+    failures.push(`${fixture}: valid project adapter installation was rejected`);
+  }
+}
+
+for (const fixture of [
+  "invalid-missing-declaration",
+  "invalid-unsupported-core-version",
+  "invalid-bad-semver",
+  "invalid-unknown-skill",
+  "invalid-adapter-version-mismatch",
+  "invalid-adapter-schema-version",
+  "invalid-adapter-location",
+  "invalid-skill-mismatch",
+  "invalid-mode-escalation",
+  "invalid-failure-suppression",
+  "invalid-completion-override",
+  "invalid-weakens-restrictions",
+  "invalid-secret-exposure",
+  "invalid-scope-expansion",
+  "invalid-path-traversal",
+]) {
+  const result = validateProjectAdapters(
+    path.join(root, "tests", "fixtures", "project-adapter-installation", fixture),
+    { coreRoot: root },
+  );
+  if (result.ok) {
+    failures.push(`${fixture}: invalid project adapter installation was accepted`);
+  }
+}
+
 const manifestSchema = readJson("schemas/skill-manifest.schema.json");
 const policySchema = readJson("schemas/command-policy.schema.json");
 const adapterSchema = readJson("schemas/project-adapter.schema.json");
+const projectInstallationSchema = readJson(
+  "schemas/project-adapter-installation.schema.json",
+);
 const evidenceSchema = readJson("contracts/evidence-pack/evidence-pack.schema.json");
 
-if (manifestSchema && policySchema && adapterSchema && evidenceSchema) {
+if (
+  manifestSchema &&
+  policySchema &&
+  adapterSchema &&
+  projectInstallationSchema &&
+  evidenceSchema
+) {
   const policiesBySkill = Object.fromEntries(
     PILOT_SKILLS.map((skill) => [
       skill,
@@ -355,6 +429,14 @@ for (const [file, patterns] of [
     [/validate-adapters\.mjs/i, /rejection/i, /real project adapters/i],
   ],
   [
+    "docs/adapters/project-installation.md",
+    [/skills\.json/i, /version pin/i, /extension-only/i, /validate-project-adapters/i],
+  ],
+  [
+    "docs/versioning/README.md",
+    [/exact pin/i, /compatible range/i, />=0\.1\.3 <0\.2\.0/],
+  ],
+  [
     "docs/testing/README.md",
     [/property-style/i, /not a complete POSIX parser/i],
   ],
@@ -477,6 +559,7 @@ for (const expected of [
   "node scripts/validate-pack.mjs .",
   "node scripts/test-pack.mjs",
   "node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic",
+  "node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin",
   "node --test",
 ]) {
   if (!ci.includes(expected)) failures.push(`CI missing safe validation step: ${expected}`);

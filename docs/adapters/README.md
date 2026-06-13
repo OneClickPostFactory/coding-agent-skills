@@ -9,7 +9,9 @@ Every adapter must validate against [the project-adapter schema](../../schemas/p
 
 External discovery is opt-in and bounded to three project-relative locations. Each adapter
 uses the exact manifest name `adapter.json`. See [the discovery convention](discovery.md)
-for path and symlink rules and [external validation](external-adapters.md) for CLI behavior.
+for path and symlink rules, [external validation](external-adapters.md) for manifest-only
+CLI behavior, and [project installation](project-installation.md) for declaration and
+version-pinning rules.
 
 Discovery validates schema, skill compatibility, command policy, and inherited restrictions
 before accepting any extension. It never executes adapter commands.
@@ -38,9 +40,9 @@ before accepting any extension. It never executes adapter commands.
 Skill manifests declare the adapter contract and compatible adapter versions. An adapter separately declares supported skill IDs, compatible skill versions, and the unchanged skill mode.
 
 Compatibility requires both declarations to agree. Exact pilot versions and the `0.1.x`
-compatibility form are supported in v0.1.3.
+compatibility form are supported in v0.1.4.
 
 The `inheritance` object is mandatory. Shared restrictions always win, and every permission-like safety flag is fixed to `false`.
 
-No real project adapter is implemented in the pilot release. The v0.1.3 harness uses only
+No real project adapter is implemented in the pilot release. The v0.1.4 harness uses only
 disposable synthetic fixture roots.

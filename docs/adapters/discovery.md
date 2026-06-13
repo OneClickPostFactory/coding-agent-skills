@@ -43,5 +43,8 @@ Project repositories may later reference a versioned checkout or installed copy 
 shared core. That integration must run the core validator against the project root; it must
 not copy or redefine shared restrictions locally.
 
-No real project adapters are added in v0.1.3. The committed roots are disposable synthetic
+The [project installation contract](project-installation.md) defines the declaration and
+version pin required before a project-owned adapter can be considered installed.
+
+No real project adapters are added in v0.1.4. The committed roots are disposable synthetic
 fixtures only.

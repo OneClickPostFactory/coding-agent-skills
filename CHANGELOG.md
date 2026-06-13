@@ -2,6 +2,21 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.1.4] - 2026-06-13
+
+### Added
+
+- Project-owned adapter installation declaration schema and dependency-free validator.
+- Exact core pins and compatible comparator ranges without a semver dependency.
+- Disposable project fixtures for valid installation, version mismatch, unsafe location,
+  policy weakening, secret exposure, scope expansion, and traversal.
+- Bidirectional matching of project ID, adapter root, adapter ID/version, and pilot skill IDs.
+
+### Changed
+
+- Release validation and CI now exercise a declared project-owned adapter installation.
+- Adapter, testing, safety, authoring, and versioning documentation now define safe adoption.
+
 ## [0.1.3] - 2026-06-13
 
 ### Added

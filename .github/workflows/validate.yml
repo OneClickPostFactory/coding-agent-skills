@@ -28,5 +28,8 @@ jobs:
       - name: Validate disposable external adapter
         run: node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic
 
+      - name: Validate disposable project installation
+        run: node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin
+
       - name: Run built-in Node tests
         run: node --test

@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://coding-agent-skills.local/schemas/project-adapter-installation.schema.json",
+  "title": "Coding Agent Project Adapter Installation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "declarationVersion",
+    "projectId",
+    "adapterRoot",
+    "adapterSchemaVersion",
+    "core",
+    "compatibleSkillIds",
+    "adapters",
+    "validationCommand",
+    "evidenceOutput",
+    "approvalPolicyReference",
+    "noSecrets"
+  ],
+  "properties": {
+    "declarationVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "projectId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "adapterRoot": {
+      "type": "string",
+      "enum": [
+        ".coding-agent/adapters",
+        "coding-agent/adapters",
+        "adapters/coding-agent"
+      ]
+    },
+    "adapterSchemaVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "core": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "expectedVersion", "versionPin"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "const": "coding-agent-skills"
+        },
+        "expectedVersion": {
+          "type": "string",
+          "pattern": "^(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)$"
+        },
+        "versionPin": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "compatibleSkillIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "repo-map",
+          "build-verify",
+          "git-preflight",
+          "runtime-truth",
+          "llm-drift-control"
+        ]
+      }
+    },
+    "adapters": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "version", "skillIds"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)$"
+          },
+          "skillIds": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "repo-map",
+                "build-verify",
+                "git-preflight",
+                "runtime-truth",
+                "llm-drift-control"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "validationCommand": {
+      "type": "string",
+      "const": "node <shared-core>/scripts/validate-project-adapters.mjs <project-root>"
+    },
+    "evidenceOutput": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!\\.env(?:\\.|$)).+"
+    },
+    "approvalPolicyReference": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!\\.env(?:\\.|$)).+"
+    },
+    "noSecrets": {
+      "type": "boolean",
+      "const": true
+    }
+  }
+}

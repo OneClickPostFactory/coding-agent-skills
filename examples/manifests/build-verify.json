@@ -1,6 +1,6 @@
 {
   "name": "build-verify",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "mode": "action-capable",
   "evidenceContract": "../../contracts/evidence-pack/evidence-pack.schema.json",
   "commandPolicy": "../command-policies/build-verify.json",

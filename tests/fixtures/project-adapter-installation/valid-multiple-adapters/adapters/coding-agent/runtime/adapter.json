@@ -1,0 +1,58 @@
+{
+  "adapterId": "fixture-project-runtime",
+  "adapterVersion": "1.0.0",
+  "project": {
+    "id": "fixture-multiple-project",
+    "detection": {
+      "rootMarkers": [{"kind": "file", "path": "package.json"}],
+      "maximumDepth": 1,
+      "scope": "declared-project-root",
+      "requireApprovalOutsideScope": true
+    }
+  },
+  "supportedSkills": [
+    {
+      "id": "runtime-truth",
+      "compatibleVersions": ["0.1.4"],
+      "declaredMode": "audit-only"
+    }
+  ],
+  "extensions": {
+    "safeReadPaths": ["README.md", "package.json"],
+    "ignoredPaths": ["logs"],
+    "documentationPrecedence": [],
+    "commandAliases": [],
+    "safeStatusCommands": [
+      {
+        "manager": "process",
+        "command": "ps -ef"
+      }
+    ],
+    "requiredEvidence": ["process status", "listener ownership"],
+    "expectedRuntimeManagers": ["process"],
+    "expectedPackageManagers": ["npm"]
+  },
+  "approvalRequirements": [],
+  "inheritance": {
+    "sharedRestrictions": "required",
+    "deniedOperationCategories": [
+      "file-write",
+      "package-install",
+      "deployment",
+      "git-mutation",
+      "unrestricted-scan",
+      "secret-read",
+      "process-mutation",
+      "service-mutation",
+      "migration-apply",
+      "privileged-api"
+    ],
+    "allowRestrictionRemoval": false,
+    "allowModeOverride": false,
+    "allowFailureSuppression": false,
+    "allowCompletionOverride": false,
+    "allowSecretExposure": false,
+    "allowRequiredEvidenceRemoval": false,
+    "allowScopeExpansionWithoutApproval": false
+  }
+}

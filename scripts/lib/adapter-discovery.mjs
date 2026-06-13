@@ -80,7 +80,7 @@ function schemaIssueCodes(errors) {
   return [...codes];
 }
 
-function readJsonFile(file, options = {}) {
+export function readSafeJsonFile(file, options = {}) {
   const stat = fs.statSync(file);
   if (stat.size > MAX_MANIFEST_BYTES) {
     return { value: null, codes: ["manifest-too-large"] };
@@ -115,7 +115,7 @@ function loadCore(coreRoot) {
     }
   }
 
-  const schemaRecord = readJsonFile(
+  const schemaRecord = readSafeJsonFile(
     path.join(coreRoot, "schemas", "project-adapter.schema.json"),
     { scanSensitive: false },
   );
@@ -126,11 +126,11 @@ function loadCore(coreRoot) {
   const manifests = {};
   const policies = {};
   for (const skill of PILOT_SKILLS) {
-    const manifestRecord = readJsonFile(
+    const manifestRecord = readSafeJsonFile(
       path.join(coreRoot, "examples", "manifests", `${skill}.json`),
       { scanSensitive: false },
     );
-    const policyRecord = readJsonFile(
+    const policyRecord = readSafeJsonFile(
       path.join(coreRoot, "examples", "command-policies", `${skill}.json`),
       { scanSensitive: false },
     );
@@ -222,7 +222,7 @@ function discover(adapterRoot) {
         failures.push({ location: publicLocation, codes: ["symlink-escape"] });
         continue;
       }
-      manifests.push({ file: manifest, location: publicLocation });
+      manifests.push({ file: manifest, location: publicLocation, rootLocation: location });
     }
   }
 
@@ -325,7 +325,7 @@ export function validateExternalAdapters(adapterRootInput, options = {}) {
   const rejected = [];
 
   for (const candidate of discovery.manifests) {
-    const record = readJsonFile(candidate.file);
+    const record = readSafeJsonFile(candidate.file);
     if (!record.value) {
       rejected.push({ location: candidate.location, codes: record.codes });
       continue;
@@ -346,6 +346,10 @@ export function validateExternalAdapters(adapterRootInput, options = {}) {
 
     accepted.push({
       location: candidate.location,
+      rootLocation: candidate.rootLocation,
+      adapterId: record.value.adapterId,
+      adapterVersion: record.value.adapterVersion,
+      projectId: record.value.project.id,
       skills: record.value.supportedSkills.map((skill) => skill.id).sort(),
     });
   }
