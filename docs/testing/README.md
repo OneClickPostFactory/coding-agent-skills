@@ -4,6 +4,7 @@ The v0.1.x harness is dependency-free and runs through:
 
 - `node scripts/validate-pack.mjs .`
 - `node scripts/test-pack.mjs`
+- `node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic`
 - `node --test`
 
 ## Trigger Classification
@@ -29,6 +30,14 @@ Sensitive shapes are stored as ordered synthetic parts and reconstructed only in
 ## Adapter Weakening
 
 Valid adapters must pass both JSON Schema validation and semantic compatibility checks. Tests cover narrowing, documentation precedence, and status-only hints, then reject deployment, Git publication, failure suppression, completion overrides, secret exposure, missing restrictions, stale skill versions, required-evidence removal, scope expansion, and audit-mode overrides.
+
+## External Adapter Discovery
+
+Disposable fixture roots exercise all three discovery conventions. The harness accepts valid
+roots and rejects malformed JSON, unknown manifests, incompatible skills and versions,
+restriction weakening, mixed roots, traversal, and symlink escapes. Missing roots fail;
+empty roots return a clear zero-adapter result. CLI tests also confirm stable exit codes and
+that summaries do not echo manifest commands or identifiers.
 
 ## False Completion
 

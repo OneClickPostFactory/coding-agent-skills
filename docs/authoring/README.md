@@ -20,3 +20,9 @@ Do not copy commands from restricted evidence into procedures. Use placeholders 
 Project adapters must validate against `schemas/project-adapter.schema.json`. They may add known paths, script aliases, source precedence, status-only commands, and evidence requirements. They may not weaken restrictions, hide failures, change skill mode, or redefine completion.
 
 Future skills must declare the adapter contract version and compatible adapter versions in their manifest. Adapter compatibility is bidirectional: the manifest must accept the adapter version, and the adapter must accept the skill ID, version, and original mode.
+
+External adapters must use one documented discovery location and an immediate child
+directory containing `adapter.json`. Keep manifests synthetic during shared-core testing.
+Run `node scripts/validate-adapters.mjs <adapter-root>` before proposing a real project
+adapter. Passing schema validation alone is insufficient; compatibility, path safety,
+command aliases, evidence additions, and inherited restrictions must also pass.

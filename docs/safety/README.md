@@ -28,6 +28,11 @@ Project adapters inherit every shared restriction. Schema fields that could weak
 
 Adapter command aliases and status hints are parsed with the same command-policy harness as shared examples. A familiar alias never bypasses argument or composition checks.
 
+External discovery is bounded to declared adapter locations and the exact `adapter.json`
+filename. It rejects traversal, symlink escapes, non-regular manifests, oversized manifests,
+malformed JSON, secret-like content, and mixed roots containing any rejection. The validator
+does not execute adapter commands or read unrelated project files.
+
 ## Command Policy Limits
 
 Command policies declare executable families, argument strategy, parser invariants, composition rules, and denied categories. Property-style tests exercise obvious bypass combinations, but the parser is not a complete shell implementation. Unsupported syntax fails closed.

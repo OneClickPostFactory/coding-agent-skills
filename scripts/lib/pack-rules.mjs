@@ -6,7 +6,7 @@ export const PILOT_SKILLS = [
   "llm-drift-control",
 ];
 
-export const PILOT_VERSION = "0.1.2";
+export const PILOT_VERSION = "0.1.3";
 
 export const AUDIT_ONLY_SKILLS = [
   "repo-map",
@@ -496,7 +496,12 @@ function classifySegment(segment, options = {}) {
   if (executable === "yarn" && !/^yarn\s+(?:run\s+)?(?:lint|typecheck|test|build|check|validate)\b/.test(segment)) {
     return "unsafe yarn script";
   }
-  if (executable === "node" && !/^node\s+(?:--check\b|--test\b|scripts\/(?:validate-pack|test-pack)\.mjs\b)/.test(segment)) {
+  if (
+    executable === "node" &&
+    !/^node\s+(?:--check\b|--test\b|scripts\/(?:validate-pack|validate-adapters|test-pack)\.mjs\b)/.test(
+      segment,
+    )
+  ) {
     return "node execution is not allowlisted";
   }
   if (executable === "systemctl" && !/^systemctl\s+(?:--user\s+)?status\b/.test(segment)) {

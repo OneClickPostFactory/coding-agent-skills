@@ -35,6 +35,8 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 - Read [usage guidance](docs/usage/README.md) before selecting a skill.
 - Browse [safe examples](examples/README.md) for manifests, policies, evidence packs, and workflows.
 - Validate project adapters against [the formal adapter schema](schemas/project-adapter.schema.json).
+- Review [external adapter discovery](docs/adapters/discovery.md).
+- Run `node scripts/validate-adapters.mjs <adapter-root>` for a disposable external root.
 - Run `node scripts/validate-pack.mjs .` for structural validation.
 - Run `node scripts/test-pack.mjs` for executable release tests.
 - Run `node --test` for built-in Node fixture tests.

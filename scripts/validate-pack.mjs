@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { validateExternalAdapters } from "./lib/adapter-discovery.mjs";
 import {
   adapterIssues,
   AUDIT_ONLY_SKILLS,
@@ -46,6 +47,8 @@ const requiredRootFiles = [
   "docs/versioning/README.md",
   "docs/privacy/README.md",
   "docs/adapters/README.md",
+  "docs/adapters/discovery.md",
+  "docs/adapters/external-adapters.md",
   "docs/usage/README.md",
   "docs/release/README.md",
   "docs/testing/README.md",
@@ -56,6 +59,8 @@ const requiredRootFiles = [
   "schemas/command-policy.schema.json",
   "schemas/project-adapter.schema.json",
   "scripts/test-pack.mjs",
+  "scripts/validate-adapters.mjs",
+  "scripts/lib/adapter-discovery.mjs",
   "scripts/lib/schema-validator.mjs",
   "scripts/lib/pack-rules.mjs",
   "tests/README.md",
@@ -79,6 +84,12 @@ const requiredRootFiles = [
   "tests/fixtures/adapters/incompatible-version.json",
   "tests/fixtures/adapters/remove-required-evidence.json",
   "tests/fixtures/adapters/expand-scope.json",
+  "tests/fixtures/external-adapters/valid-basic/.coding-agent/adapters/basic/adapter.json",
+  "tests/fixtures/external-adapters/valid-doc-precedence/coding-agent/adapters/docs/adapter.json",
+  "tests/fixtures/external-adapters/valid-runtime-status/adapters/coding-agent/runtime/adapter.json",
+  "tests/fixtures/external-adapters/invalid-deploy/.coding-agent/adapters/deploy/adapter.json",
+  "tests/fixtures/external-adapters/invalid-git-push/.coding-agent/adapters/publish/adapter.json",
+  "tests/fixtures/external-adapters/invalid-path-traversal/.coding-agent/adapters/path/adapter.json",
   "tests/fixtures/mutation/snapshot-target/README.md",
   "tests/fixtures/mutation/snapshot-target/state.json",
   "examples/README.md",
@@ -151,6 +162,47 @@ for (const skill of PILOT_SKILLS) {
   const metadata = read(`skills/${skill}/agents/openai.yaml`);
   for (const key of ["display_name:", "short_description:", "default_prompt:"]) {
     if (!metadata.includes(key)) failures.push(`${skill}: agents/openai.yaml missing ${key}`);
+  }
+}
+
+for (const fixture of [
+  "valid-basic",
+  "valid-doc-precedence",
+  "valid-runtime-status",
+]) {
+  const result = validateExternalAdapters(
+    path.join(root, "tests", "fixtures", "external-adapters", fixture),
+    { coreRoot: root },
+  );
+  if (!result.ok || result.accepted.length !== 1) {
+    failures.push(`${fixture}: valid external adapter root was rejected`);
+  }
+}
+
+for (const fixture of [
+  "invalid-deploy",
+  "invalid-git-push",
+  "invalid-secret-exposure",
+  "invalid-mode-escalation",
+  "invalid-failure-suppression",
+  "invalid-completion-override",
+  "invalid-scope-expansion",
+  "invalid-version",
+  "invalid-skill-id",
+  "invalid-skill-version",
+  "invalid-path-traversal",
+  "invalid-restriction-removal",
+  "invalid-evidence-suppression",
+  "invalid-malformed",
+  "invalid-unknown-manifest",
+  "mixed",
+]) {
+  const result = validateExternalAdapters(
+    path.join(root, "tests", "fixtures", "external-adapters", fixture),
+    { coreRoot: root },
+  );
+  if (result.ok) {
+    failures.push(`${fixture}: invalid external adapter root was accepted`);
   }
 }
 
@@ -292,7 +344,15 @@ if (contractExample?.skill?.version !== PILOT_VERSION) {
 for (const [file, patterns] of [
   [
     "docs/adapters/README.md",
-    [/inherit/i, /compatib/i, /must never|cannot/i],
+    [/inherit/i, /compatib/i, /must never|cannot/i, /external/i, /discovery/i],
+  ],
+  [
+    "docs/adapters/discovery.md",
+    [/adapter\.json/i, /symlink/i, /path traversal/i, /extension-only/i],
+  ],
+  [
+    "docs/adapters/external-adapters.md",
+    [/validate-adapters\.mjs/i, /rejection/i, /real project adapters/i],
   ],
   [
     "docs/testing/README.md",
@@ -416,6 +476,7 @@ for (const expected of [
   "permissions:\n  contents: read",
   "node scripts/validate-pack.mjs .",
   "node scripts/test-pack.mjs",
+  "node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic",
   "node --test",
 ]) {
   if (!ci.includes(expected)) failures.push(`CI missing safe validation step: ${expected}`);

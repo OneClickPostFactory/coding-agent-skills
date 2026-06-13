@@ -1,0 +1,53 @@
+{
+  "adapterId": "fixture-external-docs",
+  "adapterVersion": "1.0.0",
+  "project": {
+    "id": "fixture-docs-project",
+    "detection": {
+      "rootMarkers": [{"kind": "directory", "path": "docs"}],
+      "maximumDepth": 2,
+      "scope": "declared-project-root",
+      "requireApprovalOutsideScope": true
+    }
+  },
+  "supportedSkills": [
+    {
+      "id": "llm-drift-control",
+      "compatibleVersions": ["0.1.x"],
+      "declaredMode": "audit-only"
+    }
+  ],
+  "extensions": {
+    "safeReadPaths": ["README.md", "docs", "src", "test"],
+    "ignoredPaths": ["docs/generated"],
+    "documentationPrecedence": ["docs/architecture.md", "README.md"],
+    "commandAliases": [],
+    "safeStatusCommands": [],
+    "requiredEvidence": ["documentation source", "code source"],
+    "expectedRuntimeManagers": [],
+    "expectedPackageManagers": ["none"]
+  },
+  "approvalRequirements": [],
+  "inheritance": {
+    "sharedRestrictions": "required",
+    "deniedOperationCategories": [
+      "file-write",
+      "package-install",
+      "deployment",
+      "git-mutation",
+      "unrestricted-scan",
+      "secret-read",
+      "process-mutation",
+      "service-mutation",
+      "migration-apply",
+      "privileged-api"
+    ],
+    "allowRestrictionRemoval": false,
+    "allowModeOverride": false,
+    "allowFailureSuppression": false,
+    "allowCompletionOverride": false,
+    "allowSecretExposure": false,
+    "allowRequiredEvidenceRemoval": false,
+    "allowScopeExpansionWithoutApproval": false
+  }
+}

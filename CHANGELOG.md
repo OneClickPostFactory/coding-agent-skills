@@ -2,6 +2,21 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.1.3] - 2026-06-13
+
+### Added
+
+- Dependency-free external adapter discovery and validation CLI.
+- Disposable fixture roots for all supported locations, compatibility failures, policy
+  weakening, malformed input, mixed roots, traversal, and symlink escapes.
+- Safe public rejection codes and explicit empty-root behavior.
+
+### Changed
+
+- Release validation and CI now exercise an external adapter root.
+- Adapter documentation now defines exact manifest naming, extension-only inheritance, path
+  safety, and future project-owned integration.
+
 ## [0.1.2] - 2026-06-13
 
 ### Added

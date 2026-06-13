@@ -5,22 +5,14 @@ They add bounded project context to a compatible shared skill. They are data, no
 
 Every adapter must validate against [the project-adapter schema](../../schemas/project-adapter.schema.json).
 
-## Convention
+## Convention And Discovery
 
-A project may expose adapter metadata under:
+External discovery is opt-in and bounded to three project-relative locations. Each adapter
+uses the exact manifest name `adapter.json`. See [the discovery convention](discovery.md)
+for path and symlink rules and [external validation](external-adapters.md) for CLI behavior.
 
-```text
-.agents/coding-agent-skills/<skill-name>/adapter.json
-```
-
-Discovery is opt-in:
-
-1. Start from the confirmed project root.
-2. Look only for the exact adapter path for the selected shared skill.
-3. Validate the adapter against the shared schema.
-4. Confirm every supported skill ID, version range, and declared mode.
-5. Apply shared restrictions before adapter additions.
-6. Record the adapter ID, version, path, and compatibility result in the evidence pack.
+Discovery validates schema, skill compatibility, command policy, and inherited restrictions
+before accepting any extension. It never executes adapter commands.
 
 ## What Adapters May Do
 
@@ -45,8 +37,10 @@ Discovery is opt-in:
 
 Skill manifests declare the adapter contract and compatible adapter versions. An adapter separately declares supported skill IDs, compatible skill versions, and the unchanged skill mode.
 
-Compatibility requires both declarations to agree. Exact pilot versions and the `0.1.x` compatibility form are supported in v0.1.2.
+Compatibility requires both declarations to agree. Exact pilot versions and the `0.1.x`
+compatibility form are supported in v0.1.3.
 
 The `inheritance` object is mandatory. Shared restrictions always win, and every permission-like safety flag is fixed to `false`.
 
-No project adapter is implemented in the pilot release.
+No real project adapter is implemented in the pilot release. The v0.1.3 harness uses only
+disposable synthetic fixture roots.

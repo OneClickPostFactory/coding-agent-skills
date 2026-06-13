@@ -1,6 +1,6 @@
 {
   "name": "repo-map",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "mode": "audit-only",
   "evidenceContract": "../../contracts/evidence-pack/evidence-pack.schema.json",
   "commandPolicy": "../command-policies/repo-map.json",

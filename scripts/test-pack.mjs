@@ -1,8 +1,14 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
+import {
+  externalAdapterCliResult,
+  formatExternalAdapterSummary,
+  validateExternalAdapters,
+} from "./lib/adapter-discovery.mjs";
 import {
   analyzeCommand,
   adapterIssues,
@@ -147,6 +153,7 @@ test("release governance and safe CI files are present", () => {
   assert.deepEqual(runCommands, [
     "node scripts/validate-pack.mjs .",
     "node scripts/test-pack.mjs",
+    "node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic",
     "node --test",
   ]);
 });
@@ -457,6 +464,231 @@ test("adapter matrix rejects permission, failure, completion, secret, and mode o
     assert.ok(schemaErrors.length > 0 || semanticErrors.length > 0, file);
     assert.match([...schemaErrors, ...semanticErrors].join("\n"), expected, file);
   }
+});
+
+test("external adapter discovery accepts all supported directory conventions", () => {
+  const validRoots = [
+    ["valid-basic", "repo-map"],
+    ["valid-doc-precedence", "llm-drift-control"],
+    ["valid-runtime-status", "runtime-truth"],
+  ];
+
+  for (const [fixture, skill] of validRoots) {
+    const result = validateExternalAdapters(
+      path.join(root, "tests", "fixtures", "external-adapters", fixture),
+      { coreRoot: root },
+    );
+    assert.equal(result.ok, true, fixture);
+    assert.equal(result.status, "complete", fixture);
+    assert.equal(result.accepted.length, 1, fixture);
+    assert.deepEqual(result.accepted[0].skills, [skill], fixture);
+    assert.equal(result.rejected.length, 0, fixture);
+    assert.equal(result.failures.length, 0, fixture);
+  }
+});
+
+test("external adapter discovery rejects incompatible and weakening fixtures", () => {
+  const invalidRoots = [
+    ["invalid-deploy", "unsafe-command-alias"],
+    ["invalid-git-push", "unsafe-command-alias"],
+    ["invalid-secret-exposure", "secret-exposure"],
+    ["invalid-mode-escalation", "mode-override"],
+    ["invalid-failure-suppression", "failure-suppression"],
+    ["invalid-completion-override", "completion-override"],
+    ["invalid-scope-expansion", "scope-expansion"],
+    ["invalid-version", "unsupported-adapter-version"],
+    ["invalid-skill-id", "unsupported-skill-id"],
+    ["invalid-skill-version", "incompatible-skill-version"],
+    ["invalid-path-traversal", "unsafe-path"],
+    ["invalid-restriction-removal", "restriction-weakening"],
+    ["invalid-evidence-suppression", "required-evidence-removal"],
+    ["invalid-malformed", "schema-validation"],
+    ["invalid-unknown-manifest", "missing-adapter-manifest"],
+  ];
+
+  for (const [fixture, expectedCode] of invalidRoots) {
+    const result = validateExternalAdapters(
+      path.join(root, "tests", "fixtures", "external-adapters", fixture),
+      { coreRoot: root },
+    );
+    assert.equal(result.ok, false, fixture);
+    const codes = [...result.rejected, ...result.failures].flatMap(
+      (record) => record.codes,
+    );
+    assert.ok(codes.includes(expectedCode), `${fixture}: ${codes.join(",")}`);
+  }
+});
+
+test("external adapter discovery handles mixed, empty, missing, and traversal roots", () => {
+  const fixtureRoot = path.join(root, "tests", "fixtures", "external-adapters");
+  const mixed = validateExternalAdapters(path.join(fixtureRoot, "mixed"), {
+    coreRoot: root,
+  });
+  assert.equal(mixed.ok, false);
+  assert.equal(mixed.accepted.length, 1);
+  assert.equal(mixed.rejected.length, 1);
+
+  const empty = validateExternalAdapters(path.join(fixtureRoot, "empty"), {
+    coreRoot: root,
+  });
+  assert.equal(empty.ok, true);
+  assert.equal(empty.status, "empty");
+  assert.equal(empty.discovered, 0);
+
+  const missing = validateExternalAdapters(path.join(fixtureRoot, "missing"), {
+    coreRoot: root,
+  });
+  assert.equal(missing.ok, false);
+  assert.deepEqual(missing.failures[0].codes, ["adapter-root-not-found"]);
+
+  const traversal = validateExternalAdapters("../external-adapters/valid-basic", {
+    coreRoot: root,
+  });
+  assert.equal(traversal.ok, false);
+  assert.deepEqual(traversal.failures[0].codes, ["root-path-traversal"]);
+});
+
+test("external adapter discovery rejects malformed JSON and symlink escapes", () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "adapter-discovery-"));
+  try {
+    const malformedDirectory = path.join(
+      temporaryRoot,
+      "malformed",
+      ".coding-agent",
+      "adapters",
+      "sample",
+    );
+    fs.mkdirSync(malformedDirectory, { recursive: true });
+    fs.copyFileSync(
+      path.join(
+        root,
+        "tests",
+        "fixtures",
+        "external-adapters",
+        "invalid-malformed",
+        "malformed-adapter.txt",
+      ),
+      path.join(malformedDirectory, "adapter.json"),
+    );
+    const malformed = validateExternalAdapters(
+      path.join(temporaryRoot, "malformed"),
+      { coreRoot: root },
+    );
+    assert.equal(malformed.ok, false);
+    assert.deepEqual(malformed.rejected[0].codes, ["malformed-json"]);
+
+    const symlinkRoot = path.join(temporaryRoot, "symlink");
+    fs.mkdirSync(path.join(symlinkRoot, ".coding-agent"), { recursive: true });
+    fs.symlinkSync(
+      path.join(
+        root,
+        "tests",
+        "fixtures",
+        "external-adapters",
+        "valid-basic",
+        ".coding-agent",
+        "adapters",
+      ),
+      path.join(symlinkRoot, ".coding-agent", "adapters"),
+      "dir",
+    );
+    const symlink = validateExternalAdapters(symlinkRoot, { coreRoot: root });
+    assert.equal(symlink.ok, false);
+    assert.deepEqual(symlink.failures[0].codes, ["symlink-escape"]);
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test("external adapter discovery ignores unrelated secret files and redacts manifest rejection", () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "adapter-privacy-"));
+  const syntheticValue = readJson("tests/fixtures/privacy/cases.json")
+    .cases.find((candidate) => candidate.id === "fake-github-token")
+    .parts.join("");
+
+  try {
+    const safeRoot = path.join(temporaryRoot, "safe");
+    const safeDirectory = path.join(
+      safeRoot,
+      ".coding-agent",
+      "adapters",
+      "sample",
+    );
+    fs.mkdirSync(safeDirectory, { recursive: true });
+    fs.copyFileSync(
+      path.join(
+        root,
+        "tests",
+        "fixtures",
+        "external-adapters",
+        "valid-basic",
+        ".coding-agent",
+        "adapters",
+        "basic",
+        "adapter.json",
+      ),
+      path.join(safeDirectory, "adapter.json"),
+    );
+    fs.writeFileSync(path.join(safeRoot, ".env"), `SYNTHETIC=${syntheticValue}\n`);
+    const safe = validateExternalAdapters(safeRoot, { coreRoot: root });
+    assert.equal(safe.ok, true);
+
+    const rejectedRoot = path.join(temporaryRoot, "rejected");
+    const rejectedDirectory = path.join(
+      rejectedRoot,
+      ".coding-agent",
+      "adapters",
+      "sample",
+    );
+    fs.mkdirSync(rejectedDirectory, { recursive: true });
+    fs.writeFileSync(
+      path.join(rejectedDirectory, "adapter.json"),
+      JSON.stringify({ synthetic: syntheticValue }),
+    );
+    const rejected = validateExternalAdapters(rejectedRoot, { coreRoot: root });
+    assert.equal(rejected.ok, false);
+    assert.deepEqual(rejected.rejected[0].codes, ["secret-like-content"]);
+    assert.doesNotMatch(
+      formatExternalAdapterSummary(rejected).join("\n"),
+      new RegExp(syntheticValue),
+    );
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test("external adapter CLI uses stable exit codes and safe summaries", () => {
+  const fixtureRoot = path.join(root, "tests", "fixtures", "external-adapters");
+  const valid = externalAdapterCliResult(path.join(fixtureRoot, "valid-basic"), {
+    coreRoot: root,
+  });
+  assert.equal(valid.exitCode, 0);
+  assert.equal(valid.stream, "stdout");
+  assert.match(valid.lines.join("\n"), /1 accepted, 0 rejected/);
+
+  const invalid = externalAdapterCliResult(
+    path.join(fixtureRoot, "invalid-deploy"),
+    { coreRoot: root },
+  );
+  assert.equal(invalid.exitCode, 1);
+  assert.equal(invalid.stream, "stderr");
+  assert.match(invalid.lines.join("\n"), /unsafe-command-alias/);
+  assert.doesNotMatch(
+    invalid.lines.join("\n"),
+    /wrangler|fixture-external|adapterId/i,
+  );
+
+  const usage = externalAdapterCliResult(undefined, {
+    coreRoot: root,
+  });
+  assert.equal(usage.exitCode, 2);
+  assert.equal(usage.stream, "stderr");
+  assert.match(usage.lines.join("\n"), /usage:/i);
+
+  const summary = formatExternalAdapterSummary(
+    validateExternalAdapters(path.join(fixtureRoot, "mixed"), { coreRoot: root }),
+  ).join("\n");
+  assert.doesNotMatch(summary, /git push|fixture-mixed|adapterId/i);
 });
 
 test("audit-only agent prompts preserve their non-mutation boundary", () => {
