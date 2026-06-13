@@ -22,6 +22,16 @@ An allowlisted executable does not make arbitrary arguments safe. Evaluate the c
 
 Approval must name an exceptional read and its purpose. It cannot expand an audit-only skill into a mutation skill.
 
+## Adapter Inheritance
+
+Project adapters inherit every shared restriction. Schema fields that could weaken safety are fixed: adapters cannot remove restrictions, override mode, suppress failures, redefine completion, expose secrets, remove evidence requirements, or expand scope without approval.
+
+Adapter command aliases and status hints are parsed with the same command-policy harness as shared examples. A familiar alias never bypasses argument or composition checks.
+
+## Command Policy Limits
+
+Command policies declare executable families, argument strategy, parser invariants, composition rules, and denied categories. Property-style tests exercise obvious bypass combinations, but the parser is not a complete shell implementation. Unsupported syntax fails closed.
+
 ## Restricted Evidence
 
 Historical or extracted restricted commands may inform deny rules and warnings. They must not be copied into recommended procedures, examples, templates, or adapters.

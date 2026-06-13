@@ -1,0 +1,126 @@
+{
+  "version": "1.0.0",
+  "safeByPolicy": [
+    {
+      "policy": "repo-map",
+      "command": "find . -maxdepth 3 -type f",
+      "family": "bounded-file-inspection"
+    },
+    {
+      "policy": "repo-map",
+      "command": "sed -n 1,40p README.md",
+      "family": "bounded-file-inspection"
+    },
+    {
+      "policy": "git-preflight",
+      "command": "git status --short --branch",
+      "family": "git-read-only"
+    },
+    {
+      "policy": "build-verify",
+      "command": "npm pkg get scripts",
+      "family": "project-native-validation"
+    },
+    {
+      "policy": "build-verify",
+      "command": "npm run typecheck",
+      "family": "project-native-validation",
+      "scripts": {
+        "typecheck": "node --check src/index.js"
+      }
+    },
+    {
+      "policy": "runtime-truth",
+      "command": "curl -sS http://127.0.0.1:3000/health",
+      "family": "safe-health-check"
+    }
+  ],
+  "safePrefixes": [
+    "pwd",
+    "git status --short --branch",
+    "rg --files"
+  ],
+  "restrictedSuffixes": [
+    {
+      "command": "git push origin main",
+      "reason": "Git mutation"
+    },
+    {
+      "command": "npm install",
+      "reason": "package installation"
+    },
+    {
+      "command": "npx wrangler deploy",
+      "reason": "npx wrangler"
+    },
+    {
+      "command": "npx supabase db push",
+      "reason": "npx supabase"
+    },
+    {
+      "command": "cat .env",
+      "reason": "secret-file"
+    },
+    {
+      "command": "find /home -type f",
+      "reason": "unbounded"
+    },
+    {
+      "command": "systemctl --user restart sample.service",
+      "reason": "service mutation"
+    }
+  ],
+  "separators": [" && ", "; ", " | ", "\n"],
+  "wrappers": ["sh -c", "bash -c"],
+  "heredocs": [
+    "node <<'SCRIPT'\ngit push origin main\nSCRIPT",
+    "sh <<EOF\nnpm install\nEOF"
+  ],
+  "argumentCases": [
+    {
+      "command": "git status --short --branch",
+      "allowed": true
+    },
+    {
+      "command": "git config --global user.name Example",
+      "allowed": false,
+      "reason": "Git command"
+    },
+    {
+      "command": "sed -n 1,20p README.md",
+      "allowed": true
+    },
+    {
+      "command": "sed -n 1,20p /home/example/private.txt",
+      "allowed": false,
+      "reason": "outside declared scope"
+    },
+    {
+      "command": "curl --user fake:fake http://127.0.0.1:3000/health",
+      "allowed": false,
+      "reason": "authenticated"
+    },
+    {
+      "command": "curl --user fake:fake http://127.0.0.1:3000/health",
+      "approvals": ["authenticated-local-health"],
+      "allowed": true
+    }
+  ],
+  "scriptBodies": [
+    {
+      "command": "npm run validate",
+      "scripts": {
+        "validate": "node --check src/index.js"
+      },
+      "allowed": true
+    },
+    {
+      "command": "npm run validate",
+      "scripts": {
+        "validate": "node --check src/index.js && npm install"
+      },
+      "allowed": false,
+      "reason": "script definition"
+    }
+  ]
+}

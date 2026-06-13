@@ -12,7 +12,11 @@ Synthetic prompts identify the least-privileged matching pilot skill and reject 
 
 ## Command Policy
 
-The command analyzer handles obvious composition, multiline scripts, pipelines, wrappers, heredocs, redirects, project scripts, Git, curl, runtime status commands, and restricted arguments. It is intentionally conservative and is not a complete POSIX parser.
+The command analyzer handles obvious composition, multiline scripts, pipelines, wrappers, heredocs, redirects, project scripts, Git, provider-specific `npx`, curl approval, runtime status commands, and restricted arguments.
+
+Property-style tests generate combinations of safe prefixes, shell separators, and restricted suffixes. They exist to catch repeated bypass families without manually writing every combination.
+
+This is intentionally conservative and is not a complete POSIX parser. Unknown execution, quoting ambiguity, or unsupported shell syntax must fail closed.
 
 ## Mutation Snapshots
 
@@ -24,7 +28,7 @@ Sensitive shapes are stored as ordered synthetic parts and reconstructed only in
 
 ## Adapter Weakening
 
-Valid adapters may narrow paths and add safe context. Tests reject deployment, Git publication, failure suppression, completion overrides, secret exposure, missing restrictions, and audit-mode overrides.
+Valid adapters must pass both JSON Schema validation and semantic compatibility checks. Tests cover narrowing, documentation precedence, and status-only hints, then reject deployment, Git publication, failure suppression, completion overrides, secret exposure, missing restrictions, stale skill versions, required-evidence removal, scope expansion, and audit-mode overrides.
 
 ## False Completion
 

@@ -1,10 +1,27 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "mode": "audit-only",
+  "parserPolicy": {
+    "inspectEverySegment": true,
+    "inspectScriptBodies": true,
+    "rejectUnknownExecutables": true,
+    "rejectShellWrappers": true,
+    "rejectHeredocs": true,
+    "rejectRedirection": true,
+    "providerSpecificNpx": true,
+    "authenticatedCurlRequiresApproval": true,
+    "boundedReadsRequired": true,
+    "allowedComposition": "read-only"
+  },
   "allowedFamilies": [
     {
       "name": "bounded-evidence-read",
       "executables": ["rg", "sed", "head", "jq", "git"],
+      "argumentPolicy": {
+        "strategy": "pattern",
+        "allowedPatterns": ["bounded documentation, source, test, and read-only Git evidence"],
+        "deniedPatterns": ["writes, generated rewrites, secrets, runtime mutation, and publication"]
+      },
       "constraints": [
         "Read only declared documentation, source, tests, and Git evidence.",
         "Inspect repository drift scripts before running them.",

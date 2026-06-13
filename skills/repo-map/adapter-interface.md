@@ -1,5 +1,7 @@
 # Project Adapter Interface
 
+Validate adapters against `../../schemas/project-adapter.schema.json` and confirm manifest compatibility before applying them.
+
 An adapter may provide:
 
 - Adapter identifier and version.

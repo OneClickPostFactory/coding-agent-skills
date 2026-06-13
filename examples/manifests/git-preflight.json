@@ -1,9 +1,14 @@
 {
   "name": "git-preflight",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "mode": "audit-only",
   "evidenceContract": "../../contracts/evidence-pack/evidence-pack.schema.json",
   "commandPolicy": "../command-policies/git-preflight.json",
+  "adapterSchema": "../../schemas/project-adapter.schema.json",
+  "adapterCompatibility": {
+    "contractVersion": "1.0.0",
+    "compatibleAdapterVersions": ["1.0.0"]
+  },
   "adapterInterface": "../../skills/git-preflight/adapter-interface.md",
   "description": "Inspect Git handoff readiness without changing Git state."
 }

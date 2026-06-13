@@ -22,7 +22,7 @@ jobs:
       - name: Validate pack
         run: node scripts/validate-pack.mjs .
 
-      - name: Run release tests
+      - name: Run adapter and command-policy harness
         run: node scripts/test-pack.mjs
 
       - name: Run built-in Node tests

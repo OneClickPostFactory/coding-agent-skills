@@ -1,9 +1,14 @@
 {
   "name": "build-verify",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "mode": "action-capable",
   "evidenceContract": "../../contracts/evidence-pack/evidence-pack.schema.json",
   "commandPolicy": "../command-policies/build-verify.json",
+  "adapterSchema": "../../schemas/project-adapter.schema.json",
+  "adapterCompatibility": {
+    "contractVersion": "1.0.0",
+    "compatibleAdapterVersions": ["1.0.0"]
+  },
   "adapterInterface": "../../skills/build-verify/adapter-interface.md",
   "description": "Run discovered project-native local validation commands."
 }

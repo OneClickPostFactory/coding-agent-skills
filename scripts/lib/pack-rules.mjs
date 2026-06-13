@@ -6,7 +6,7 @@ export const PILOT_SKILLS = [
   "llm-drift-control",
 ];
 
-export const PILOT_VERSION = "0.1.1";
+export const PILOT_VERSION = "0.1.2";
 
 export const AUDIT_ONLY_SKILLS = [
   "repo-map",
@@ -31,6 +31,7 @@ export const RESTRICTED_CATEGORIES = [
 const KNOWN_COMMANDS = new Set([
   "cat",
   "curl",
+  "docker",
   "find",
   "gh",
   "git",
@@ -45,6 +46,7 @@ const KNOWN_COMMANDS = new Set([
   "pm2",
   "pnpm",
   "prisma",
+  "ps",
   "pwd",
   "rg",
   "sed",
@@ -98,6 +100,12 @@ const SENSITIVE_PATTERNS = [
 
 function expectedMode(skill) {
   return AUDIT_ONLY_SKILLS.includes(skill) ? "audit-only" : "action-capable";
+}
+
+function versionMatches(candidate, currentVersion) {
+  if (candidate === currentVersion) return true;
+  const [major, minor] = currentVersion.split(".");
+  return candidate === `${major}.${minor}.x`;
 }
 
 function hasMaterialRisk(risks = []) {
@@ -173,22 +181,57 @@ export function completionIssues(evidence) {
   return issues;
 }
 
-export function adapterIssues(adapter) {
+export function adapterIssues(adapter, options = {}) {
   const issues = [];
 
+  if (!adapter || typeof adapter !== "object") return ["adapter must be an object"];
+  if (!adapter.adapterId || typeof adapter.adapterId !== "string") {
+    issues.push("adapterId must be a non-empty string");
+  }
   if (adapter.adapterVersion !== "1.0.0") issues.push("unsupported adapterVersion");
-  if (!PILOT_SKILLS.includes(adapter.skill)) issues.push("unknown pilot skill");
-  if (!adapter.project || typeof adapter.project !== "string") {
-    issues.push("project must be a non-empty string");
+
+  const supportedSkills = adapter.supportedSkills ?? [];
+  if (!Array.isArray(supportedSkills) || supportedSkills.length === 0) {
+    issues.push("adapter must declare supported skills");
   }
-  if (!Array.isArray(adapter.repositoryMarkers) || !adapter.repositoryMarkers.length) {
-    issues.push("repositoryMarkers must be a non-empty array");
-  }
-  if (!Array.isArray(adapter.boundedReadPaths) || !adapter.boundedReadPaths.length) {
-    issues.push("boundedReadPaths must be a non-empty array");
+  for (const skill of supportedSkills) {
+    if (!PILOT_SKILLS.includes(skill.id)) {
+      issues.push(`unknown pilot skill: ${String(skill.id)}`);
+      continue;
+    }
+    if (skill.declaredMode !== expectedMode(skill.id)) {
+      issues.push(`adapter cannot override ${skill.id} mode`);
+    }
+    if (
+      !(skill.compatibleVersions ?? []).some((version) =>
+        versionMatches(version, PILOT_VERSION),
+      )
+    ) {
+      issues.push(`adapter is incompatible with ${skill.id} ${PILOT_VERSION}`);
+    }
   }
 
-  for (const candidate of adapter.boundedReadPaths ?? []) {
+  const detection = adapter.project?.detection;
+  if (!detection || !Array.isArray(detection.rootMarkers) || !detection.rootMarkers.length) {
+    issues.push("project detection must include root markers");
+  }
+  if (detection?.scope !== "declared-project-root") {
+    issues.push("adapter scope must remain the declared project root");
+  }
+  if (detection?.requireApprovalOutsideScope !== true) {
+    issues.push("adapter must require approval outside declared scope");
+  }
+  if (!Number.isInteger(detection?.maximumDepth) || detection.maximumDepth < 0) {
+    issues.push("project detection maximumDepth must be a non-negative integer");
+  }
+
+  const relativePaths = [
+    ...(detection?.rootMarkers ?? []).map((marker) => marker.path),
+    ...(adapter.extensions?.safeReadPaths ?? []),
+    ...(adapter.extensions?.ignoredPaths ?? []),
+    ...(adapter.extensions?.documentationPrecedence ?? []),
+  ];
+  for (const candidate of relativePaths) {
     if (
       typeof candidate !== "string" ||
       candidate === "." ||
@@ -196,35 +239,81 @@ export function adapterIssues(adapter) {
       candidate.split("/").includes("..") ||
       /(^|\/)\.env(?:\.|$)/.test(candidate)
     ) {
-      issues.push(`unsafe boundedReadPath: ${String(candidate)}`);
+      issues.push(`unsafe adapter path: ${String(candidate)}`);
     }
   }
 
-  const restrictions = new Set(adapter.restrictedCategories ?? []);
+  const inheritance = adapter.inheritance ?? {};
+  const restrictions = new Set(inheritance.deniedOperationCategories ?? []);
   for (const category of RESTRICTED_CATEGORIES) {
     if (!restrictions.has(category)) {
       issues.push(`adapter weakens required restriction: ${category}`);
     }
   }
+  if (inheritance.sharedRestrictions !== "required") {
+    issues.push("adapter must inherit shared restrictions");
+  }
+  const forbiddenInheritanceFlags = [
+    ["allowRestrictionRemoval", "remove shared restrictions"],
+    ["allowModeOverride", "override skill mode"],
+    ["allowFailureSuppression", "suppress failures"],
+    ["allowCompletionOverride", "redefine completion"],
+    ["allowSecretExposure", "expose secrets"],
+    ["allowRequiredEvidenceRemoval", "remove required evidence"],
+    ["allowScopeExpansionWithoutApproval", "expand scope without approval"],
+  ];
+  for (const [field, description] of forbiddenInheritanceFlags) {
+    if (inheritance[field] !== false) issues.push(`adapter cannot ${description}`);
+  }
 
-  if (adapter.mode && adapter.mode !== expectedMode(adapter.skill)) {
-    issues.push(`adapter cannot override ${adapter.skill} mode`);
+  const supportedIds = new Set(supportedSkills.map((skill) => skill.id));
+  for (const alias of adapter.extensions?.commandAliases ?? []) {
+    if (!supportedIds.has(alias.skillId)) {
+      issues.push(`command alias targets unsupported skill: ${String(alias.skillId)}`);
+    }
+    const policy = options.policies?.[alias.skillId];
+    const result = policy
+      ? commandPolicyDecision(alias.command, policy)
+      : analyzeCommand(alias.command);
+    if (!result.allowed) {
+      issues.push(`unsafe command alias ${alias.alias}: ${result.reasons.join(", ")}`);
+    }
+    if (policy && result.family !== alias.family) {
+      issues.push(
+        `command alias ${alias.alias} declares ${alias.family} but matches ${String(result.family)}`,
+      );
+    }
+  }
+  for (const status of adapter.extensions?.safeStatusCommands ?? []) {
+    const result = analyzeCommand(status.command);
+    if (!result.allowed) {
+      issues.push(`unsafe status command: ${result.reasons.join(", ")}`);
+    }
+    if (
+      !/^(?:systemctl\s+(?:--user\s+)?status|pm2\s+(?:list|status)|docker\s+(?:ps|inspect)|ps\b|pgrep\b|ss\b)/.test(
+        status.command,
+      )
+    ) {
+      issues.push("adapter status command is not status-only");
+    }
   }
   if (
-    (adapter.allowedOperations ?? []).some((operation) =>
-      /\b(?:deploy|publish|push|commit|install|migrate|secret|restart|write)\b/i.test(
-        operation,
-      ),
+    (adapter.extensions?.safeStatusCommands ?? []).length > 0 &&
+    !supportedIds.has("runtime-truth")
+  ) {
+    issues.push("status commands require runtime-truth compatibility");
+  }
+  if (
+    !Array.isArray(adapter.extensions?.requiredEvidence) ||
+    adapter.extensions.requiredEvidence.length === 0
+  ) {
+    issues.push("adapter cannot remove required evidence");
+  } else if (
+    adapter.extensions.requiredEvidence.some(
+      (evidence) => typeof evidence !== "string" || !evidence.trim(),
     )
   ) {
-    issues.push("adapter allows a restricted operation");
-  }
-  if (adapter.suppressFailures === true) issues.push("adapter cannot suppress failures");
-  if (adapter.completionOverride !== undefined && adapter.completionOverride !== null) {
-    issues.push("adapter cannot redefine completion");
-  }
-  if ((adapter.secretPaths ?? []).length > 0 || adapter.readSecrets === true) {
-    issues.push("adapter cannot expose secrets");
+    issues.push("adapter required evidence must be explicit");
   }
 
   return issues;
@@ -321,7 +410,7 @@ function firstToken(segment) {
   return segment.trim().split(/\s+/)[0]?.replace(/^['"]|['"]$/g, "");
 }
 
-function classifySegment(segment) {
+function classifySegment(segment, options = {}) {
   if (/(?:^|\s)(?:source|\.)\s+[^\s]*\.env\b/.test(segment) || /\bcat\s+[^\s]*\.env\b/.test(segment)) {
     return "secret-file read";
   }
@@ -330,6 +419,12 @@ function classifySegment(segment) {
   }
   if (/\b(?:npm\s+(?:install|ci)|pnpm\s+(?:add|install)|yarn\s+(?:add|install))\b/.test(segment)) {
     return "package installation";
+  }
+  if (/\bnpx\s+wrangler\b/.test(segment)) {
+    return "npx wrangler is deployment-capable";
+  }
+  if (/\bnpx\s+supabase\b/.test(segment)) {
+    return "npx supabase is database-capable";
   }
   if (/\b(?:wrangler|vercel|netlify)\s+(?:deploy|publish)\b/.test(segment)) {
     return "deployment";
@@ -356,15 +451,25 @@ function classifySegment(segment) {
       segment,
     )
   ) {
-    return /Authorization:|--user|-u\s/i.test(segment)
-      ? "authenticated HTTP request"
-      : "mutating HTTP request";
+    const isAuthenticated = /Authorization:|--user|-u\s/i.test(segment);
+    const url = segment.match(/https?:\/\/[^\s'"]+/i)?.[0];
+    if (
+      isAuthenticated &&
+      options.approvals?.includes("authenticated-local-health") &&
+      /^http:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?\/.*health/i.test(url ?? "")
+    ) {
+      return null;
+    }
+    return isAuthenticated ? "authenticated HTTP request" : "mutating HTTP request";
   }
   if (/\bcurl\b\s+\S*https?:\/\/[^/\s:@]+:[^@\s/]+@/i.test(segment)) {
     return "URL credentials";
   }
   if (/\bfind\s+(?:\/|\/home\b|~)\b/.test(segment) || (/\bfind\b/.test(segment) && !/-maxdepth\s+\d+/.test(segment))) {
     return "unbounded filesystem scan";
+  }
+  if (/\b(?:sed|head|jq|rg|ls)\b.*(?:\/home\/|~\/)/.test(segment)) {
+    return "read path is outside declared scope";
   }
   if (/\bnpm\s+run\s+\S*(?:fix|deploy|migrate|install|snapshot|update|watch|dev|start)\S*/i.test(segment)) {
     return "unsafe npm script";
@@ -383,7 +488,7 @@ function classifySegment(segment) {
     }
   }
   if (executable === "npm" && !/^npm\s+(?:run\s+(?:lint|typecheck|test|build|check|validate)|test)\b/.test(segment)) {
-    return "unsafe npm script";
+    if (!/^npm\s+pkg\s+get\s+scripts\b/.test(segment)) return "unsafe npm script";
   }
   if (executable === "pnpm" && !/^pnpm\s+(?:run\s+)?(?:lint|typecheck|test|build|check|validate)\b/.test(segment)) {
     return "unsafe pnpm script";
@@ -399,6 +504,9 @@ function classifySegment(segment) {
   }
   if (executable === "pm2" && !/^pm2\s+(?:list|status)\b/.test(segment)) {
     return "pm2 operation is not status-only";
+  }
+  if (executable === "docker" && !/^docker\s+(?:ps|inspect)\b/.test(segment)) {
+    return "docker operation is not status-only";
   }
   if (executable === "curl") {
     const url = segment.match(/https?:\/\/[^\s'"]+/i)?.[0];
@@ -436,7 +544,7 @@ export function analyzeCommand(command, options = {}) {
   const parsed = splitShellSegments(policyText);
   if (!parsed.balanced) reasons.push("unbalanced shell quoting");
   for (const segment of parsed.segments) {
-    const reason = classifySegment(segment);
+    const reason = classifySegment(segment, options);
     if (reason) reasons.push(reason);
 
     const npmScript = segment.match(/^npm\s+run\s+([^\s]+)/)?.[1];
@@ -458,6 +566,30 @@ export function analyzeCommand(command, options = {}) {
     allowed: reasons.length === 0,
     reasons: [...new Set(reasons)],
     segments: parsed.segments,
+  };
+}
+
+export function commandPolicyDecision(command, policy, options = {}) {
+  const analysis = analyzeCommand(command, options);
+  const executable = firstToken(analysis.segments[0] ?? "");
+  const family = policy.allowedFamilies?.find((candidate) =>
+    candidate.executables.includes(executable),
+  );
+  const reasons = [...analysis.reasons];
+
+  if (!family) reasons.push(`executable is not allowed by policy: ${executable}`);
+  if (
+    analysis.segments.length > 1 &&
+    policy.parserPolicy?.allowedComposition !== "read-only"
+  ) {
+    reasons.push("policy does not allow command composition");
+  }
+
+  return {
+    allowed: reasons.length === 0,
+    family: family?.name ?? null,
+    reasons: [...new Set(reasons)],
+    segments: analysis.segments,
   };
 }
 

@@ -2,6 +2,21 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.1.2] - 2026-06-13
+
+### Added
+
+- Formal project-adapter JSON Schema and three valid synthetic examples.
+- Bidirectional adapter skill/version/mode compatibility tests.
+- Property-style command-policy generation across composition and bypass families.
+- Provider-specific `npx`, bounded-read, authenticated-health approval, and package-script-body checks.
+
+### Changed
+
+- Skill manifests now declare adapter contract compatibility.
+- Command policies now declare parser invariants and argument strategies.
+- Validator enforcement now covers valid and invalid adapters plus command-policy invariants.
+
 ## [0.1.1] - 2026-06-13
 
 ### Added

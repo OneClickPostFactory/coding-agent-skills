@@ -4,6 +4,7 @@ All examples are synthetic and safe to publish.
 
 - [Skill manifests](manifests/)
 - [Command policies](command-policies/)
+- [Project adapters](adapters/)
 - [Evidence packs](evidence-packs/)
 - [Workflow guides](workflows/)
 

@@ -1,29 +1,29 @@
 {
-  "adapterId": "fixture-valid-documentation",
+  "adapterId": "fixture-incompatible-version",
   "adapterVersion": "1.0.0",
   "project": {
     "id": "fixture-project",
     "detection": {
-      "rootMarkers": [{"kind": "directory", "path": "docs"}],
-      "maximumDepth": 2,
+      "rootMarkers": [{"kind": "file", "path": "package.json"}],
+      "maximumDepth": 1,
       "scope": "declared-project-root",
       "requireApprovalOutsideScope": true
     }
   },
   "supportedSkills": [
     {
-      "id": "llm-drift-control",
-      "compatibleVersions": ["0.1.x"],
+      "id": "repo-map",
+      "compatibleVersions": ["0.1.0"],
       "declaredMode": "audit-only"
     }
   ],
   "extensions": {
-    "safeReadPaths": ["README.md", "docs", "src", "test"],
-    "ignoredPaths": ["docs/generated"],
-    "documentationPrecedence": ["docs/architecture.md", "README.md"],
+    "safeReadPaths": ["README.md"],
+    "ignoredPaths": [],
+    "documentationPrecedence": [],
     "commandAliases": [],
     "safeStatusCommands": [],
-    "requiredEvidence": ["documentation source", "code source"],
+    "requiredEvidence": ["repository root"],
     "expectedRuntimeManagers": [],
     "expectedPackageManagers": ["none"]
   },

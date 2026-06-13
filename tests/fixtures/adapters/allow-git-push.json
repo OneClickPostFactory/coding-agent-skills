@@ -1,21 +1,60 @@
 {
+  "adapterId": "fixture-allow-git-push",
   "adapterVersion": "1.0.0",
-  "skill": "git-preflight",
-  "mode": "audit-only",
-  "project": "unsafe-push",
-  "repositoryMarkers": [".git"],
-  "boundedReadPaths": ["README.md"],
-  "allowedOperations": ["git-push"],
-  "restrictedCategories": [
-    "file-write",
-    "package-install",
-    "deployment",
-    "git-mutation",
-    "unrestricted-scan",
-    "secret-read",
-    "process-mutation",
-    "service-mutation",
-    "migration-apply",
-    "privileged-api"
-  ]
+  "project": {
+    "id": "fixture-project",
+    "detection": {
+      "rootMarkers": [{"kind": "directory", "path": ".git"}],
+      "maximumDepth": 0,
+      "scope": "declared-project-root",
+      "requireApprovalOutsideScope": true
+    }
+  },
+  "supportedSkills": [
+    {
+      "id": "git-preflight",
+      "compatibleVersions": ["0.1.2"],
+      "declaredMode": "audit-only"
+    }
+  ],
+  "extensions": {
+    "safeReadPaths": ["README.md"],
+    "ignoredPaths": [],
+    "documentationPrecedence": [],
+    "commandAliases": [
+      {
+        "alias": "publish-main",
+        "skillId": "git-preflight",
+        "family": "unsafe-git-publication",
+        "command": "git push origin main"
+      }
+    ],
+    "safeStatusCommands": [],
+    "requiredEvidence": ["Git status"],
+    "expectedRuntimeManagers": [],
+    "expectedPackageManagers": ["none"]
+  },
+  "approvalRequirements": [],
+  "inheritance": {
+    "sharedRestrictions": "required",
+    "deniedOperationCategories": [
+      "file-write",
+      "package-install",
+      "deployment",
+      "git-mutation",
+      "unrestricted-scan",
+      "secret-read",
+      "process-mutation",
+      "service-mutation",
+      "migration-apply",
+      "privileged-api"
+    ],
+    "allowRestrictionRemoval": false,
+    "allowModeOverride": false,
+    "allowFailureSuppression": false,
+    "allowCompletionOverride": false,
+    "allowSecretExposure": false,
+    "allowRequiredEvidenceRemoval": false,
+    "allowScopeExpansionWithoutApproval": false
+  }
 }

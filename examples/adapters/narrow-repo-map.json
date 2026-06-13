@@ -1,10 +1,15 @@
 {
-  "adapterId": "fixture-valid-documentation",
+  "adapterId": "sample-repo-map",
   "adapterVersion": "1.0.0",
   "project": {
-    "id": "fixture-project",
+    "id": "sample-project",
     "detection": {
-      "rootMarkers": [{"kind": "directory", "path": "docs"}],
+      "rootMarkers": [
+        {
+          "kind": "file",
+          "path": "package.json"
+        }
+      ],
       "maximumDepth": 2,
       "scope": "declared-project-root",
       "requireApprovalOutsideScope": true
@@ -12,22 +17,28 @@
   },
   "supportedSkills": [
     {
-      "id": "llm-drift-control",
-      "compatibleVersions": ["0.1.x"],
+      "id": "repo-map",
+      "compatibleVersions": ["0.1.2"],
       "declaredMode": "audit-only"
     }
   ],
   "extensions": {
-    "safeReadPaths": ["README.md", "docs", "src", "test"],
-    "ignoredPaths": ["docs/generated"],
-    "documentationPrecedence": ["docs/architecture.md", "README.md"],
+    "safeReadPaths": ["README.md", "docs", "src"],
+    "ignoredPaths": ["dist", "coverage"],
+    "documentationPrecedence": [],
     "commandAliases": [],
     "safeStatusCommands": [],
-    "requiredEvidence": ["documentation source", "code source"],
+    "requiredEvidence": ["package manifest", "application entry point"],
     "expectedRuntimeManagers": [],
-    "expectedPackageManagers": ["none"]
+    "expectedPackageManagers": ["npm"]
   },
-  "approvalRequirements": [],
+  "approvalRequirements": [
+    {
+      "operation": "read-outside-declared-scope",
+      "required": true,
+      "reason": "The adapter cannot expand repository scope implicitly."
+    }
+  ],
   "inheritance": {
     "sharedRestrictions": "required",
     "deniedOperationCategories": [

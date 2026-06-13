@@ -1,10 +1,27 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "mode": "audit-only",
+  "parserPolicy": {
+    "inspectEverySegment": true,
+    "inspectScriptBodies": true,
+    "rejectUnknownExecutables": true,
+    "rejectShellWrappers": true,
+    "rejectHeredocs": true,
+    "rejectRedirection": true,
+    "providerSpecificNpx": true,
+    "authenticatedCurlRequiresApproval": true,
+    "boundedReadsRequired": true,
+    "allowedComposition": "read-only"
+  },
   "allowedFamilies": [
     {
       "name": "bounded-file-inspection",
       "executables": ["pwd", "ls", "rg", "find", "sed", "head"],
+      "argumentPolicy": {
+        "strategy": "pattern",
+        "allowedPatterns": ["bounded repository-local inspection"],
+        "deniedPatterns": ["absolute home paths, secret files, and unbounded traversal"]
+      },
       "constraints": [
         "Remain inside the declared repository scope.",
         "Bound traversal depth and output.",
@@ -14,6 +31,11 @@
     {
       "name": "git-identity-inspection",
       "executables": ["git"],
+      "argumentPolicy": {
+        "strategy": "exact",
+        "allowedPatterns": ["rev-parse, remote -v, and status --short --branch"],
+        "deniedPatterns": ["all Git mutation and publication subcommands"]
+      },
       "constraints": [
         "Allow only rev-parse, remote -v, and status --short --branch."
       ]

@@ -1,0 +1,328 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://coding-agent-skills.local/schemas/project-adapter.schema.json",
+  "title": "Coding Agent Project Adapter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "adapterId",
+    "adapterVersion",
+    "project",
+    "supportedSkills",
+    "extensions",
+    "approvalRequirements",
+    "inheritance"
+  ],
+  "properties": {
+    "adapterId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "adapterVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "detection"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "detection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rootMarkers",
+            "maximumDepth",
+            "scope",
+            "requireApprovalOutsideScope"
+          ],
+          "properties": {
+            "rootMarkers": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["kind", "path"],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": ["file", "directory"]
+                  },
+                  "path": {
+                    "type": "string",
+                    "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!\\.env(?:\\.|$)).+"
+                  }
+                }
+              }
+            },
+            "maximumDepth": {
+              "type": "integer"
+            },
+            "scope": {
+              "type": "string",
+              "const": "declared-project-root"
+            },
+            "requireApprovalOutsideScope": {
+              "type": "boolean",
+              "const": true
+            }
+          }
+        }
+      }
+    },
+    "supportedSkills": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "compatibleVersions", "declaredMode"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "repo-map",
+              "build-verify",
+              "git-preflight",
+              "runtime-truth",
+              "llm-drift-control"
+            ]
+          },
+          "compatibleVersions": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^(?:0\\.1\\.[0-9]+|0\\.1\\.x)$"
+            }
+          },
+          "declaredMode": {
+            "type": "string",
+            "enum": ["audit-only", "action-capable"]
+          }
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "safeReadPaths",
+        "ignoredPaths",
+        "documentationPrecedence",
+        "commandAliases",
+        "safeStatusCommands",
+        "requiredEvidence",
+        "expectedRuntimeManagers",
+        "expectedPackageManagers"
+      ],
+      "properties": {
+        "safeReadPaths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!\\.env(?:\\.|$)).+"
+          }
+        },
+        "ignoredPaths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+"
+          }
+        },
+        "documentationPrecedence": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!\\.env(?:\\.|$)).+"
+          }
+        },
+        "commandAliases": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["alias", "skillId", "family", "command"],
+            "properties": {
+              "alias": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "skillId": {
+                "type": "string",
+                "enum": [
+                  "repo-map",
+                  "build-verify",
+                  "git-preflight",
+                  "runtime-truth",
+                  "llm-drift-control"
+                ]
+              },
+              "family": {
+                "type": "string",
+                "minLength": 1
+              },
+              "command": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "safeStatusCommands": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["manager", "command"],
+            "properties": {
+              "manager": {
+                "type": "string",
+                "enum": ["systemd-user", "systemd-system", "pm2", "container", "process"]
+              },
+              "command": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "requiredEvidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "expectedRuntimeManagers": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["systemd-user", "systemd-system", "pm2", "container", "process"]
+          }
+        },
+        "expectedPackageManagers": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["npm", "pnpm", "yarn", "none"]
+          }
+        }
+      }
+    },
+    "approvalRequirements": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operation", "required", "reason"],
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "read-outside-declared-scope",
+              "read-named-excluded-file",
+              "authenticated-health-check"
+            ]
+          },
+          "required": {
+            "type": "boolean",
+            "const": true
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "inheritance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sharedRestrictions",
+        "deniedOperationCategories",
+        "allowRestrictionRemoval",
+        "allowModeOverride",
+        "allowFailureSuppression",
+        "allowCompletionOverride",
+        "allowSecretExposure",
+        "allowRequiredEvidenceRemoval",
+        "allowScopeExpansionWithoutApproval"
+      ],
+      "properties": {
+        "sharedRestrictions": {
+          "type": "string",
+          "const": "required"
+        },
+        "deniedOperationCategories": {
+          "type": "array",
+          "minItems": 10,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "file-write",
+              "package-install",
+              "deployment",
+              "git-mutation",
+              "unrestricted-scan",
+              "secret-read",
+              "process-mutation",
+              "service-mutation",
+              "migration-apply",
+              "privileged-api"
+            ]
+          }
+        },
+        "allowRestrictionRemoval": {
+          "type": "boolean",
+          "const": false
+        },
+        "allowModeOverride": {
+          "type": "boolean",
+          "const": false
+        },
+        "allowFailureSuppression": {
+          "type": "boolean",
+          "const": false
+        },
+        "allowCompletionOverride": {
+          "type": "boolean",
+          "const": false
+        },
+        "allowSecretExposure": {
+          "type": "boolean",
+          "const": false
+        },
+        "allowRequiredEvidenceRemoval": {
+          "type": "boolean",
+          "const": false
+        },
+        "allowScopeExpansionWithoutApproval": {
+          "type": "boolean",
+          "const": false
+        }
+      }
+    }
+  }
+}

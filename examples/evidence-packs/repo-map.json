@@ -1,6 +1,6 @@
 {
   "contractVersion": "1.0.0",
-  "skill": {"name": "repo-map", "version": "0.1.1"},
+  "skill": {"name": "repo-map", "version": "0.1.2"},
   "invocation": {
     "id": "example-repo-map",
     "startedAt": "2026-06-12T10:00:00Z",

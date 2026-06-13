@@ -1,20 +1,53 @@
 {
+  "adapterId": "fixture-override-mode",
   "adapterVersion": "1.0.0",
-  "skill": "runtime-truth",
-  "mode": "action-capable",
-  "project": "unsafe-mode",
-  "repositoryMarkers": ["package.json"],
-  "boundedReadPaths": ["README.md"],
-  "restrictedCategories": [
-    "file-write",
-    "package-install",
-    "deployment",
-    "git-mutation",
-    "unrestricted-scan",
-    "secret-read",
-    "process-mutation",
-    "service-mutation",
-    "migration-apply",
-    "privileged-api"
-  ]
+  "project": {
+    "id": "fixture-project",
+    "detection": {
+      "rootMarkers": [{"kind": "file", "path": "package.json"}],
+      "maximumDepth": 1,
+      "scope": "declared-project-root",
+      "requireApprovalOutsideScope": true
+    }
+  },
+  "supportedSkills": [
+    {
+      "id": "runtime-truth",
+      "compatibleVersions": ["0.1.2"],
+      "declaredMode": "action-capable"
+    }
+  ],
+  "extensions": {
+    "safeReadPaths": ["README.md"],
+    "ignoredPaths": [],
+    "documentationPrecedence": [],
+    "commandAliases": [],
+    "safeStatusCommands": [],
+    "requiredEvidence": ["manager status"],
+    "expectedRuntimeManagers": ["systemd-user"],
+    "expectedPackageManagers": ["none"]
+  },
+  "approvalRequirements": [],
+  "inheritance": {
+    "sharedRestrictions": "required",
+    "deniedOperationCategories": [
+      "file-write",
+      "package-install",
+      "deployment",
+      "git-mutation",
+      "unrestricted-scan",
+      "secret-read",
+      "process-mutation",
+      "service-mutation",
+      "migration-apply",
+      "privileged-api"
+    ],
+    "allowRestrictionRemoval": false,
+    "allowModeOverride": false,
+    "allowFailureSuppression": false,
+    "allowCompletionOverride": false,
+    "allowSecretExposure": false,
+    "allowRequiredEvidenceRemoval": false,
+    "allowScopeExpansionWithoutApproval": false
+  }
 }

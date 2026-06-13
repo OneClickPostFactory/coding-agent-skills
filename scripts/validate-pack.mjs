@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import {
+  adapterIssues,
   AUDIT_ONLY_SKILLS,
   auditOnlyDocumentIssues,
   completionIssues,
@@ -53,6 +54,7 @@ const requiredRootFiles = [
   "contracts/evidence-pack/evidence-pack.example.json",
   "schemas/skill-manifest.schema.json",
   "schemas/command-policy.schema.json",
+  "schemas/project-adapter.schema.json",
   "scripts/test-pack.mjs",
   "scripts/lib/schema-validator.mjs",
   "scripts/lib/pack-rules.mjs",
@@ -62,6 +64,7 @@ const requiredRootFiles = [
   "tests/evidence/README.md",
   "tests/fixtures/triggers/cases.json",
   "tests/fixtures/policy/commands.json",
+  "tests/fixtures/policy/properties.json",
   "tests/fixtures/mutation/cases.json",
   "tests/fixtures/privacy/cases.json",
   "tests/fixtures/completion/cases.json",
@@ -72,9 +75,17 @@ const requiredRootFiles = [
   "tests/fixtures/adapters/redefine-completion.json",
   "tests/fixtures/adapters/expose-secrets.json",
   "tests/fixtures/adapters/override-audit-only.json",
+  "tests/fixtures/adapters/weakening-repo-map.json",
+  "tests/fixtures/adapters/incompatible-version.json",
+  "tests/fixtures/adapters/remove-required-evidence.json",
+  "tests/fixtures/adapters/expand-scope.json",
   "tests/fixtures/mutation/snapshot-target/README.md",
   "tests/fixtures/mutation/snapshot-target/state.json",
   "examples/README.md",
+  "examples/adapters/README.md",
+  "examples/adapters/narrow-repo-map.json",
+  "examples/adapters/documentation-precedence.json",
+  "examples/adapters/runtime-status-hints.json",
 ];
 
 function read(relativePath) {
@@ -145,9 +156,16 @@ for (const skill of PILOT_SKILLS) {
 
 const manifestSchema = readJson("schemas/skill-manifest.schema.json");
 const policySchema = readJson("schemas/command-policy.schema.json");
+const adapterSchema = readJson("schemas/project-adapter.schema.json");
 const evidenceSchema = readJson("contracts/evidence-pack/evidence-pack.schema.json");
 
-if (manifestSchema && policySchema && evidenceSchema) {
+if (manifestSchema && policySchema && adapterSchema && evidenceSchema) {
+  const policiesBySkill = Object.fromEntries(
+    PILOT_SKILLS.map((skill) => [
+      skill,
+      readJson(`examples/command-policies/${skill}.json`),
+    ]),
+  );
   for (const skill of PILOT_SKILLS) {
     const records = [
       [
@@ -179,6 +197,12 @@ if (manifestSchema && policySchema && evidenceSchema) {
     if (manifest.version !== PILOT_VERSION) failures.push(`${skill}: stale manifest version`);
     if (policy.version !== PILOT_VERSION) failures.push(`${skill}: stale policy version`);
     if (manifest.mode !== policy.mode) failures.push(`${skill}: manifest/policy mode mismatch`);
+    if (manifest.adapterCompatibility?.contractVersion !== "1.0.0") {
+      failures.push(`${skill}: adapter contract version mismatch`);
+    }
+    if (!manifest.adapterCompatibility?.compatibleAdapterVersions?.includes("1.0.0")) {
+      failures.push(`${skill}: adapter version compatibility missing`);
+    }
     if (evidence.skill.name !== skill) failures.push(`${skill}: evidence skill mismatch`);
     if (evidence.skill.version !== PILOT_VERSION) {
       failures.push(`${skill}: stale evidence example version`);
@@ -193,8 +217,69 @@ if (manifestSchema && policySchema && evidenceSchema) {
         failures.push(`${skill}: command policy omits ${category}`);
       }
     }
+    for (const invariant of [
+      "inspectEverySegment",
+      "inspectScriptBodies",
+      "rejectUnknownExecutables",
+      "rejectShellWrappers",
+      "rejectHeredocs",
+      "rejectRedirection",
+      "providerSpecificNpx",
+      "authenticatedCurlRequiresApproval",
+      "boundedReadsRequired",
+    ]) {
+      if (policy.parserPolicy?.[invariant] !== true) {
+        failures.push(`${skill}: command parser invariant disabled: ${invariant}`);
+      }
+    }
+    for (const family of policy.allowedFamilies ?? []) {
+      if (!family.argumentPolicy?.allowedPatterns?.length) {
+        failures.push(`${skill}: ${family.name} has no allowed argument patterns`);
+      }
+      if (!family.argumentPolicy?.deniedPatterns?.length) {
+        failures.push(`${skill}: ${family.name} has no denied argument patterns`);
+      }
+    }
     for (const issue of completionIssues(evidence)) {
       failures.push(`${skill}: ${issue}`);
+    }
+  }
+
+  for (const file of [
+    "examples/adapters/narrow-repo-map.json",
+    "examples/adapters/documentation-precedence.json",
+    "examples/adapters/runtime-status-hints.json",
+  ]) {
+    const adapter = readJson(file);
+    if (!adapter) continue;
+    for (const error of validateValue(adapterSchema, adapter)) {
+      failures.push(`${file}: ${error}`);
+    }
+    for (const error of adapterIssues(adapter, { policies: policiesBySkill })) {
+      failures.push(`${file}: ${error}`);
+    }
+  }
+
+  for (const file of [
+    "tests/fixtures/adapters/allow-deploy.json",
+    "tests/fixtures/adapters/allow-git-push.json",
+    "tests/fixtures/adapters/suppress-failures.json",
+    "tests/fixtures/adapters/redefine-completion.json",
+    "tests/fixtures/adapters/expose-secrets.json",
+    "tests/fixtures/adapters/override-audit-only.json",
+    "tests/fixtures/adapters/weakening-repo-map.json",
+    "tests/fixtures/adapters/incompatible-version.json",
+    "tests/fixtures/adapters/remove-required-evidence.json",
+    "tests/fixtures/adapters/expand-scope.json",
+  ]) {
+    const adapter = readJson(file);
+    if (!adapter) continue;
+    const rejectionReasons = [
+      ...validateValue(adapterSchema, adapter),
+      ...adapterIssues(adapter, { policies: policiesBySkill }),
+    ];
+    if (rejectionReasons.length === 0) {
+      failures.push(`${file}: invalid adapter fixture was accepted`);
     }
   }
 }
@@ -202,6 +287,26 @@ if (manifestSchema && policySchema && evidenceSchema) {
 const contractExample = readJson("contracts/evidence-pack/evidence-pack.example.json");
 if (contractExample?.skill?.version !== PILOT_VERSION) {
   failures.push("evidence-pack contract example has a stale skill version");
+}
+
+for (const [file, patterns] of [
+  [
+    "docs/adapters/README.md",
+    [/inherit/i, /compatib/i, /must never|cannot/i],
+  ],
+  [
+    "docs/testing/README.md",
+    [/property-style/i, /not a complete POSIX parser/i],
+  ],
+  [
+    "docs/authoring/README.md",
+    [/adapter.*compatib/i, /command.*argument/i],
+  ],
+]) {
+  const text = read(file);
+  for (const pattern of patterns) {
+    if (!pattern.test(text)) failures.push(`${file}: missing ${pattern}`);
+  }
 }
 
 const allFiles = walk(root);

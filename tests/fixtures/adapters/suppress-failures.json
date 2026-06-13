@@ -1,21 +1,53 @@
 {
+  "adapterId": "fixture-suppress-failures",
   "adapterVersion": "1.0.0",
-  "skill": "repo-map",
-  "mode": "audit-only",
-  "project": "unsafe-suppression",
-  "repositoryMarkers": ["package.json"],
-  "boundedReadPaths": ["README.md"],
-  "restrictedCategories": [
-    "file-write",
-    "package-install",
-    "deployment",
-    "git-mutation",
-    "unrestricted-scan",
-    "secret-read",
-    "process-mutation",
-    "service-mutation",
-    "migration-apply",
-    "privileged-api"
+  "project": {
+    "id": "fixture-project",
+    "detection": {
+      "rootMarkers": [{"kind": "file", "path": "package.json"}],
+      "maximumDepth": 1,
+      "scope": "declared-project-root",
+      "requireApprovalOutsideScope": true
+    }
+  },
+  "supportedSkills": [
+    {
+      "id": "repo-map",
+      "compatibleVersions": ["0.1.2"],
+      "declaredMode": "audit-only"
+    }
   ],
-  "suppressFailures": true
+  "extensions": {
+    "safeReadPaths": ["README.md"],
+    "ignoredPaths": [],
+    "documentationPrecedence": [],
+    "commandAliases": [],
+    "safeStatusCommands": [],
+    "requiredEvidence": ["repository root"],
+    "expectedRuntimeManagers": [],
+    "expectedPackageManagers": ["none"]
+  },
+  "approvalRequirements": [],
+  "inheritance": {
+    "sharedRestrictions": "required",
+    "deniedOperationCategories": [
+      "file-write",
+      "package-install",
+      "deployment",
+      "git-mutation",
+      "unrestricted-scan",
+      "secret-read",
+      "process-mutation",
+      "service-mutation",
+      "migration-apply",
+      "privileged-api"
+    ],
+    "allowRestrictionRemoval": false,
+    "allowModeOverride": false,
+    "allowFailureSuppression": true,
+    "allowCompletionOverride": false,
+    "allowSecretExposure": false,
+    "allowRequiredEvidenceRemoval": false,
+    "allowScopeExpansionWithoutApproval": false
+  }
 }

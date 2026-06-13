@@ -1,10 +1,27 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "mode": "audit-only",
+  "parserPolicy": {
+    "inspectEverySegment": true,
+    "inspectScriptBodies": true,
+    "rejectUnknownExecutables": true,
+    "rejectShellWrappers": true,
+    "rejectHeredocs": true,
+    "rejectRedirection": true,
+    "providerSpecificNpx": true,
+    "authenticatedCurlRequiresApproval": true,
+    "boundedReadsRequired": true,
+    "allowedComposition": "read-only"
+  },
   "allowedFamilies": [
     {
       "name": "runtime-status",
       "executables": ["ps", "ss", "systemctl", "pm2", "docker"],
+      "argumentPolicy": {
+        "strategy": "status-only",
+        "allowedPatterns": ["bounded process, listener, service, manager, and container status"],
+        "deniedPatterns": ["start, stop, restart, reload, enable, disable, signals, and unbounded logs"]
+      },
       "constraints": [
         "Use status and inspection forms only.",
         "Filter output to the named process, service, container, or port."
@@ -13,6 +30,11 @@
     {
       "name": "safe-health-check",
       "executables": ["curl"],
+      "argumentPolicy": {
+        "strategy": "pattern",
+        "allowedPatterns": ["unauthenticated HTTP GET to localhost health paths"],
+        "deniedPatterns": ["authorization, credentials, request bodies, uploads, and non-health endpoints"]
+      },
       "constraints": [
         "Use only unauthenticated local or explicitly approved public health endpoints.",
         "Do not send credentials, cookies, or mutation methods."

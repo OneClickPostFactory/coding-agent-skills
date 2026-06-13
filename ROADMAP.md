@@ -6,8 +6,9 @@ The pilot release remains limited to five approved skills. Future work requires 
 
 - `v0.1.0`: schemas, examples, dependency-free validation, CI, and governance.
 - `v0.1.1`: trigger, command-policy, mutation, privacy, adapter, and false-completion harnesses.
+- `v0.1.2`: formal adapter contract, compatibility enforcement, and property-style command-policy coverage.
 
-The next v0.1.x milestone should formalize the project-adapter schema and add property-style command-policy fixtures before any new skill is approved.
+The next milestone should exercise the formal adapter contract in disposable external fixture repositories and define a safe installation/discovery test harness before any new skill is approved.
 
 | Candidate | Scope | Mode | Current gate |
 |---|---|---|---|

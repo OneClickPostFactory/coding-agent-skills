@@ -1,29 +1,29 @@
 {
-  "adapterId": "fixture-valid-documentation",
+  "adapterId": "fixture-expand-scope",
   "adapterVersion": "1.0.0",
   "project": {
     "id": "fixture-project",
     "detection": {
-      "rootMarkers": [{"kind": "directory", "path": "docs"}],
-      "maximumDepth": 2,
+      "rootMarkers": [{"kind": "file", "path": "package.json"}],
+      "maximumDepth": 8,
       "scope": "declared-project-root",
-      "requireApprovalOutsideScope": true
+      "requireApprovalOutsideScope": false
     }
   },
   "supportedSkills": [
     {
-      "id": "llm-drift-control",
-      "compatibleVersions": ["0.1.x"],
+      "id": "repo-map",
+      "compatibleVersions": ["0.1.2"],
       "declaredMode": "audit-only"
     }
   ],
   "extensions": {
-    "safeReadPaths": ["README.md", "docs", "src", "test"],
-    "ignoredPaths": ["docs/generated"],
-    "documentationPrecedence": ["docs/architecture.md", "README.md"],
+    "safeReadPaths": ["README.md"],
+    "ignoredPaths": [],
+    "documentationPrecedence": [],
     "commandAliases": [],
     "safeStatusCommands": [],
-    "requiredEvidence": ["documentation source", "code source"],
+    "requiredEvidence": ["repository root"],
     "expectedRuntimeManagers": [],
     "expectedPackageManagers": ["none"]
   },
@@ -48,6 +48,6 @@
     "allowCompletionOverride": false,
     "allowSecretExposure": false,
     "allowRequiredEvidenceRemoval": false,
-    "allowScopeExpansionWithoutApproval": false
+    "allowScopeExpansionWithoutApproval": true
   }
 }

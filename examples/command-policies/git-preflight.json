@@ -1,10 +1,27 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "mode": "audit-only",
+  "parserPolicy": {
+    "inspectEverySegment": true,
+    "inspectScriptBodies": true,
+    "rejectUnknownExecutables": true,
+    "rejectShellWrappers": true,
+    "rejectHeredocs": true,
+    "rejectRedirection": true,
+    "providerSpecificNpx": true,
+    "authenticatedCurlRequiresApproval": true,
+    "boundedReadsRequired": true,
+    "allowedComposition": "read-only"
+  },
   "allowedFamilies": [
     {
       "name": "git-read-only",
       "executables": ["git"],
+      "argumentPolicy": {
+        "strategy": "exact",
+        "allowedPatterns": ["rev-parse, remote -v, branch, bounded log, status, diff, ls-files, and show"],
+        "deniedPatterns": ["configuration, index, worktree, history, tag, and remote mutation"]
+      },
       "constraints": [
         "Allow rev-parse, remote -v, branch --show-current, bounded log, status, and diff inspection.",
         "Reject configuration changes and every worktree, index, history, or remote mutation."

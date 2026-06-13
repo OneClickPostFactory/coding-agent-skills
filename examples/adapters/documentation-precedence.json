@@ -1,11 +1,16 @@
 {
-  "adapterId": "fixture-valid-documentation",
+  "adapterId": "sample-documentation-precedence",
   "adapterVersion": "1.0.0",
   "project": {
-    "id": "fixture-project",
+    "id": "sample-project",
     "detection": {
-      "rootMarkers": [{"kind": "directory", "path": "docs"}],
-      "maximumDepth": 2,
+      "rootMarkers": [
+        {
+          "kind": "directory",
+          "path": "docs"
+        }
+      ],
+      "maximumDepth": 1,
       "scope": "declared-project-root",
       "requireApprovalOutsideScope": true
     }
@@ -20,10 +25,14 @@
   "extensions": {
     "safeReadPaths": ["README.md", "docs", "src", "test"],
     "ignoredPaths": ["docs/generated"],
-    "documentationPrecedence": ["docs/architecture.md", "README.md"],
+    "documentationPrecedence": [
+      "docs/architecture/README.md",
+      "docs/product/README.md",
+      "README.md"
+    ],
     "commandAliases": [],
     "safeStatusCommands": [],
-    "requiredEvidence": ["documentation source", "code source"],
+    "requiredEvidence": ["source reference", "test reference", "documentation reference"],
     "expectedRuntimeManagers": [],
     "expectedPackageManagers": ["none"]
   },

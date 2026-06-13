@@ -10,6 +10,7 @@ import {
   auditOnlyDocumentIssues,
   classifyTrigger,
   commandLooksExecutable,
+  commandPolicyDecision,
   completionIssues,
   detectSensitiveValues,
   PILOT_SKILLS,
@@ -119,7 +120,14 @@ function snapshotDirectory(relativePath) {
 
 const manifestSchema = readJson("schemas/skill-manifest.schema.json");
 const policySchema = readJson("schemas/command-policy.schema.json");
+const adapterSchema = readJson("schemas/project-adapter.schema.json");
 const evidenceSchema = readJson("contracts/evidence-pack/evidence-pack.schema.json");
+const policiesBySkill = Object.fromEntries(
+  PILOT_SKILLS.map((skill) => [
+    skill,
+    readJson(`examples/command-policies/${skill}.json`),
+  ]),
+);
 
 test("the pilot contains exactly the approved skills", () => {
   const actual = fs
@@ -193,19 +201,37 @@ test("all manifests, command policies, and evidence examples satisfy their schem
   }
 });
 
+test("project adapter examples satisfy schema and compatibility rules", () => {
+  const examples = [
+    "narrow-repo-map.json",
+    "documentation-precedence.json",
+    "runtime-status-hints.json",
+  ];
+
+  for (const file of examples) {
+    const adapter = readJson(`examples/adapters/${file}`);
+    assertSchemaValid(adapterSchema, adapter, file);
+    assert.deepEqual(adapterIssues(adapter, { policies: policiesBySkill }), [], file);
+  }
+});
+
 test("manifest references resolve and agree with skill policy", () => {
   for (const skill of PILOT_SKILLS) {
     const manifestPath = path.join(root, "examples", "manifests", `${skill}.json`);
     const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
     const policyPath = path.resolve(path.dirname(manifestPath), manifest.commandPolicy);
     const evidencePath = path.resolve(path.dirname(manifestPath), manifest.evidenceContract);
+    const adapterSchemaPath = path.resolve(path.dirname(manifestPath), manifest.adapterSchema);
     const adapterPath = path.resolve(path.dirname(manifestPath), manifest.adapterInterface);
 
     assert.equal(manifest.name, skill);
     assert.ok(fs.existsSync(policyPath), `${skill}: missing command policy`);
     assert.ok(fs.existsSync(evidencePath), `${skill}: missing evidence contract`);
+    assert.ok(fs.existsSync(adapterSchemaPath), `${skill}: missing adapter schema`);
     assert.ok(fs.existsSync(adapterPath), `${skill}: missing adapter interface`);
     assert.equal(JSON.parse(fs.readFileSync(policyPath, "utf8")).mode, manifest.mode);
+    assert.equal(manifest.adapterCompatibility.contractVersion, "1.0.0");
+    assert.ok(manifest.adapterCompatibility.compatibleAdapterVersions.includes("1.0.0"));
   }
 });
 
@@ -243,10 +269,25 @@ test("command policies use explicit constrained families without restricted exec
     const policy = readJson(`examples/command-policies/${skill}.json`);
     const familyNames = policy.allowedFamilies.map((family) => family.name);
     assert.equal(new Set(familyNames).size, familyNames.length, `${skill}: duplicate family`);
+    for (const invariant of [
+      "inspectEverySegment",
+      "inspectScriptBodies",
+      "rejectUnknownExecutables",
+      "rejectShellWrappers",
+      "rejectHeredocs",
+      "rejectRedirection",
+      "providerSpecificNpx",
+      "authenticatedCurlRequiresApproval",
+      "boundedReadsRequired",
+    ]) {
+      assert.equal(policy.parserPolicy[invariant], true, `${skill}: ${invariant}`);
+    }
     for (const family of policy.allowedFamilies) {
       assert.ok(family.name.trim(), `${skill}: empty family name`);
       assert.ok(family.executables.length, `${skill}: empty executable list`);
       assert.ok(family.constraints.length, `${skill}: missing constraints`);
+      assert.ok(family.argumentPolicy.allowedPatterns.length, `${skill}: allowed patterns`);
+      assert.ok(family.argumentPolicy.deniedPatterns.length, `${skill}: denied patterns`);
       for (const executable of family.executables) {
         assert.equal(
           restrictedExecutables.has(executable),
@@ -256,6 +297,63 @@ test("command policies use explicit constrained families without restricted exec
       }
     }
   }
+});
+
+test("property-style command-policy cases reject obvious bypass families", () => {
+  const fixture = readJson("tests/fixtures/policy/properties.json");
+
+  for (const candidate of fixture.safeByPolicy) {
+    const policy = readJson(`examples/command-policies/${candidate.policy}.json`);
+    const result = commandPolicyDecision(candidate.command, policy, {
+      scripts: candidate.scripts,
+    });
+    assert.equal(result.allowed, true, candidate.command);
+    assert.equal(result.family, candidate.family, candidate.command);
+  }
+
+  let generated = 0;
+  for (const prefix of fixture.safePrefixes) {
+    for (const separator of fixture.separators) {
+      for (const suffix of fixture.restrictedSuffixes) {
+        const result = analyzeCommand(`${prefix}${separator}${suffix.command}`);
+        assert.equal(result.allowed, false, `${prefix}${separator}${suffix.command}`);
+        assert.match(result.reasons.join("\n"), new RegExp(suffix.reason, "i"));
+        generated += 1;
+      }
+    }
+  }
+  assert.ok(generated >= 80, `expected broad generated coverage, received ${generated}`);
+
+  for (const wrapper of fixture.wrappers) {
+    for (const suffix of fixture.restrictedSuffixes) {
+      const result = analyzeCommand(`${wrapper} '${suffix.command}'`);
+      assert.equal(result.allowed, false, `${wrapper}: ${suffix.command}`);
+      assert.match(result.reasons.join("\n"), /shell wrapper/i);
+    }
+  }
+  for (const command of fixture.heredocs) {
+    assert.match(analyzeCommand(command).reasons.join("\n"), /heredoc/i);
+  }
+  for (const candidate of fixture.argumentCases) {
+    const result = analyzeCommand(candidate.command, {
+      approvals: candidate.approvals,
+    });
+    assert.equal(result.allowed, candidate.allowed, candidate.command);
+    if (candidate.reason) {
+      assert.match(result.reasons.join("\n"), new RegExp(candidate.reason, "i"));
+    }
+  }
+  for (const candidate of fixture.scriptBodies) {
+    const result = analyzeCommand(candidate.command, { scripts: candidate.scripts });
+    assert.equal(result.allowed, candidate.allowed, candidate.command);
+    if (candidate.reason) {
+      assert.match(result.reasons.join("\n"), new RegExp(candidate.reason, "i"));
+    }
+  }
+
+  assert.match(analyzeCommand("npx wrangler deploy").reasons.join("\n"), /npx wrangler/i);
+  assert.match(analyzeCommand("npx supabase db push").reasons.join("\n"), /npx supabase/i);
+  assert.match(analyzeCommand("npx unknown-tool check").reasons.join("\n"), /npx execution/i);
 });
 
 test("trigger-classification fixtures select only the intended pilot skill", () => {
@@ -325,27 +423,39 @@ test("false-completion matrix rejects every unsupported complete status", () => 
 test("adapters may extend but may not weaken restrictions", () => {
   const valid = readJson("tests/fixtures/adapters/valid-repo-map.json");
   const weakening = readJson("tests/fixtures/adapters/weakening-repo-map.json");
-  assert.deepEqual(adapterIssues(valid), []);
-  assert.ok(adapterIssues(weakening).some((issue) => issue.includes("weakens")));
+  assertSchemaValid(adapterSchema, valid, "valid-repo-map");
+  assert.deepEqual(adapterIssues(valid, { policies: policiesBySkill }), []);
+  assert.ok(
+    validateValue(adapterSchema, weakening).length > 0 ||
+      adapterIssues(weakening, { policies: policiesBySkill }).some((issue) =>
+        issue.includes("weakens"),
+      ),
+  );
 });
 
 test("adapter matrix rejects permission, failure, completion, secret, and mode overrides", () => {
-  assert.deepEqual(
-    adapterIssues(readJson("tests/fixtures/adapters/valid-narrowing.json")),
-    [],
-  );
+  const valid = readJson("tests/fixtures/adapters/valid-narrowing.json");
+  assertSchemaValid(adapterSchema, valid, "valid-narrowing");
+  assert.deepEqual(adapterIssues(valid, { policies: policiesBySkill }), []);
 
   const invalid = [
-    ["allow-deploy.json", /restricted operation/],
-    ["allow-git-push.json", /restricted operation/],
+    ["allow-deploy.json", /unsafe command alias/],
+    ["allow-git-push.json", /unsafe command alias/],
     ["suppress-failures.json", /suppress failures/],
     ["redefine-completion.json", /redefine completion/],
     ["expose-secrets.json", /expose secrets/],
     ["override-audit-only.json", /override runtime-truth mode/],
+    ["weakening-repo-map.json", /weakens required restriction/],
+    ["incompatible-version.json", /incompatible/],
+    ["remove-required-evidence.json", /remove required evidence/],
+    ["expand-scope.json", /approval|expand scope/],
   ];
   for (const [file, expected] of invalid) {
-    const issues = adapterIssues(readJson(`tests/fixtures/adapters/${file}`));
-    assert.match(issues.join("\n"), expected, file);
+    const adapter = readJson(`tests/fixtures/adapters/${file}`);
+    const schemaErrors = validateValue(adapterSchema, adapter);
+    const semanticErrors = adapterIssues(adapter, { policies: policiesBySkill });
+    assert.ok(schemaErrors.length > 0 || semanticErrors.length > 0, file);
+    assert.match([...schemaErrors, ...semanticErrors].join("\n"), expected, file);
   }
 });
 

@@ -152,7 +152,7 @@
       "id": "migration-apply",
       "command": "npx supabase db push",
       "allowed": false,
-      "reason": "migration"
+      "reason": "npx supabase"
     },
     {
       "id": "privileged-api",

@@ -4,25 +4,102 @@
   "title": "Coding Agent Command Policy",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "mode", "allowedFamilies", "restrictedCategories"],
+  "required": [
+    "version",
+    "mode",
+    "parserPolicy",
+    "allowedFamilies",
+    "restrictedCategories"
+  ],
   "properties": {
     "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
     "mode": {"type": "string", "enum": ["audit-only", "action-capable"]},
+    "parserPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inspectEverySegment",
+        "inspectScriptBodies",
+        "rejectUnknownExecutables",
+        "rejectShellWrappers",
+        "rejectHeredocs",
+        "rejectRedirection",
+        "providerSpecificNpx",
+        "authenticatedCurlRequiresApproval",
+        "boundedReadsRequired",
+        "allowedComposition"
+      ],
+      "properties": {
+        "inspectEverySegment": {"type": "boolean", "const": true},
+        "inspectScriptBodies": {"type": "boolean", "const": true},
+        "rejectUnknownExecutables": {"type": "boolean", "const": true},
+        "rejectShellWrappers": {"type": "boolean", "const": true},
+        "rejectHeredocs": {"type": "boolean", "const": true},
+        "rejectRedirection": {"type": "boolean", "const": true},
+        "providerSpecificNpx": {"type": "boolean", "const": true},
+        "authenticatedCurlRequiresApproval": {"type": "boolean", "const": true},
+        "boundedReadsRequired": {"type": "boolean", "const": true},
+        "allowedComposition": {
+          "type": "string",
+          "enum": ["none", "read-only"]
+        }
+      }
+    },
     "allowedFamilies": {
       "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name", "executables", "constraints"],
+        "required": ["name", "executables", "argumentPolicy", "constraints"],
         "properties": {
-          "name": {"type": "string"},
-          "executables": {"type": "array", "items": {"type": "string"}},
-          "constraints": {"type": "array", "items": {"type": "string"}}
+          "name": {"type": "string", "minLength": 1},
+          "executables": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9._-]*$"
+            }
+          },
+          "argumentPolicy": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["strategy", "allowedPatterns", "deniedPatterns"],
+            "properties": {
+              "strategy": {
+                "type": "string",
+                "enum": ["exact", "pattern", "discovered-script", "status-only"]
+              },
+              "allowedPatterns": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {"type": "string", "minLength": 1}
+              },
+              "deniedPatterns": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {"type": "string", "minLength": 1}
+              }
+            }
+          },
+          "constraints": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          }
         }
       }
     },
     "restrictedCategories": {
       "type": "array",
+      "minItems": 10,
+      "uniqueItems": true,
       "items": {
         "type": "string",
         "enum": [
@@ -39,6 +116,10 @@
         ]
       }
     },
-    "approvalExceptions": {"type": "array", "items": {"type": "string"}}
+    "approvalExceptions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    }
   }
 }

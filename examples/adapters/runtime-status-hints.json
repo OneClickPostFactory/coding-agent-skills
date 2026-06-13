@@ -1,10 +1,15 @@
 {
-  "adapterId": "fixture-allow-deploy",
+  "adapterId": "sample-runtime-status",
   "adapterVersion": "1.0.0",
   "project": {
-    "id": "fixture-project",
+    "id": "sample-service",
     "detection": {
-      "rootMarkers": [{"kind": "file", "path": "package.json"}],
+      "rootMarkers": [
+        {
+          "kind": "file",
+          "path": "package.json"
+        }
+      ],
       "maximumDepth": 1,
       "scope": "declared-project-root",
       "requireApprovalOutsideScope": true
@@ -12,29 +17,40 @@
   },
   "supportedSkills": [
     {
-      "id": "repo-map",
+      "id": "runtime-truth",
       "compatibleVersions": ["0.1.2"],
       "declaredMode": "audit-only"
     }
   ],
   "extensions": {
-    "safeReadPaths": ["README.md"],
-    "ignoredPaths": [],
-    "documentationPrecedence": [],
+    "safeReadPaths": ["README.md", "package.json"],
+    "ignoredPaths": ["logs"],
+    "documentationPrecedence": ["README.md"],
     "commandAliases": [
       {
-        "alias": "deploy-project",
-        "skillId": "repo-map",
-        "family": "unsafe-deployment",
-        "command": "wrangler deploy"
+        "alias": "service-status",
+        "skillId": "runtime-truth",
+        "family": "runtime-status",
+        "command": "systemctl --user status sample.service --no-pager"
       }
     ],
-    "safeStatusCommands": [],
-    "requiredEvidence": ["repository root"],
-    "expectedRuntimeManagers": [],
+    "safeStatusCommands": [
+      {
+        "manager": "systemd-user",
+        "command": "systemctl --user status sample.service --no-pager"
+      }
+    ],
+    "requiredEvidence": ["manager status", "listener ownership", "health response"],
+    "expectedRuntimeManagers": ["systemd-user"],
     "expectedPackageManagers": ["npm"]
   },
-  "approvalRequirements": [],
+  "approvalRequirements": [
+    {
+      "operation": "authenticated-health-check",
+      "required": true,
+      "reason": "Authenticated health checks require a separately approved workflow."
+    }
+  ],
   "inheritance": {
     "sharedRestrictions": "required",
     "deniedOperationCategories": [

@@ -1,10 +1,27 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "mode": "action-capable",
+  "parserPolicy": {
+    "inspectEverySegment": true,
+    "inspectScriptBodies": true,
+    "rejectUnknownExecutables": true,
+    "rejectShellWrappers": true,
+    "rejectHeredocs": true,
+    "rejectRedirection": true,
+    "providerSpecificNpx": true,
+    "authenticatedCurlRequiresApproval": true,
+    "boundedReadsRequired": true,
+    "allowedComposition": "read-only"
+  },
   "allowedFamilies": [
     {
       "name": "manifest-inspection",
       "executables": ["sed", "head", "jq"],
+      "argumentPolicy": {
+        "strategy": "pattern",
+        "allowedPatterns": ["known manifest and CI file reads"],
+        "deniedPatterns": ["secret files and paths outside the repository"]
+      },
       "constraints": [
         "Read only known project manifests and CI configuration."
       ]
@@ -12,6 +29,11 @@
     {
       "name": "project-native-validation",
       "executables": ["npm", "pnpm", "yarn", "node"],
+      "argumentPolicy": {
+        "strategy": "discovered-script",
+        "allowedPatterns": ["lint, typecheck, test, build, check, and validate"],
+        "deniedPatterns": ["install, fix, deploy, migrate, snapshot, watch, dev, and start"]
+      },
       "constraints": [
         "Run only scripts discovered in project manifests.",
         "Allow lint without fix mode, typecheck, targeted tests, tests, and build.",
