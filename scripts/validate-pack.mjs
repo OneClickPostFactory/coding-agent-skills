@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { checkAdapterUpgrade } from "./lib/adapter-upgrade.mjs";
 import { validateExternalAdapters } from "./lib/adapter-discovery.mjs";
 import {
   adapterIssues,
@@ -51,6 +52,8 @@ const requiredRootFiles = [
   "docs/adapters/discovery.md",
   "docs/adapters/external-adapters.md",
   "docs/adapters/project-installation.md",
+  "docs/adapters/upgrades.md",
+  "docs/versioning/adapter-compatibility.md",
   "docs/usage/README.md",
   "docs/release/README.md",
   "docs/testing/README.md",
@@ -62,8 +65,10 @@ const requiredRootFiles = [
   "schemas/project-adapter.schema.json",
   "schemas/project-adapter-installation.schema.json",
   "scripts/test-pack.mjs",
+  "scripts/check-adapter-upgrade.mjs",
   "scripts/validate-adapters.mjs",
   "scripts/validate-project-adapters.mjs",
+  "scripts/lib/adapter-upgrade.mjs",
   "scripts/lib/adapter-discovery.mjs",
   "scripts/lib/project-adapter-installation.mjs",
   "scripts/lib/semver.mjs",
@@ -123,6 +128,19 @@ const requiredRootFiles = [
   "examples/adapters/documentation-precedence.json",
   "examples/adapters/runtime-status-hints.json",
 ];
+const upgradeFixtures = [
+  "valid-upgrade",
+  "stale-exact-pin",
+  "stale-compatible-range",
+  "unsupported-future-core",
+  "unsupported-old-core",
+  "adapter-schema-drift",
+  "skill-compatibility-drift",
+  "unsafe-upgrade-weakens-restrictions",
+  "unsafe-upgrade-mode-escalation",
+  "unsafe-upgrade-removes-evidence",
+  "safe-upgrade-preserves-restrictions",
+];
 
 function read(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), "utf8");
@@ -149,6 +167,24 @@ function walk(directory, output = []) {
 
 for (const file of requiredRootFiles) {
   if (!fs.existsSync(path.join(root, file))) failures.push(`missing ${file}`);
+}
+for (const fixture of upgradeFixtures) {
+  for (const revision of ["before", "after"]) {
+    for (const relative of [
+      ".coding-agent/skills.json",
+      ".coding-agent/adapters/fixture-upgrade-adapter/adapter.json",
+    ]) {
+      const file = path.join(
+        "tests",
+        "fixtures",
+        "project-adapter-upgrades",
+        fixture,
+        revision,
+        relative,
+      );
+      if (!fs.existsSync(path.join(root, file))) failures.push(`missing ${file}`);
+    }
+  }
 }
 
 const actualSkillFolders = fs
@@ -202,6 +238,48 @@ for (const fixture of [
   if (!result.ok || result.accepted.length !== 1) {
     failures.push(`${fixture}: valid external adapter root was rejected`);
   }
+}
+
+for (const fixture of ["valid-upgrade", "safe-upgrade-preserves-restrictions"]) {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrades",
+    fixture,
+  );
+  const result = checkAdapterUpgrade(
+    path.join(fixtureRoot, "before"),
+    path.join(fixtureRoot, "after"),
+    { coreRoot: root },
+  );
+  if (!result.ok) failures.push(`${fixture}: safe adapter upgrade was rejected`);
+}
+
+for (const fixture of [
+  "stale-exact-pin",
+  "stale-compatible-range",
+  "unsupported-future-core",
+  "unsupported-old-core",
+  "adapter-schema-drift",
+  "skill-compatibility-drift",
+  "unsafe-upgrade-weakens-restrictions",
+  "unsafe-upgrade-mode-escalation",
+  "unsafe-upgrade-removes-evidence",
+]) {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrades",
+    fixture,
+  );
+  const result = checkAdapterUpgrade(
+    path.join(fixtureRoot, "before"),
+    path.join(fixtureRoot, "after"),
+    { coreRoot: root },
+  );
+  if (result.ok) failures.push(`${fixture}: unsafe adapter upgrade was accepted`);
 }
 
 for (const fixture of [
@@ -433,6 +511,14 @@ for (const [file, patterns] of [
     [/skills\.json/i, /version pin/i, /extension-only/i, /validate-project-adapters/i],
   ],
   [
+    "docs/adapters/upgrades.md",
+    [/stale exact pin/i, /stale compatible range/i, /advisory/i, /disposable/i],
+  ],
+  [
+    "docs/versioning/adapter-compatibility.md",
+    [/schema drift/i, /skill compatibility drift/i, /preserve/i, /evidence/i],
+  ],
+  [
     "docs/versioning/README.md",
     [/exact pin/i, /compatible range/i, />=0\.1\.3 <0\.2\.0/],
   ],
@@ -560,6 +646,7 @@ for (const expected of [
   "node scripts/test-pack.mjs",
   "node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic",
   "node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin",
+  "node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after",
   "node --test",
 ]) {
   if (!ci.includes(expected)) failures.push(`CI missing safe validation step: ${expected}`);

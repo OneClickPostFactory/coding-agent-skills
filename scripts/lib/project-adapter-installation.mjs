@@ -119,7 +119,7 @@ function schemaCodes(errors) {
   return [...codes];
 }
 
-function versionCodes(declaration) {
+function versionCodes(declaration, coreVersion) {
   const codes = [];
   const expected = declaration.core?.expectedVersion;
   const pin = declaration.core?.versionPin;
@@ -128,8 +128,8 @@ function versionCodes(declaration) {
     codes.push("invalid-semver");
     return codes;
   }
-  if (expected !== PILOT_VERSION) codes.push("unsupported-core-version");
-  if (!satisfiesVersionPin(PILOT_VERSION, pin)) codes.push("core-pin-mismatch");
+  if (expected !== coreVersion) codes.push("unsupported-core-version");
+  if (!satisfiesVersionPin(coreVersion, pin)) codes.push("core-pin-mismatch");
   if (!satisfiesVersionPin(expected, pin)) codes.push("expected-version-outside-pin");
   return codes;
 }
@@ -192,26 +192,28 @@ function declarationCompatibilityCodes(declaration, discovery) {
   return codes;
 }
 
-export function validateProjectAdapters(projectRootInput, options = {}) {
+export function readProjectAdapterDeclaration(projectRootInput) {
   const input = String(projectRootInput ?? "");
-  if (!input.trim()) return baseFailure("missing-project-root");
-  if (input.split(/[\\/]+/).includes("..")) return baseFailure("root-path-traversal");
+  if (!input.trim()) return { ok: false, codes: ["missing-project-root"] };
+  if (input.split(/[\\/]+/).includes("..")) {
+    return { ok: false, codes: ["root-path-traversal"] };
+  }
 
   const projectRoot = path.resolve(input);
-  if (!fs.existsSync(projectRoot)) return baseFailure("project-root-not-found");
+  if (!fs.existsSync(projectRoot)) {
+    return { ok: false, codes: ["project-root-not-found"] };
+  }
   const rootStat = fs.lstatSync(projectRoot);
-  if (rootStat.isSymbolicLink()) return baseFailure("symlink-escape");
-  if (!rootStat.isDirectory()) return baseFailure("project-root-not-directory");
+  if (rootStat.isSymbolicLink()) return { ok: false, codes: ["symlink-escape"] };
+  if (!rootStat.isDirectory()) {
+    return { ok: false, codes: ["project-root-not-directory"] };
+  }
 
   const realRoot = fs.realpathSync(projectRoot);
-  const coreRoot = path.resolve(options.coreRoot ?? DEFAULT_CORE_ROOT);
-  const schema = declarationSchema(coreRoot);
-  if (!schema) return baseFailure("project-declaration-schema-unavailable");
-
   const declarationRecord = discoverDeclaration(realRoot);
   if (!declarationRecord.candidate) {
     return {
-      ...baseFailure(declarationRecord.codes[0]),
+      ok: false,
       codes: [...new Set(declarationRecord.codes)],
     };
   }
@@ -219,12 +221,36 @@ export function validateProjectAdapters(projectRootInput, options = {}) {
   const parsed = readSafeJsonFile(declarationRecord.candidate.file);
   if (!parsed.value) {
     return {
-      ...baseFailure(parsed.codes[0]),
+      ok: false,
       codes: parsed.codes,
     };
   }
 
-  const declaration = parsed.value;
+  return {
+    ok: true,
+    projectRoot: realRoot,
+    declarationPath: declarationRecord.candidate.relative,
+    declaration: parsed.value,
+    codes: [],
+  };
+}
+
+export function validateProjectAdapters(projectRootInput, options = {}) {
+  const loaded = readProjectAdapterDeclaration(projectRootInput);
+  if (!loaded.ok) {
+    return {
+      ...baseFailure(loaded.codes[0]),
+      codes: loaded.codes,
+    };
+  }
+
+  const coreRoot = path.resolve(options.coreRoot ?? DEFAULT_CORE_ROOT);
+  const coreVersion = options.coreVersion ?? PILOT_VERSION;
+  const schema = declarationSchema(coreRoot);
+  if (!schema) return baseFailure("project-declaration-schema-unavailable");
+
+  const realRoot = loaded.projectRoot;
+  const declaration = loaded.declaration;
   const codes = new Set(schemaCodes(validateValue(schema, declaration)));
 
   if (declaration.declarationVersion !== PROJECT_DECLARATION_VERSION) {
@@ -240,7 +266,7 @@ export function validateProjectAdapters(projectRootInput, options = {}) {
   ]) {
     for (const code of inspectRelativePath(realRoot, relative)) codes.add(code);
   }
-  for (const code of versionCodes(declaration)) codes.add(code);
+  for (const code of versionCodes(declaration, coreVersion)) codes.add(code);
   if (declaration.noSecrets !== true) codes.add("secret-guarantee-missing");
   if (
     declaration.validationCommand !==
@@ -249,7 +275,7 @@ export function validateProjectAdapters(projectRootInput, options = {}) {
     codes.add("invalid-validation-command");
   }
 
-  const discovery = validateExternalAdapters(realRoot, { coreRoot });
+  const discovery = validateExternalAdapters(realRoot, { coreRoot, coreVersion });
   for (const record of [...discovery.rejected, ...discovery.failures]) {
     for (const code of record.codes) codes.add(code);
   }

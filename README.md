@@ -39,6 +39,9 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 - Run `node scripts/validate-adapters.mjs <adapter-root>` for a disposable external root.
 - Review [project-owned installation and pinning](docs/adapters/project-installation.md).
 - Run `node scripts/validate-project-adapters.mjs <project-root>` for a declared project root.
+- Review [adapter upgrade checks](docs/adapters/upgrades.md).
+- Run `node scripts/check-adapter-upgrade.mjs <before-project-root> <after-project-root>`
+  for disposable project revisions.
 - Run `node scripts/validate-pack.mjs .` for structural validation.
 - Run `node scripts/test-pack.mjs` for executable release tests.
 - Run `node --test` for built-in Node fixture tests.

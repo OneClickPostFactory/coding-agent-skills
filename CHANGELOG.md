@@ -2,6 +2,25 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.1.5] - 2026-06-14
+
+### Added
+
+- Dependency-free adapter upgrade comparison command for paired project revisions.
+- Distinct stale exact-pin and stale compatible-range detection.
+- Disposable revision fixtures for safe upgrades, old and future cores, schema and skill
+  drift, restriction weakening, mode escalation, and evidence removal.
+- Dynamic rejection coverage for failure suppression, completion override, unknown skills,
+  secret exposure, and traversal.
+
+### Changed
+
+- Project validation can evaluate an immutable source revision against its declared core
+  while upgrade acceptance remains pinned to the running shared core.
+- Release validation and CI now exercise the safe adapter upgrade path.
+- Adapter, versioning, safety, authoring, and testing documentation now define upgrade
+  evidence and drift rejection.
+
 ## [0.1.4] - 2026-06-13
 
 ### Added

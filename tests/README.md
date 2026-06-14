@@ -4,7 +4,7 @@ Run the dependency-free release suite with:
 
 `node scripts/test-pack.mjs`
 
-The current suite verifies 42 release conditions, including:
+The current suite verifies 48 release conditions, including:
 
 - The exact approved five-skill inventory.
 - Manifest, command-policy, and evidence-pack schema validity.
@@ -30,6 +30,8 @@ The current suite verifies 42 release conditions, including:
 - Project declaration schema, exact pins, compatible ranges, and multiple adapters.
 - Project installation rejection for stale versions, mismatches, unsafe paths, and weakening.
 - Project `.env` avoidance, declaration symlink rejection, and secret-safe summaries.
+- Safe adapter upgrades and distinct stale exact-pin and compatible-range detection.
+- Upgrade rejection for core, schema, skill, mode, policy, evidence, secret, and path drift.
 - Property-generated command-policy bypass combinations.
 - A matrix of schema-valid but semantically false completion claims.
 

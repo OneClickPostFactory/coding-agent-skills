@@ -31,3 +31,9 @@ A future project adoption must also add exactly one supported skills declaration
 released shared core, list every adapter ID/version/skill set, retain `noSecrets: true`, and
 pass `node scripts/validate-project-adapters.mjs <project-root>`. A project declaration may
 narrow compatibility but cannot replace the shared schema, policy, mode, or completion rules.
+
+Before proposing an adapter upgrade, retain separate before and after project revisions and
+run `node scripts/check-adapter-upgrade.mjs <before-project-root> <after-project-root>`.
+Update the expected core, pin, and skill compatibility together. Preserve adapter identity,
+all denied categories, and every existing evidence requirement. A passing advisory check
+does not approve modification of a real project.

@@ -13,7 +13,7 @@
   "supportedSkills": [
     {
       "id": "repo-map",
-      "compatibleVersions": ["0.1.4"],
+      "compatibleVersions": ["0.1.5"],
       "declaredMode": "action-capable"
     }
   ],

@@ -30,6 +30,11 @@ import {
   projectAdapterCliResult,
   validateProjectAdapters,
 } from "./lib/project-adapter-installation.mjs";
+import {
+  adapterUpgradeCliResult,
+  checkAdapterUpgrade,
+  formatAdapterUpgradeSummary,
+} from "./lib/adapter-upgrade.mjs";
 import { validateValue } from "./lib/schema-validator.mjs";
 import { parseSemver, parseVersionPin, satisfiesVersionPin } from "./lib/semver.mjs";
 
@@ -164,6 +169,7 @@ test("release governance and safe CI files are present", () => {
     "node scripts/test-pack.mjs",
     "node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic",
     "node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin",
+    "node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after",
     "node --test",
   ]);
 });
@@ -722,16 +728,16 @@ test("project adapter declarations satisfy schema and supported pin forms", () =
     );
   }
 
-  assert.deepEqual(parseSemver("0.1.4"), [0, 1, 4]);
-  assert.equal(parseSemver("v0.1.4"), null);
-  assert.equal(parseSemver("00.1.4"), null);
-  assert.ok(parseVersionPin("0.1.4"));
+  assert.deepEqual(parseSemver("0.1.5"), [0, 1, 5]);
+  assert.equal(parseSemver("v0.1.5"), null);
+  assert.equal(parseSemver("00.1.5"), null);
+  assert.ok(parseVersionPin("0.1.5"));
   assert.ok(parseVersionPin(">=0.1.3 <0.2.0"));
-  assert.equal(parseVersionPin("^0.1.4"), null);
-  assert.equal(satisfiesVersionPin("0.1.4", "0.1.4"), true);
-  assert.equal(satisfiesVersionPin("0.1.4", ">=0.1.3 <0.2.0"), true);
-  assert.equal(satisfiesVersionPin("0.1.4", "<0.1.4"), false);
-  assert.equal(satisfiesVersionPin("0.1.4", ">=0.2.0"), false);
+  assert.equal(parseVersionPin("^0.1.5"), null);
+  assert.equal(satisfiesVersionPin("0.1.5", "0.1.5"), true);
+  assert.equal(satisfiesVersionPin("0.1.5", ">=0.1.3 <0.2.0"), true);
+  assert.equal(satisfiesVersionPin("0.1.5", "<0.1.5"), false);
+  assert.equal(satisfiesVersionPin("0.1.5", ">=0.2.0"), false);
 });
 
 test("project adapter installation accepts exact, range, and multiple adapters", () => {
@@ -917,6 +923,262 @@ test("project adapter CLI uses stable exit codes and safe summaries", () => {
   assert.doesNotMatch(invalid.lines.join("\n"), /fixture-project|adapterId/i);
 
   const usage = projectAdapterCliResult(undefined, { coreRoot: root });
+  assert.equal(usage.exitCode, 2);
+  assert.equal(usage.stream, "stderr");
+  assert.match(usage.lines.join("\n"), /usage:/i);
+});
+
+test("adapter upgrade accepts safe exact and compatible-range revisions", () => {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrades",
+  );
+  for (const fixture of ["valid-upgrade", "safe-upgrade-preserves-restrictions"]) {
+    const result = checkAdapterUpgrade(
+      path.join(fixtureRoot, fixture, "before"),
+      path.join(fixtureRoot, fixture, "after"),
+      { coreRoot: root },
+    );
+    assert.equal(result.ok, true, `${fixture}: ${result.codes}`);
+    assert.equal(result.comparedAdapters, 1);
+    assert.equal(result.comparedSkills, 1);
+  }
+});
+
+test("adapter upgrade detects stale exact pins and compatible ranges", () => {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrades",
+  );
+  for (const [fixture, code] of [
+    ["stale-exact-pin", "stale-exact-pin"],
+    ["stale-compatible-range", "stale-compatible-range"],
+  ]) {
+    const result = checkAdapterUpgrade(
+      path.join(fixtureRoot, fixture, "before"),
+      path.join(fixtureRoot, fixture, "after"),
+      { coreRoot: root },
+    );
+    assert.equal(result.ok, false, fixture);
+    assert.ok(result.codes.includes(code), `${fixture}: ${result.codes}`);
+  }
+});
+
+test("adapter upgrade rejects unsupported cores and compatibility drift", () => {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrades",
+  );
+  for (const [fixture, code] of [
+    ["unsupported-future-core", "unsupported-future-core"],
+    ["unsupported-old-core", "unsupported-old-core"],
+    ["adapter-schema-drift", "adapter-schema-drift"],
+    ["skill-compatibility-drift", "skill-compatibility-drift"],
+  ]) {
+    const result = checkAdapterUpgrade(
+      path.join(fixtureRoot, fixture, "before"),
+      path.join(fixtureRoot, fixture, "after"),
+      { coreRoot: root },
+    );
+    assert.equal(result.ok, false, fixture);
+    assert.ok(result.codes.includes(code), `${fixture}: ${result.codes}`);
+  }
+});
+
+test("adapter upgrade rejects restriction, mode, and evidence weakening", () => {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrades",
+  );
+  for (const [fixture, code] of [
+    ["unsafe-upgrade-weakens-restrictions", "restriction-weakening"],
+    ["unsafe-upgrade-mode-escalation", "mode-escalation"],
+    ["unsafe-upgrade-removes-evidence", "required-evidence-removal"],
+  ]) {
+    const result = checkAdapterUpgrade(
+      path.join(fixtureRoot, fixture, "before"),
+      path.join(fixtureRoot, fixture, "after"),
+      { coreRoot: root },
+    );
+    assert.equal(result.ok, false, fixture);
+    assert.ok(result.codes.includes(code), `${fixture}: ${result.codes}`);
+  }
+});
+
+test("adapter upgrade rejects dynamic unsafe revision attempts without leaking values", () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "adapter-upgrade-"));
+  const source = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrades",
+    "valid-upgrade",
+  );
+  const syntheticValue = readJson("tests/fixtures/privacy/cases.json")
+    .cases.find((candidate) => candidate.id === "fake-github-token")
+    .parts.join("");
+
+  function prepare(name) {
+    const destination = path.join(temporaryRoot, name);
+    fs.cpSync(source, destination, { recursive: true });
+    return {
+      before: path.join(destination, "before"),
+      after: path.join(destination, "after"),
+      declaration: path.join(
+        destination,
+        "after",
+        ".coding-agent",
+        "skills.json",
+      ),
+      adapter: path.join(
+        destination,
+        "after",
+        ".coding-agent",
+        "adapters",
+        "fixture-upgrade-adapter",
+        "adapter.json",
+      ),
+    };
+  }
+
+  function editJson(file, callback) {
+    const value = JSON.parse(fs.readFileSync(file, "utf8"));
+    callback(value);
+    fs.writeFileSync(file, JSON.stringify(value));
+  }
+
+  try {
+    for (const [name, code, mutate] of [
+      [
+        "failure",
+        "failure-suppression",
+        ({ adapter }) =>
+          editJson(adapter, (value) => {
+            value.inheritance.allowFailureSuppression = true;
+          }),
+      ],
+      [
+        "completion",
+        "completion-override",
+        ({ adapter }) =>
+          editJson(adapter, (value) => {
+            value.inheritance.allowCompletionOverride = true;
+          }),
+      ],
+      [
+        "adapter-version",
+        "adapter-version-drift",
+        ({ declaration, adapter }) => {
+          editJson(declaration, (value) => {
+            value.adapters[0].version = "1.0.1";
+          });
+          editJson(adapter, (value) => {
+            value.adapterVersion = "1.0.1";
+          });
+        },
+      ],
+      [
+        "unknown-skill",
+        "unknown-skill-compatibility",
+        ({ declaration, adapter }) => {
+          editJson(declaration, (value) => {
+            value.compatibleSkillIds = ["future-skill"];
+            value.adapters[0].skillIds = ["future-skill"];
+          });
+          editJson(adapter, (value) => {
+            value.supportedSkills[0].id = "future-skill";
+          });
+        },
+      ],
+      [
+        "path",
+        "path-traversal",
+        ({ declaration }) =>
+          editJson(declaration, (value) => {
+            value.evidenceOutput = "../outside/evidence.json";
+          }),
+      ],
+      [
+        "scope",
+        "scope-expansion",
+        ({ adapter }) =>
+          editJson(adapter, (value) => {
+            value.project.detection.requireApprovalOutsideScope = false;
+            value.inheritance.allowScopeExpansionWithoutApproval = true;
+          }),
+      ],
+    ]) {
+      const revision = prepare(name);
+      mutate(revision);
+      const result = checkAdapterUpgrade(revision.before, revision.after, {
+        coreRoot: root,
+      });
+      assert.equal(result.ok, false, name);
+      assert.ok(result.codes.includes(code), `${name}: ${result.codes}`);
+    }
+
+    const env = prepare("env");
+    fs.writeFileSync(path.join(env.after, ".env"), `SYNTHETIC=${syntheticValue}\n`);
+    const envResult = checkAdapterUpgrade(env.before, env.after, {
+      coreRoot: root,
+    });
+    assert.equal(envResult.ok, true, envResult.codes.join(","));
+
+    const secret = prepare("secret");
+    editJson(secret.declaration, (value) => {
+      value.syntheticNote = syntheticValue;
+    });
+    const secretResult = checkAdapterUpgrade(secret.before, secret.after, {
+      coreRoot: root,
+    });
+    assert.equal(secretResult.ok, false);
+    assert.ok(secretResult.codes.includes("secret-exposure"));
+    assert.doesNotMatch(
+      formatAdapterUpgradeSummary(secretResult).join("\n"),
+      new RegExp(syntheticValue),
+    );
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test("adapter upgrade CLI uses stable exit codes and safe summaries", () => {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrades",
+  );
+  const valid = adapterUpgradeCliResult(
+    path.join(fixtureRoot, "valid-upgrade", "before"),
+    path.join(fixtureRoot, "valid-upgrade", "after"),
+    { coreRoot: root },
+  );
+  assert.equal(valid.exitCode, 0);
+  assert.equal(valid.stream, "stdout");
+  assert.match(valid.lines.join("\n"), /target core accepted/);
+
+  const invalid = adapterUpgradeCliResult(
+    path.join(fixtureRoot, "stale-exact-pin", "before"),
+    path.join(fixtureRoot, "stale-exact-pin", "after"),
+    { coreRoot: root },
+  );
+  assert.equal(invalid.exitCode, 1);
+  assert.equal(invalid.stream, "stderr");
+  assert.match(invalid.lines.join("\n"), /stale-exact-pin/);
+  assert.doesNotMatch(invalid.lines.join("\n"), /fixture-upgrade|adapterId/i);
+
+  const usage = adapterUpgradeCliResult(undefined, undefined, {
+    coreRoot: root,
+  });
   assert.equal(usage.exitCode, 2);
   assert.equal(usage.stream, "stderr");
   assert.match(usage.lines.join("\n"), /usage:/i);

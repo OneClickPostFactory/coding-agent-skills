@@ -6,6 +6,7 @@ The v0.1.x harness is dependency-free and runs through:
 - `node scripts/test-pack.mjs`
 - `node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic`
 - `node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin`
+- `node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after`
 - `node --test`
 
 ## Trigger Classification
@@ -47,6 +48,14 @@ ambiguous declarations, unsupported old and future cores, malformed semver, unkn
 adapter version mismatch, invalid locations, restriction weakening, secret exposure, scope
 expansion, traversal, and symlink escape. Privacy tests verify that unrelated `.env` files
 are ignored and secret-like declaration content is rejected without appearing in summaries.
+
+## Adapter Upgrade And Stale Pins
+
+Paired simulated revisions cover safe exact and ranged upgrades, stale exact pins, stale
+ranges, unsupported old and future cores, adapter schema drift, skill compatibility drift,
+restriction weakening, mode escalation, evidence removal, failure suppression, completion
+override, secret exposure, unknown skills, and traversal. CLI tests confirm stable exit
+codes and summaries that do not echo adapter identifiers or secret-like values.
 
 ## False Completion
 

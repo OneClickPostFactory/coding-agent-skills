@@ -6,7 +6,7 @@ export const PILOT_SKILLS = [
   "llm-drift-control",
 ];
 
-export const PILOT_VERSION = "0.1.4";
+export const PILOT_VERSION = "0.1.5";
 
 export const AUDIT_ONLY_SKILLS = [
   "repo-map",
@@ -183,6 +183,7 @@ export function completionIssues(evidence) {
 
 export function adapterIssues(adapter, options = {}) {
   const issues = [];
+  const skillVersion = options.skillVersion ?? PILOT_VERSION;
 
   if (!adapter || typeof adapter !== "object") return ["adapter must be an object"];
   if (!adapter.adapterId || typeof adapter.adapterId !== "string") {
@@ -204,10 +205,10 @@ export function adapterIssues(adapter, options = {}) {
     }
     if (
       !(skill.compatibleVersions ?? []).some((version) =>
-        versionMatches(version, PILOT_VERSION),
+        versionMatches(version, skillVersion),
       )
     ) {
-      issues.push(`adapter is incompatible with ${skill.id} ${PILOT_VERSION}`);
+      issues.push(`adapter is incompatible with ${skill.id} ${skillVersion}`);
     }
   }
 
@@ -498,7 +499,7 @@ function classifySegment(segment, options = {}) {
   }
   if (
     executable === "node" &&
-    !/^node\s+(?:--check\b|--test\b|scripts\/(?:validate-pack|validate-adapters|validate-project-adapters|test-pack)\.mjs\b)/.test(
+    !/^node\s+(?:--check\b|--test\b|scripts\/(?:validate-pack|validate-adapters|validate-project-adapters|check-adapter-upgrade|test-pack)\.mjs\b)/.test(
       segment,
     )
   ) {

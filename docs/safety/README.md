@@ -38,6 +38,11 @@ adapter records, and skill IDs must agree with discovered manifests. Declaration
 repository-relative, `.env` files remain outside discovery, and the declared validation
 command is metadata rather than executable input.
 
+Upgrade checks preserve that boundary across revisions. They are advisory, do not write
+pins or manifests, and reject stale targets, unsupported cores, schema or skill drift,
+restriction weakening, audit-mode escalation, evidence removal, failure suppression,
+completion override, secret exposure, scope expansion, traversal, and symlink escape.
+
 ## Command Policy Limits
 
 Command policies declare executable families, argument strategy, parser invariants, composition rules, and denied categories. Property-style tests exercise obvious bypass combinations, but the parser is not a complete shell implementation. Unsupported syntax fails closed.

@@ -15,7 +15,7 @@ Tags use `vMAJOR.MINOR.PATCH`. Tags are created only after validation passes, `m
 A project-owned adapter declaration records the expected shared core version and one version
 pin. Supported forms are:
 
-- Exact pin: `0.1.4`
+- Exact pin: `0.1.5`
 - Compatible range: `>=0.1.3 <0.2.0`
 
 Ranges are conjunctions of plain Semantic Versioning comparators. Caret, tilde, wildcard,
@@ -25,3 +25,6 @@ pilot parser.
 The running core version must equal `expectedVersion` and satisfy `versionPin`. This rejects
 unsupported old or future cores, stale declarations, and ranges that do not include the
 current release. Adapter schema and adapter manifest versions are validated separately.
+
+See [adapter compatibility](adapter-compatibility.md) for stale-pin, schema-drift, skill
+compatibility, and policy-preservation rules across project revisions.

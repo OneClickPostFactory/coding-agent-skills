@@ -53,7 +53,7 @@ The validator checks this field; it does not execute it.
 Two version pin forms are supported:
 
 ```text
-0.1.4
+0.1.5
 >=0.1.3 <0.2.0
 ```
 
@@ -96,5 +96,8 @@ The validator reads only the declaration, discovered `adapter.json` files, and s
 metadata. It ignores unrelated `.env` files and never installs packages, runs adapter
 commands, deploys, migrates, or changes project state.
 
-All committed project roots in v0.1.4 are disposable synthetic fixtures. No real project
+Use [the upgrade checker](upgrades.md) to compare a current declaration with a proposed
+revision and detect stale pins or compatibility drift before adoption.
+
+All committed project roots in v0.1.5 are disposable synthetic fixtures. No real project
 adapter or real project repository is modified.

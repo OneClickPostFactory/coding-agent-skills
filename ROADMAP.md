@@ -9,10 +9,11 @@ The pilot release remains limited to five approved skills. Future work requires 
 - `v0.1.2`: formal adapter contract, compatibility enforcement, and property-style command-policy coverage.
 - `v0.1.3`: bounded external-adapter discovery, validation, fixture roots, and path-safety enforcement.
 - `v0.1.4`: project-owned installation declarations, version pins, and disposable adoption fixtures.
+- `v0.1.5`: paired adapter upgrade checks, stale-pin detection, and compatibility-drift rejection.
 
-The next milestone should exercise adapter upgrade, stale-pin detection, and compatibility
-drift across disposable project revisions. Real project adapters and new skills remain
-separately gated.
+The next milestone should exercise machine-readable upgrade evidence, multi-step upgrade
+chains, and compatibility reporting without applying changes. Real project adapters and new
+skills remain separately gated.
 
 | Candidate | Scope | Mode | Current gate |
 |---|---|---|---|

@@ -11,6 +11,7 @@ Current synthetic fixtures include:
 - `adapters/`: valid contract fixtures plus distinct schema and compatibility failures.
 - `external-adapters/`: disposable project roots for bounded discovery and rejection tests.
 - `project-adapter-installation/`: disposable repositories with declarations and version pins.
+- `project-adapter-upgrades/`: paired disposable revisions for safe upgrades and drift rejection.
 - `completion/`: single and matrix-style schema-valid false completions.
 
 Future fixtures may cover dirty monorepos, non-Git projects, nested repositories, malformed manifests, bounded large trees, and secret-like filenames.

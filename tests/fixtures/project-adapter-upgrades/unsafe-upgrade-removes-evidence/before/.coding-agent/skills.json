@@ -1,0 +1,27 @@
+{
+  "declarationVersion": "1.0.0",
+  "projectId": "fixture-upgrade-project",
+  "adapterRoot": ".coding-agent/adapters",
+  "adapterSchemaVersion": "1.0.0",
+  "core": {
+    "id": "coding-agent-skills",
+    "expectedVersion": "0.1.4",
+    "versionPin": "0.1.4"
+  },
+  "compatibleSkillIds": [
+    "repo-map"
+  ],
+  "adapters": [
+    {
+      "id": "fixture-upgrade-adapter",
+      "version": "1.0.0",
+      "skillIds": [
+        "repo-map"
+      ]
+    }
+  ],
+  "validationCommand": "node <shared-core>/scripts/validate-project-adapters.mjs <project-root>",
+  "evidenceOutput": "validation-output/project-adapters.json",
+  "approvalPolicyReference": "docs/coding-agent-approval-policy.md",
+  "noSecrets": true
+}

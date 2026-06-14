@@ -6,6 +6,7 @@ import {
   adapterIssues,
   detectSensitiveValues,
   PILOT_SKILLS,
+  PILOT_VERSION,
 } from "./pack-rules.mjs";
 import { validateValue } from "./schema-validator.mjs";
 
@@ -229,7 +230,7 @@ function discover(adapterRoot) {
   return { manifests, failures };
 }
 
-function validateCompatibility(adapter, manifests) {
+function validateCompatibility(adapter, manifests, coreVersion) {
   const codes = [];
   if (adapter.adapterVersion !== ADAPTER_SCHEMA_VERSION) {
     codes.push("unsupported-adapter-version");
@@ -309,6 +310,7 @@ export function validateExternalAdapters(adapterRootInput, options = {}) {
 
   const realRoot = fs.realpathSync(adapterRoot);
   const core = loadCore(path.resolve(options.coreRoot ?? DEFAULT_CORE_ROOT));
+  const coreVersion = options.coreVersion ?? PILOT_VERSION;
   if (core.error.length) {
     return {
       ok: false,
@@ -332,11 +334,14 @@ export function validateExternalAdapters(adapterRootInput, options = {}) {
     }
 
     const schemaErrors = validateValue(core.schema, record.value);
-    const semanticErrors = adapterIssues(record.value, { policies: core.policies });
+    const semanticErrors = adapterIssues(record.value, {
+      policies: core.policies,
+      skillVersion: coreVersion,
+    });
     const codes = new Set([
       ...schemaIssueCodes(schemaErrors),
       ...semanticErrors.map(publicIssueCode),
-      ...validateCompatibility(record.value, core.manifests),
+      ...validateCompatibility(record.value, core.manifests, coreVersion),
     ]);
 
     if (codes.size > 0) {
@@ -351,6 +356,29 @@ export function validateExternalAdapters(adapterRootInput, options = {}) {
       adapterVersion: record.value.adapterVersion,
       projectId: record.value.project.id,
       skills: record.value.supportedSkills.map((skill) => skill.id).sort(),
+      skillCompatibility: record.value.supportedSkills
+        .map((skill) => ({
+          id: skill.id,
+          compatibleVersions: [...skill.compatibleVersions].sort(),
+          declaredMode: skill.declaredMode,
+        }))
+        .sort((left, right) => left.id.localeCompare(right.id)),
+      requiredEvidence: [...record.value.extensions.requiredEvidence].sort(),
+      deniedOperationCategories: [
+        ...record.value.inheritance.deniedOperationCategories,
+      ].sort(),
+      inheritance: {
+        sharedRestrictions: record.value.inheritance.sharedRestrictions,
+        allowRestrictionRemoval: record.value.inheritance.allowRestrictionRemoval,
+        allowModeOverride: record.value.inheritance.allowModeOverride,
+        allowFailureSuppression: record.value.inheritance.allowFailureSuppression,
+        allowCompletionOverride: record.value.inheritance.allowCompletionOverride,
+        allowSecretExposure: record.value.inheritance.allowSecretExposure,
+        allowRequiredEvidenceRemoval:
+          record.value.inheritance.allowRequiredEvidenceRemoval,
+        allowScopeExpansionWithoutApproval:
+          record.value.inheritance.allowScopeExpansionWithoutApproval,
+      },
     });
   }
 

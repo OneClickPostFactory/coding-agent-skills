@@ -31,5 +31,8 @@ jobs:
       - name: Validate disposable project installation
         run: node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin
 
+      - name: Check disposable adapter upgrade
+        run: node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after
+
       - name: Run built-in Node tests
         run: node --test
