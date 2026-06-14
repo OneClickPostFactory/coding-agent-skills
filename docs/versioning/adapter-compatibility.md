@@ -9,13 +9,17 @@ Adapter upgrades compare four independent version surfaces:
 
 ## Supported Transition
 
-The `v0.1.5` harness recognizes `0.1.4` as its supported source and `0.1.5` as its target.
+The `v0.1.6` pair harness recognizes `0.1.5` as its supported source and `0.1.6` as its target.
 The source revision is validated against the version it declares. The target revision is
 then required to match the running core.
 
 This separation allows a valid older revision to be inspected without pretending its pin is
 current. A source older than the immediately preceding patch is an unsupported old core. A
 target newer than the running core is an unsupported future core.
+
+Multi-step chains may retain earlier synthetic revisions when every adjacent transition is
+a contiguous patch upgrade. Each step is evaluated against its own target core, while the
+last revision must target `0.1.6`.
 
 ## Drift Rules
 
@@ -44,3 +48,7 @@ A review should retain:
 
 Upgrade evidence is advisory. It does not authorize edits, publication, deployment, or
 adoption in a real project.
+
+Structured pair and chain records validate against
+[`adapter-upgrade-evidence.schema.json`](../../schemas/adapter-upgrade-evidence.schema.json).
+They use ordinal project summaries and never store raw revision paths or project IDs.

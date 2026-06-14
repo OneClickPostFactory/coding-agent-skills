@@ -12,6 +12,7 @@ Current synthetic fixtures include:
 - `external-adapters/`: disposable project roots for bounded discovery and rejection tests.
 - `project-adapter-installation/`: disposable repositories with declarations and version pins.
 - `project-adapter-upgrades/`: paired disposable revisions for safe upgrades and drift rejection.
+- `project-adapter-upgrade-chains/`: ordered disposable revisions for chain-level compatibility.
 - `completion/`: single and matrix-style schema-valid false completions.
 
 Future fixtures may cover dirty monorepos, non-Git projects, nested repositories, malformed manifests, bounded large trees, and secret-like filenames.

@@ -13,7 +13,7 @@
   "supportedSkills": [
     {
       "id": "git-preflight",
-      "compatibleVersions": ["0.1.5"],
+      "compatibleVersions": ["0.1.6"],
       "declaredMode": "audit-only"
     }
   ],

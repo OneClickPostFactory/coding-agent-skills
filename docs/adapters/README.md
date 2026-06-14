@@ -12,7 +12,8 @@ uses the exact manifest name `adapter.json`. See [the discovery convention](disc
 for path and symlink rules, [external validation](external-adapters.md) for manifest-only
 CLI behavior, and [project installation](project-installation.md) for declaration and
 version-pinning rules. Use [upgrade checks](upgrades.md) to compare two declared revisions
-before changing a real project.
+or a multi-step compatibility chain before changing a real project. The
+[upgrade evidence contract](upgrade-evidence.md) defines sanitized review output.
 
 Discovery validates schema, skill compatibility, command policy, and inherited restrictions
 before accepting any extension. It never executes adapter commands.
@@ -41,10 +42,10 @@ before accepting any extension. It never executes adapter commands.
 Skill manifests declare the adapter contract and compatible adapter versions. An adapter separately declares supported skill IDs, compatible skill versions, and the unchanged skill mode.
 
 Compatibility requires both declarations to agree. Exact pilot versions and the `0.1.x`
-compatibility form are supported in v0.1.5. Upgrade comparisons also preserve adapter
+compatibility form are supported in v0.1.6. Upgrade comparisons also preserve adapter
 identity, inherited restrictions, and required evidence across revisions.
 
 The `inheritance` object is mandatory. Shared restrictions always win, and every permission-like safety flag is fixed to `false`.
 
-No real project adapter is implemented in the pilot release. The v0.1.5 harness uses only
+No real project adapter is implemented in the pilot release. The v0.1.6 harness uses only
 disposable synthetic fixture roots.

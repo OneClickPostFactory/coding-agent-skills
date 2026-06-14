@@ -42,6 +42,10 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 - Review [adapter upgrade checks](docs/adapters/upgrades.md).
 - Run `node scripts/check-adapter-upgrade.mjs <before-project-root> <after-project-root>`
   for disposable project revisions.
+- Validate ordered revisions with
+  `node scripts/check-adapter-upgrade-chain.mjs <chain-root>`.
+- Review the [upgrade evidence contract](docs/adapters/upgrade-evidence.md) before using
+  `--json` or explicit `--output` evidence.
 - Run `node scripts/validate-pack.mjs .` for structural validation.
 - Run `node scripts/test-pack.mjs` for executable release tests.
 - Run `node --test` for built-in Node fixture tests.

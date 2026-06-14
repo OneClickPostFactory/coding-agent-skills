@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { checkAdapterUpgrade } from "./lib/adapter-upgrade.mjs";
+import { checkAdapterUpgradeChain } from "./lib/adapter-upgrade-chain.mjs";
 import { validateExternalAdapters } from "./lib/adapter-discovery.mjs";
 import {
   adapterIssues,
@@ -53,6 +54,7 @@ const requiredRootFiles = [
   "docs/adapters/external-adapters.md",
   "docs/adapters/project-installation.md",
   "docs/adapters/upgrades.md",
+  "docs/adapters/upgrade-evidence.md",
   "docs/versioning/adapter-compatibility.md",
   "docs/usage/README.md",
   "docs/release/README.md",
@@ -64,16 +66,29 @@ const requiredRootFiles = [
   "schemas/command-policy.schema.json",
   "schemas/project-adapter.schema.json",
   "schemas/project-adapter-installation.schema.json",
+  "schemas/adapter-upgrade-evidence.schema.json",
+  "examples/upgrade-evidence/README.md",
+  "examples/upgrade-evidence/valid-upgrade.evidence.json",
+  "examples/upgrade-evidence/stale-pin.evidence.json",
+  "examples/upgrade-evidence/unsafe-upgrade.evidence.json",
+  "examples/upgrade-evidence/chain-pass.evidence.json",
+  "examples/upgrade-evidence/chain-fail.evidence.json",
+  "examples/upgrade-evidence/valid-upgrade.evidence.md",
+  "examples/upgrade-evidence/chain-fail.evidence.md",
   "scripts/test-pack.mjs",
   "scripts/check-adapter-upgrade.mjs",
+  "scripts/check-adapter-upgrade-chain.mjs",
   "scripts/validate-adapters.mjs",
   "scripts/validate-project-adapters.mjs",
   "scripts/lib/adapter-upgrade.mjs",
+  "scripts/lib/adapter-upgrade-chain.mjs",
   "scripts/lib/adapter-discovery.mjs",
   "scripts/lib/project-adapter-installation.mjs",
   "scripts/lib/semver.mjs",
   "scripts/lib/schema-validator.mjs",
   "scripts/lib/pack-rules.mjs",
+  "scripts/lib/safe-evidence-output.mjs",
+  "scripts/lib/upgrade-evidence.mjs",
   "tests/README.md",
   "tests/fixtures/README.md",
   "tests/safety/README.md",
@@ -141,6 +156,16 @@ const upgradeFixtures = [
   "unsafe-upgrade-removes-evidence",
   "safe-upgrade-preserves-restrictions",
 ];
+const chainFixtures = {
+  valid: ["valid-chain"],
+  invalid: [
+    "stale-pin-chain",
+    "broken-compatibility-chain",
+    "unsafe-weakening-chain",
+    "schema-drift-chain",
+    "skill-drift-chain",
+  ],
+};
 
 function read(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), "utf8");
@@ -185,6 +210,16 @@ for (const fixture of upgradeFixtures) {
       if (!fs.existsSync(path.join(root, file))) failures.push(`missing ${file}`);
     }
   }
+}
+for (const fixture of [...chainFixtures.valid, ...chainFixtures.invalid]) {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrade-chains",
+    fixture,
+  );
+  if (!fs.existsSync(fixtureRoot)) failures.push(`missing chain fixture ${fixture}`);
 }
 
 const actualSkillFolders = fs
@@ -282,6 +317,21 @@ for (const fixture of [
   if (result.ok) failures.push(`${fixture}: unsafe adapter upgrade was accepted`);
 }
 
+for (const fixture of chainFixtures.valid) {
+  const result = checkAdapterUpgradeChain(
+    path.join(root, "tests", "fixtures", "project-adapter-upgrade-chains", fixture),
+    { coreRoot: root },
+  );
+  if (!result.ok) failures.push(`${fixture}: safe adapter chain was rejected`);
+}
+for (const fixture of chainFixtures.invalid) {
+  const result = checkAdapterUpgradeChain(
+    path.join(root, "tests", "fixtures", "project-adapter-upgrade-chains", fixture),
+    { coreRoot: root },
+  );
+  if (result.ok) failures.push(`${fixture}: unsafe adapter chain was accepted`);
+}
+
 for (const fixture of [
   "invalid-deploy",
   "invalid-git-push",
@@ -356,13 +406,17 @@ const projectInstallationSchema = readJson(
   "schemas/project-adapter-installation.schema.json",
 );
 const evidenceSchema = readJson("contracts/evidence-pack/evidence-pack.schema.json");
+const upgradeEvidenceSchema = readJson(
+  "schemas/adapter-upgrade-evidence.schema.json",
+);
 
 if (
   manifestSchema &&
   policySchema &&
   adapterSchema &&
   projectInstallationSchema &&
-  evidenceSchema
+  evidenceSchema &&
+  upgradeEvidenceSchema
 ) {
   const policiesBySkill = Object.fromEntries(
     PILOT_SKILLS.map((skill) => [
@@ -486,6 +540,23 @@ if (
       failures.push(`${file}: invalid adapter fixture was accepted`);
     }
   }
+
+  for (const file of [
+    "examples/upgrade-evidence/valid-upgrade.evidence.json",
+    "examples/upgrade-evidence/stale-pin.evidence.json",
+    "examples/upgrade-evidence/unsafe-upgrade.evidence.json",
+    "examples/upgrade-evidence/chain-pass.evidence.json",
+    "examples/upgrade-evidence/chain-fail.evidence.json",
+  ]) {
+    const evidence = readJson(file);
+    if (!evidence) continue;
+    for (const error of validateValue(upgradeEvidenceSchema, evidence)) {
+      failures.push(`${file}: ${error}`);
+    }
+    if (evidence.changedState?.changed !== false) {
+      failures.push(`${file}: upgrade evidence must declare no project state change`);
+    }
+  }
 }
 
 const contractExample = readJson("contracts/evidence-pack/evidence-pack.example.json");
@@ -513,6 +584,10 @@ for (const [file, patterns] of [
   [
     "docs/adapters/upgrades.md",
     [/stale exact pin/i, /stale compatible range/i, /advisory/i, /disposable/i],
+  ],
+  [
+    "docs/adapters/upgrade-evidence.md",
+    [/changedState/i, /--json/i, /--output/i, /does not apply/i],
   ],
   [
     "docs/versioning/adapter-compatibility.md",
@@ -647,6 +722,7 @@ for (const expected of [
   "node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic",
   "node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin",
   "node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after",
+  "node scripts/check-adapter-upgrade-chain.mjs tests/fixtures/project-adapter-upgrade-chains/valid-chain",
   "node --test",
 ]) {
   if (!ci.includes(expected)) failures.push(`CI missing safe validation step: ${expected}`);

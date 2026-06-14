@@ -35,6 +35,11 @@ import {
   checkAdapterUpgrade,
   formatAdapterUpgradeSummary,
 } from "./lib/adapter-upgrade.mjs";
+import {
+  adapterChainCliResult,
+  checkAdapterUpgradeChain,
+  formatAdapterChainSummary,
+} from "./lib/adapter-upgrade-chain.mjs";
 import { validateValue } from "./lib/schema-validator.mjs";
 import { parseSemver, parseVersionPin, satisfiesVersionPin } from "./lib/semver.mjs";
 
@@ -127,6 +132,10 @@ function deepMerge(base, patch) {
 
 function snapshotDirectory(relativePath) {
   const directory = path.join(root, relativePath);
+  return snapshotAbsoluteDirectory(directory);
+}
+
+function snapshotAbsoluteDirectory(directory) {
   const digest = createHash("sha256");
   for (const file of walk(directory).sort()) {
     digest.update(path.relative(directory, file));
@@ -140,6 +149,9 @@ const policySchema = readJson("schemas/command-policy.schema.json");
 const adapterSchema = readJson("schemas/project-adapter.schema.json");
 const projectInstallationSchema = readJson(
   "schemas/project-adapter-installation.schema.json",
+);
+const upgradeEvidenceSchema = readJson(
+  "schemas/adapter-upgrade-evidence.schema.json",
 );
 const evidenceSchema = readJson("contracts/evidence-pack/evidence-pack.schema.json");
 const policiesBySkill = Object.fromEntries(
@@ -170,6 +182,7 @@ test("release governance and safe CI files are present", () => {
     "node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic",
     "node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin",
     "node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after",
+    "node scripts/check-adapter-upgrade-chain.mjs tests/fixtures/project-adapter-upgrade-chains/valid-chain",
     "node --test",
   ]);
 });
@@ -728,16 +741,16 @@ test("project adapter declarations satisfy schema and supported pin forms", () =
     );
   }
 
-  assert.deepEqual(parseSemver("0.1.5"), [0, 1, 5]);
-  assert.equal(parseSemver("v0.1.5"), null);
-  assert.equal(parseSemver("00.1.5"), null);
-  assert.ok(parseVersionPin("0.1.5"));
+  assert.deepEqual(parseSemver("0.1.6"), [0, 1, 6]);
+  assert.equal(parseSemver("v0.1.6"), null);
+  assert.equal(parseSemver("00.1.6"), null);
+  assert.ok(parseVersionPin("0.1.6"));
   assert.ok(parseVersionPin(">=0.1.3 <0.2.0"));
-  assert.equal(parseVersionPin("^0.1.5"), null);
-  assert.equal(satisfiesVersionPin("0.1.5", "0.1.5"), true);
-  assert.equal(satisfiesVersionPin("0.1.5", ">=0.1.3 <0.2.0"), true);
-  assert.equal(satisfiesVersionPin("0.1.5", "<0.1.5"), false);
-  assert.equal(satisfiesVersionPin("0.1.5", ">=0.2.0"), false);
+  assert.equal(parseVersionPin("^0.1.6"), null);
+  assert.equal(satisfiesVersionPin("0.1.6", "0.1.6"), true);
+  assert.equal(satisfiesVersionPin("0.1.6", ">=0.1.3 <0.2.0"), true);
+  assert.equal(satisfiesVersionPin("0.1.6", "<0.1.6"), false);
+  assert.equal(satisfiesVersionPin("0.1.6", ">=0.2.0"), false);
 });
 
 test("project adapter installation accepts exact, range, and multiple adapters", () => {
@@ -1182,6 +1195,426 @@ test("adapter upgrade CLI uses stable exit codes and safe summaries", () => {
   assert.equal(usage.exitCode, 2);
   assert.equal(usage.stream, "stderr");
   assert.match(usage.lines.join("\n"), /usage:/i);
+});
+
+test("upgrade evidence examples validate and declare no project state change", () => {
+  for (const file of [
+    "valid-upgrade.evidence.json",
+    "stale-pin.evidence.json",
+    "unsafe-upgrade.evidence.json",
+    "chain-pass.evidence.json",
+    "chain-fail.evidence.json",
+  ]) {
+    const evidence = readJson(`examples/upgrade-evidence/${file}`);
+    assertSchemaValid(upgradeEvidenceSchema, evidence, file);
+    assert.equal(evidence.changedState.changed, false, file);
+    assert.doesNotMatch(JSON.stringify(evidence), /\/home\/|projectId|github_pat_|ghp_/i);
+  }
+});
+
+test("adapter upgrade JSON and explicit output remain schema-valid and bounded", () => {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrades",
+    "valid-upgrade",
+  );
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "upgrade-output-"));
+
+  try {
+    const json = adapterUpgradeCliResult(
+      path.join(fixtureRoot, "before"),
+      path.join(fixtureRoot, "after"),
+      { coreRoot: root, json: true },
+    );
+    assert.equal(json.exitCode, 0);
+    assert.equal(json.stream, "stdout");
+    assertSchemaValid(upgradeEvidenceSchema, JSON.parse(json.lines[0]), "pair JSON");
+
+    const written = adapterUpgradeCliResult(
+      path.join(fixtureRoot, "before"),
+      path.join(fixtureRoot, "after"),
+      {
+        coreRoot: root,
+        output: "upgrade.json",
+        outputBase: temporaryRoot,
+      },
+    );
+    assert.equal(written.exitCode, 0);
+    const output = JSON.parse(
+      fs.readFileSync(path.join(temporaryRoot, "upgrade.json"), "utf8"),
+    );
+    assertSchemaValid(upgradeEvidenceSchema, output, "pair output");
+    assert.equal(output.changedState.changed, false);
+
+    const overwrite = adapterUpgradeCliResult(
+      path.join(fixtureRoot, "before"),
+      path.join(fixtureRoot, "after"),
+      {
+        coreRoot: root,
+        output: "upgrade.json",
+        outputBase: temporaryRoot,
+      },
+    );
+    assert.equal(overwrite.exitCode, 2);
+    assert.match(overwrite.lines.join("\n"), /output-already-exists/);
+
+    for (const unsafe of ["../outside.json", ".env.json", "/tmp/outside.json"]) {
+      const rejected = adapterUpgradeCliResult(
+        path.join(fixtureRoot, "before"),
+        path.join(fixtureRoot, "after"),
+        {
+          coreRoot: root,
+          output: unsafe,
+          outputBase: temporaryRoot,
+        },
+      );
+      assert.equal(rejected.exitCode, 2, unsafe);
+      assert.match(rejected.lines.join("\n"), /unsafe-output-path/, unsafe);
+    }
+
+    const realOutput = path.join(temporaryRoot, "real");
+    fs.mkdirSync(realOutput);
+    fs.symlinkSync(realOutput, path.join(temporaryRoot, "linked"));
+    const symlinked = adapterUpgradeCliResult(
+      path.join(fixtureRoot, "before"),
+      path.join(fixtureRoot, "after"),
+      {
+        coreRoot: root,
+        output: "linked/report.json",
+        outputBase: temporaryRoot,
+      },
+    );
+    assert.equal(symlinked.exitCode, 2);
+    assert.match(symlinked.lines.join("\n"), /output-symlink-escape/);
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test("adapter upgrade chains accept safe revisions and reject named fixture drift", () => {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrade-chains",
+  );
+  const valid = checkAdapterUpgradeChain(path.join(fixtureRoot, "valid-chain"), {
+    coreRoot: root,
+  });
+  assert.equal(valid.ok, true, valid.codes.join(","));
+  assert.equal(valid.revisionCount, 3);
+  assert.equal(valid.transitionCount, 2);
+
+  for (const [fixture, code] of [
+    ["stale-pin-chain", "stale-exact-pin"],
+    ["broken-compatibility-chain", "skill-compatibility-drift"],
+    ["unsafe-weakening-chain", "restriction-weakening"],
+    ["schema-drift-chain", "adapter-schema-drift"],
+    ["skill-drift-chain", "skill-compatibility-drift"],
+  ]) {
+    const result = checkAdapterUpgradeChain(path.join(fixtureRoot, fixture), {
+      coreRoot: root,
+    });
+    assert.equal(result.ok, false, fixture);
+    assert.ok(result.codes.includes(code), `${fixture}: ${result.codes}`);
+  }
+});
+
+test("adapter chain evidence is schema-valid and summarizes ordinal transitions", () => {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrade-chains",
+  );
+  for (const fixture of ["valid-chain", "unsafe-weakening-chain"]) {
+    const result = adapterChainCliResult(path.join(fixtureRoot, fixture), {
+      coreRoot: root,
+      json: true,
+      invocationId: `test-${fixture}`,
+      chainId: `test-${fixture}`,
+      timestamp: "2026-06-14T12:00:00Z",
+    });
+    const evidence = JSON.parse(result.lines[0]);
+    assertSchemaValid(upgradeEvidenceSchema, evidence, fixture);
+    assert.equal(evidence.changedState.changed, false);
+    assert.ok(evidence.chainSummary.steps.length > 0);
+    assert.match(evidence.chainSummary.steps[0].beforeRevision, /^revision-/);
+    assert.doesNotMatch(JSON.stringify(evidence), /01-current|fixture-chain-project/);
+  }
+});
+
+test("adapter chains reject dynamic evidence, mode, failure, completion, and version drift", () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "chain-drift-"));
+  const source = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrade-chains",
+    "valid-chain",
+  );
+
+  function prepare(name) {
+    const destination = path.join(temporaryRoot, name);
+    fs.cpSync(source, destination, { recursive: true });
+    return {
+      root: destination,
+      declaration: path.join(destination, "03-upgrade", ".coding-agent", "skills.json"),
+      adapter: path.join(
+        destination,
+        "03-upgrade",
+        ".coding-agent",
+        "adapters",
+        "fixture-chain-adapter",
+        "adapter.json",
+      ),
+      middleDeclaration: path.join(
+        destination,
+        "02-upgrade",
+        ".coding-agent",
+        "skills.json",
+      ),
+      middleAdapter: path.join(
+        destination,
+        "02-upgrade",
+        ".coding-agent",
+        "adapters",
+        "fixture-chain-adapter",
+        "adapter.json",
+      ),
+    };
+  }
+
+  function editJson(file, callback) {
+    const value = JSON.parse(fs.readFileSync(file, "utf8"));
+    callback(value);
+    fs.writeFileSync(file, JSON.stringify(value));
+  }
+
+  try {
+    for (const [name, code, mutate] of [
+      [
+        "evidence",
+        "required-evidence-removal",
+        ({ adapter }) =>
+          editJson(adapter, (value) => {
+            value.extensions.requiredEvidence = ["repository root"];
+          }),
+      ],
+      [
+        "failure",
+        "failure-suppression",
+        ({ adapter }) =>
+          editJson(adapter, (value) => {
+            value.inheritance.allowFailureSuppression = true;
+          }),
+      ],
+      [
+        "completion",
+        "completion-override",
+        ({ adapter }) =>
+          editJson(adapter, (value) => {
+            value.inheritance.allowCompletionOverride = true;
+          }),
+      ],
+      [
+        "mode",
+        "mode-escalation",
+        ({ adapter }) =>
+          editJson(adapter, (value) => {
+            value.supportedSkills[0].declaredMode = "action-capable";
+          }),
+      ],
+      [
+        "adapter-version",
+        "adapter-version-drift",
+        ({ declaration, adapter }) => {
+          editJson(declaration, (value) => {
+            value.adapters[0].version = "1.0.1";
+          });
+          editJson(adapter, (value) => {
+            value.adapterVersion = "1.0.1";
+          });
+        },
+      ],
+      [
+        "core-jump",
+        "incompatible-core-chain",
+        ({ middleDeclaration, middleAdapter }) => {
+          editJson(middleDeclaration, (value) => {
+            value.core.expectedVersion = "0.1.6";
+            value.core.versionPin = "0.1.6";
+          });
+          editJson(middleAdapter, (value) => {
+            value.supportedSkills[0].compatibleVersions = ["0.1.6"];
+          });
+        },
+      ],
+    ]) {
+      const chain = prepare(name);
+      mutate(chain);
+      const result = checkAdapterUpgradeChain(chain.root, { coreRoot: root });
+      assert.equal(result.ok, false, name);
+      assert.ok(result.codes.includes(code), `${name}: ${result.codes}`);
+    }
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test("adapter chain discovery ignores .env, preserves revisions, and redacts secrets", () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "chain-privacy-"));
+  const source = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrade-chains",
+    "valid-chain",
+  );
+  const syntheticValue = readJson("tests/fixtures/privacy/cases.json")
+    .cases.find((candidate) => candidate.id === "fake-github-token")
+    .parts.join("");
+
+  try {
+    const safe = path.join(temporaryRoot, "safe");
+    fs.cpSync(source, safe, { recursive: true });
+    fs.writeFileSync(path.join(safe, ".env"), `SYNTHETIC=${syntheticValue}\n`);
+    fs.writeFileSync(
+      path.join(safe, "02-upgrade", ".env.local"),
+      `SYNTHETIC=${syntheticValue}\n`,
+    );
+    const before = snapshotAbsoluteDirectory(safe);
+    const safeResult = checkAdapterUpgradeChain(safe, { coreRoot: root });
+    const after = snapshotAbsoluteDirectory(safe);
+    assert.equal(safeResult.ok, true, safeResult.codes.join(","));
+    assert.equal(after, before, "chain validation mutated a project revision");
+
+    const secret = path.join(temporaryRoot, "secret");
+    fs.cpSync(source, secret, { recursive: true });
+    const declaration = path.join(
+      secret,
+      "03-upgrade",
+      ".coding-agent",
+      "skills.json",
+    );
+    const value = JSON.parse(fs.readFileSync(declaration, "utf8"));
+    value.syntheticNote = syntheticValue;
+    fs.writeFileSync(declaration, JSON.stringify(value));
+    const secretResult = checkAdapterUpgradeChain(secret, { coreRoot: root });
+    assert.equal(secretResult.ok, false);
+    assert.ok(secretResult.codes.includes("secret-exposure"));
+    assert.doesNotMatch(
+      formatAdapterChainSummary(secretResult).join("\n"),
+      new RegExp(syntheticValue),
+    );
+    const evidence = adapterChainCliResult(secret, {
+      coreRoot: root,
+      json: true,
+    }).lines[0];
+    assert.doesNotMatch(evidence, new RegExp(syntheticValue));
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test("adapter chain discovery rejects symlink escapes and non-contiguous order", () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "chain-path-"));
+  const source = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrade-chains",
+    "valid-chain",
+  );
+
+  try {
+    const rootLink = path.join(temporaryRoot, "root-link");
+    fs.symlinkSync(source, rootLink);
+    assert.deepEqual(checkAdapterUpgradeChain(rootLink, { coreRoot: root }).codes, [
+      "symlink-escape",
+    ]);
+
+    const linkedRevision = path.join(temporaryRoot, "linked-revision");
+    fs.cpSync(source, linkedRevision, { recursive: true });
+    fs.symlinkSync(
+      path.join(source, "03-upgrade"),
+      path.join(linkedRevision, "04-linked"),
+    );
+    assert.ok(
+      checkAdapterUpgradeChain(linkedRevision, { coreRoot: root }).codes.includes(
+        "symlink-escape",
+      ),
+    );
+
+    const gap = path.join(temporaryRoot, "gap");
+    fs.cpSync(source, gap, { recursive: true });
+    fs.renameSync(path.join(gap, "03-upgrade"), path.join(gap, "04-upgrade"));
+    assert.ok(
+      checkAdapterUpgradeChain(gap, { coreRoot: root }).codes.includes(
+        "non-contiguous-chain-order",
+      ),
+    );
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test("adapter chain CLI uses stable exits, safe JSON, and bounded output", () => {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-upgrade-chains",
+  );
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "chain-output-"));
+
+  try {
+    const valid = adapterChainCliResult(path.join(fixtureRoot, "valid-chain"), {
+      coreRoot: root,
+    });
+    assert.equal(valid.exitCode, 0);
+    assert.equal(valid.stream, "stdout");
+    assert.match(valid.lines.join("\n"), /2 transitions accepted/);
+
+    const invalid = adapterChainCliResult(
+      path.join(fixtureRoot, "stale-pin-chain"),
+      { coreRoot: root },
+    );
+    assert.equal(invalid.exitCode, 1);
+    assert.equal(invalid.stream, "stderr");
+    assert.match(invalid.lines.join("\n"), /stale-exact-pin/);
+
+    const written = adapterChainCliResult(path.join(fixtureRoot, "valid-chain"), {
+      coreRoot: root,
+      output: "chain.json",
+      outputBase: temporaryRoot,
+    });
+    assert.equal(written.exitCode, 0);
+    assertSchemaValid(
+      upgradeEvidenceSchema,
+      JSON.parse(fs.readFileSync(path.join(temporaryRoot, "chain.json"), "utf8")),
+      "chain output",
+    );
+
+    const traversal = adapterChainCliResult(
+      path.join(fixtureRoot, "valid-chain"),
+      {
+        coreRoot: root,
+        output: "../chain.json",
+        outputBase: temporaryRoot,
+      },
+    );
+    assert.equal(traversal.exitCode, 2);
+    assert.match(traversal.lines.join("\n"), /unsafe-output-path/);
+
+    const usage = adapterChainCliResult(undefined, { coreRoot: root });
+    assert.equal(usage.exitCode, 2);
+    assert.match(usage.lines.join("\n"), /usage:/i);
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
 });
 
 test("audit-only agent prompts preserve their non-mutation boundary", () => {

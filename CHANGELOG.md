@@ -2,6 +2,25 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.1.6] - 2026-06-14
+
+### Added
+
+- Machine-readable adapter-upgrade evidence schema with sanitized pair and chain examples.
+- Dependency-free compatibility-chain validator for ordered simulated project revisions.
+- Optional safe `--json` and non-overwriting `--output` evidence modes.
+- Disposable chain fixtures for valid progression, stale pins, core and skill
+  incompatibility, schema drift, and restriction weakening.
+- Chain-level privacy, path, symlink, mutation, and unsafe-policy tests.
+
+### Changed
+
+- Pair validation can target an adjacent historical core when used inside a chain while the
+  final chain revision must match the running core.
+- Release validation and CI now validate a complete three-revision compatibility chain.
+- Adapter, evidence, versioning, safety, authoring, testing, and roadmap documentation now
+  define structured read-only upgrade review.
+
 ## [0.1.5] - 2026-06-14
 
 ### Added

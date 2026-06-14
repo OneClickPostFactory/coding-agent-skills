@@ -46,5 +46,5 @@ not copy or redefine shared restrictions locally.
 The [project installation contract](project-installation.md) defines the declaration and
 version pin required before a project-owned adapter can be considered installed.
 
-No real project adapters are added in v0.1.5. The committed roots are disposable synthetic
+No real project adapters are added in v0.1.6. The committed roots are disposable synthetic
 fixtures only.

@@ -1,6 +1,6 @@
 {
   "contractVersion": "1.0.0",
-  "skill": {"name": "runtime-truth", "version": "0.1.5"},
+  "skill": {"name": "runtime-truth", "version": "0.1.6"},
   "invocation": {
     "id": "example-runtime-truth",
     "startedAt": "2026-06-12T13:00:00Z",

@@ -1,0 +1,117 @@
+{
+  "contractVersion": "1.0.0",
+  "validator": {
+    "name": "check-adapter-upgrade",
+    "version": "0.1.6"
+  },
+  "invocation": {
+    "id": "example-stale-pin-001",
+    "timestamp": "2026-06-14T12:01:00Z"
+  },
+  "beforeProject": {
+    "reference": "before",
+    "declarationStatus": "present",
+    "validationStatus": "pass"
+  },
+  "afterProject": {
+    "reference": "after",
+    "declarationStatus": "present",
+    "validationStatus": "pass"
+  },
+  "coreVersions": {
+    "before": "0.1.5",
+    "after": "0.1.5"
+  },
+  "adapterIds": [
+    "fixture-upgrade-adapter"
+  ],
+  "adapterVersions": {
+    "before": [
+      {
+        "adapterId": "fixture-upgrade-adapter",
+        "version": "1.0.0"
+      }
+    ],
+    "after": [
+      {
+        "adapterId": "fixture-upgrade-adapter",
+        "version": "1.0.0"
+      }
+    ]
+  },
+  "adapterSchemaVersions": {
+    "before": "1.0.0",
+    "after": "1.0.0"
+  },
+  "supportedSkillIds": {
+    "before": [
+      "repo-map"
+    ],
+    "after": [
+      "repo-map"
+    ]
+  },
+  "skillCompatibility": {
+    "before": [
+      {
+        "adapterId": "fixture-upgrade-adapter",
+        "skillId": "repo-map",
+        "versions": [
+          "0.1.5"
+        ],
+        "mode": "audit-only"
+      }
+    ],
+    "after": [
+      {
+        "adapterId": "fixture-upgrade-adapter",
+        "skillId": "repo-map",
+        "versions": [
+          "0.1.5"
+        ],
+        "mode": "audit-only"
+      }
+    ]
+  },
+  "pinStatus": {
+    "before": "0.1.5",
+    "after": "0.1.5",
+    "result": "stale",
+    "staleClassification": "stale-exact-pin"
+  },
+  "compatibilityResult": {
+    "result": "fail",
+    "codes": [
+      "stale-exact-pin"
+    ]
+  },
+  "restrictionInheritanceResult": {
+    "result": "pass",
+    "codes": []
+  },
+  "approvalRequirements": [],
+  "detectedRisks": [
+    {
+      "code": "stale-exact-pin",
+      "summary": "The exact core pin is stale."
+    }
+  ],
+  "blockingFailures": [
+    {
+      "code": "stale-exact-pin",
+      "summary": "The exact core pin is stale."
+    }
+  ],
+  "warnings": [],
+  "safeSummary": "The read-only compatibility check rejected 1 condition(s).",
+  "finalStatus": "fail",
+  "confidence": {
+    "level": "high",
+    "reason": "Both sanitized revision summaries and compatibility results were available."
+  },
+  "changedState": {
+    "changed": false,
+    "summary": "No project, adapter, Git, runtime, service, database, or remote state was changed."
+  },
+  "recommendedNextAction": "Resolve every blocking failure and rerun the read-only validation."
+}

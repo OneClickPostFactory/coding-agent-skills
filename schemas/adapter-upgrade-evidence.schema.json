@@ -1,0 +1,443 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://coding-agent-skills.local/schemas/adapter-upgrade-evidence.schema.json",
+  "title": "Adapter Upgrade Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "validator",
+    "invocation",
+    "beforeProject",
+    "afterProject",
+    "coreVersions",
+    "adapterIds",
+    "adapterVersions",
+    "adapterSchemaVersions",
+    "supportedSkillIds",
+    "skillCompatibility",
+    "pinStatus",
+    "compatibilityResult",
+    "restrictionInheritanceResult",
+    "approvalRequirements",
+    "detectedRisks",
+    "blockingFailures",
+    "warnings",
+    "safeSummary",
+    "finalStatus",
+    "confidence",
+    "changedState",
+    "recommendedNextAction"
+  ],
+  "properties": {
+    "contractVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "validator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": ["check-adapter-upgrade", "check-adapter-upgrade-chain"]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)$"
+        }
+      }
+    },
+    "invocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "timestamp"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "beforeProject": {
+      "$ref": "#/$defs/projectSummary"
+    },
+    "afterProject": {
+      "$ref": "#/$defs/projectSummary"
+    },
+    "chainId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "chainStepIndex": {
+      "type": "integer"
+    },
+    "chainSummary": {
+      "$ref": "#/$defs/chainSummary"
+    },
+    "coreVersions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["before", "after"],
+      "properties": {
+        "before": {
+          "type": ["string", "null"],
+          "pattern": "^(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)$"
+        },
+        "after": {
+          "type": ["string", "null"],
+          "pattern": "^(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)$"
+        }
+      }
+    },
+    "adapterIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      }
+    },
+    "adapterVersions": {
+      "$ref": "#/$defs/versionSides"
+    },
+    "adapterSchemaVersions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["before", "after"],
+      "properties": {
+        "before": {
+          "type": ["string", "null"]
+        },
+        "after": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "supportedSkillIds": {
+      "$ref": "#/$defs/stringSides"
+    },
+    "skillCompatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["before", "after"],
+      "properties": {
+        "before": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/skillCompatibility"
+          }
+        },
+        "after": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/skillCompatibility"
+          }
+        }
+      }
+    },
+    "pinStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["before", "after", "result", "staleClassification"],
+      "properties": {
+        "before": {
+          "type": ["string", "null"]
+        },
+        "after": {
+          "type": ["string", "null"]
+        },
+        "result": {
+          "type": "string",
+          "enum": ["accepted", "stale", "invalid", "unknown"]
+        },
+        "staleClassification": {
+          "type": "string",
+          "enum": [
+            "none",
+            "stale-exact-pin",
+            "stale-compatible-range",
+            "chain-target-stale"
+          ]
+        }
+      }
+    },
+    "compatibilityResult": {
+      "$ref": "#/$defs/result"
+    },
+    "restrictionInheritanceResult": {
+      "$ref": "#/$defs/result"
+    },
+    "approvalRequirements": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "read-outside-declared-scope",
+          "read-named-excluded-file",
+          "authenticated-health-check"
+        ]
+      }
+    },
+    "detectedRisks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/note"
+      }
+    },
+    "blockingFailures": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/note"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/note"
+      }
+    },
+    "safeSummary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "finalStatus": {
+      "type": "string",
+      "enum": ["pass", "warn", "fail", "blocked"]
+    },
+    "confidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "reason"],
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["high", "medium", "low"]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "changedState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["changed", "summary"],
+      "properties": {
+        "changed": {
+          "type": "boolean",
+          "const": false
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "recommendedNextAction": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "projectSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference", "declarationStatus", "validationStatus"],
+      "properties": {
+        "reference": {
+          "type": "string",
+          "enum": ["before", "after"]
+        },
+        "declarationStatus": {
+          "type": "string",
+          "enum": ["present", "unavailable"]
+        },
+        "validationStatus": {
+          "type": "string",
+          "enum": ["pass", "fail"]
+        }
+      }
+    },
+    "versionRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adapterId", "version"],
+      "properties": {
+        "adapterId": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)$"
+        }
+      }
+    },
+    "versionSides": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["before", "after"],
+      "properties": {
+        "before": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/versionRecord"
+          }
+        },
+        "after": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/versionRecord"
+          }
+        }
+      }
+    },
+    "stringSides": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["before", "after"],
+      "properties": {
+        "before": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "after": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "skillCompatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adapterId", "skillId", "versions", "mode"],
+      "properties": {
+        "adapterId": {
+          "type": "string"
+        },
+        "skillId": {
+          "type": "string"
+        },
+        "versions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["audit-only", "action-capable"]
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["result", "codes"],
+      "properties": {
+        "result": {
+          "type": "string",
+          "enum": ["pass", "warn", "fail", "blocked"]
+        },
+        "codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          }
+        }
+      }
+    },
+    "note": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "summary"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "chainStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stepIndex", "beforeRevision", "afterRevision", "status", "codes"],
+      "properties": {
+        "stepIndex": {
+          "type": "integer"
+        },
+        "beforeRevision": {
+          "type": "string",
+          "pattern": "^revision-[0-9]+$"
+        },
+        "afterRevision": {
+          "type": "string",
+          "pattern": "^revision-[0-9]+$"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pass", "warn", "fail", "blocked"]
+        },
+        "codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "chainSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revisionCount",
+        "transitionCount",
+        "passedTransitions",
+        "failedTransitions",
+        "steps"
+      ],
+      "properties": {
+        "revisionCount": {
+          "type": "integer"
+        },
+        "transitionCount": {
+          "type": "integer"
+        },
+        "passedTransitions": {
+          "type": "integer"
+        },
+        "failedTransitions": {
+          "type": "integer"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/chainStep"
+          }
+        }
+      }
+    }
+  }
+}

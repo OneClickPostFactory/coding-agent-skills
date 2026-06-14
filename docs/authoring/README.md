@@ -37,3 +37,9 @@ run `node scripts/check-adapter-upgrade.mjs <before-project-root> <after-project
 Update the expected core, pin, and skill compatibility together. Preserve adapter identity,
 all denied categories, and every existing evidence requirement. A passing advisory check
 does not approve modification of a real project.
+
+For multiple revisions, use contiguous ordinal directories and run
+`node scripts/check-adapter-upgrade-chain.mjs <chain-root>`. Produce sanitized evidence with
+`--json` or an explicitly requested relative `--output` file. Validate evidence against
+`schemas/adapter-upgrade-evidence.schema.json`, keep `changedState.changed` false, and never
+store raw project paths, project IDs, `.env` values, credentials, or applied changes.

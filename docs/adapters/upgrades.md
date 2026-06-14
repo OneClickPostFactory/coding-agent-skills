@@ -17,8 +17,29 @@ Both roots must use the project installation convention in
 [project-installation.md](project-installation.md). The before revision declares its current
 core compatibility. The after revision declares the proposed target compatibility.
 
-For the `0.1.5` harness, `0.1.4` is the supported upgrade source and `0.1.5` is the target.
+For a direct `0.1.6` check, `0.1.5` is the supported upgrade source and `0.1.6` is the target.
 Older sources and future targets fail closed.
+
+## Compatibility Chains
+
+An ordered chain uses contiguous directory names such as:
+
+```text
+01-current/
+02-upgrade/
+03-upgrade/
+```
+
+Run:
+
+```bash
+node scripts/check-adapter-upgrade-chain.mjs <chain-root>
+```
+
+Every revision validates against its declared core. Every adjacent transition reuses the
+pair validator with that transition's target version. Patch versions must advance by one,
+and the final revision must target the running `0.1.6` core. Repeated versions are stale;
+gaps, reversals, old sources, and future targets fail.
 
 ## Stale Pins
 
@@ -47,12 +68,16 @@ scope expansion, traversal, and symlink escape reject the upgrade.
 
 ## Evidence And Exit Codes
 
-Exit `0` means both revisions validated and the comparison preserved the shared boundary.
-Exit `1` means the upgrade was rejected. Exit `2` means one or both root arguments are
-missing. Summaries contain counts and rejection codes only; manifest values are not echoed.
+Exit `0` means the pair or chain validated and preserved the shared boundary. Exit `1`
+means validation was rejected. Exit `2` means usage, output safety, or an internal boundary
+failed. Summaries contain counts and rejection codes only; manifest values are not echoed.
+
+Use `--json` for sanitized machine-readable evidence or `--output <relative-file.json>` to
+write a new evidence artifact. See [upgrade evidence](upgrade-evidence.md) for the
+non-overwriting output policy.
 
 A passing result is evidence that the disposable comparison passed. Applying the same
 upgrade to a real project still requires explicit approval and fresh project evidence.
 
-All committed revisions in this milestone are synthetic fixtures. No real project adapter
+All committed revisions and chains in this milestone are synthetic fixtures. No real project adapter
 or project repository is read or modified.

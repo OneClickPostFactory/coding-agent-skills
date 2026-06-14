@@ -13,6 +13,8 @@ import {
   parseVersionPin,
   satisfiesVersionPin,
 } from "./semver.mjs";
+import { writeSafeEvidenceJson } from "./safe-evidence-output.mjs";
+import { buildAdapterUpgradeEvidence } from "./upgrade-evidence.mjs";
 
 const DEFAULT_CORE_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -131,8 +133,8 @@ function addValidationCodes(codes, state, revision) {
   }
 }
 
-function addCoreVersionCodes(codes, before, after) {
-  const previous = previousPatch(PILOT_VERSION);
+function addCoreVersionCodes(codes, before, after, targetVersion) {
+  const previous = previousPatch(targetVersion);
   const beforeVersion = before.loaded.declaration?.core?.expectedVersion;
   const afterVersion = after.loaded.declaration?.core?.expectedVersion;
   const beforePin = before.loaded.declaration?.core?.versionPin;
@@ -147,19 +149,19 @@ function addCoreVersionCodes(codes, before, after) {
   }
 
   if (parseSemver(beforeVersion)) {
-    if (compareSemver(beforeVersion, PILOT_VERSION) > 0) {
+    if (compareSemver(beforeVersion, targetVersion) > 0) {
       codes.add("unsupported-future-core");
     } else if (previous && compareSemver(beforeVersion, previous) < 0) {
       codes.add("unsupported-old-core");
     }
   }
 
-  const afterComparison = compareSemver(afterVersion, PILOT_VERSION);
+  const afterComparison = compareSemver(afterVersion, targetVersion);
   if (afterComparison > 0) {
     codes.add("unsupported-future-core");
   } else if (
     afterComparison < 0 ||
-    !satisfiesVersionPin(PILOT_VERSION, afterPin)
+    !satisfiesVersionPin(targetVersion, afterPin)
   ) {
     codes.add(
       pinKind(afterPin) === "exact"
@@ -186,7 +188,13 @@ function missingValues(before, after) {
   return before.filter((value) => !afterSet.has(value));
 }
 
-function addAdapterComparisonCodes(codes, before, after, requireCurrentCompatibility) {
+function addAdapterComparisonCodes(
+  codes,
+  before,
+  after,
+  targetVersion,
+  requireTargetCompatibility,
+) {
   const beforeAdapters = byAdapterId(before.discovery);
   const afterAdapters = byAdapterId(after.discovery);
 
@@ -242,17 +250,48 @@ function addAdapterComparisonCodes(codes, before, after, requireCurrentCompatibi
         codes.add("mode-escalation");
       }
       if (
-        requireCurrentCompatibility &&
+        requireTargetCompatibility &&
         !afterSkill.compatibleVersions.some(
           (version) =>
-            version === PILOT_VERSION ||
-            version === `${PILOT_VERSION.split(".").slice(0, 2).join(".")}.x`,
+            version === targetVersion ||
+            version === `${targetVersion.split(".").slice(0, 2).join(".")}.x`,
         )
       ) {
         codes.add("skill-compatibility-drift");
       }
     }
   }
+}
+
+function safeRevisionContext(state, label) {
+  const declaration = state.loaded.declaration;
+  const discoveredById = byAdapterId(state.discovery);
+  const declaredAdapters = Array.isArray(declaration?.adapters)
+    ? declaration.adapters
+    : [];
+
+  return {
+    rootSummary: {
+      reference: label,
+      declarationStatus: state.loaded.ok ? "present" : "unavailable",
+      validationStatus: state.ok ? "pass" : "fail",
+    },
+    coreVersion: declaration?.core?.expectedVersion ?? null,
+    versionPin: declaration?.core?.versionPin ?? null,
+    adapterSchemaVersion: declaration?.adapterSchemaVersion ?? null,
+    adapters: declaredAdapters
+      .map((adapter) => {
+        const discovered = discoveredById.get(adapter.id);
+        return {
+          id: adapter.id,
+          version: adapter.version,
+          skillIds: [...(adapter.skillIds ?? [])].sort(),
+          skillCompatibility: discovered?.skillCompatibility ?? [],
+          approvalRequirements: discovered?.approvalRequirements ?? [],
+        };
+      })
+      .sort((left, right) => left.id.localeCompare(right.id)),
+  };
 }
 
 export function checkAdapterUpgrade(beforeProjectRoot, afterProjectRoot, options = {}) {
@@ -267,6 +306,16 @@ export function checkAdapterUpgrade(beforeProjectRoot, afterProjectRoot, options
   }
 
   const coreRoot = path.resolve(options.coreRoot ?? DEFAULT_CORE_ROOT);
+  const targetVersion = options.targetCoreVersion ?? PILOT_VERSION;
+  if (!parseSemver(targetVersion)) {
+    return {
+      ok: false,
+      status: "failed",
+      comparedAdapters: 0,
+      comparedSkills: 0,
+      codes: ["invalid-target-core-version"],
+    };
+  }
   const before = revisionState(beforeProjectRoot, coreRoot);
   const after = revisionState(afterProjectRoot, coreRoot);
   const codes = new Set();
@@ -277,12 +326,13 @@ export function checkAdapterUpgrade(beforeProjectRoot, afterProjectRoot, options
     if (before.loaded.declaration.projectId !== after.loaded.declaration.projectId) {
       codes.add("project-id-drift");
     }
-    addCoreVersionCodes(codes, before, after);
+    addCoreVersionCodes(codes, before, after, targetVersion);
     addAdapterComparisonCodes(
       codes,
       before,
       after,
-      after.loaded.declaration.core?.expectedVersion === PILOT_VERSION,
+      targetVersion,
+      after.loaded.declaration.core?.expectedVersion === targetVersion,
     );
   }
 
@@ -305,6 +355,11 @@ export function checkAdapterUpgrade(beforeProjectRoot, afterProjectRoot, options
     comparedAdapters: sharedAdapters.length,
     comparedSkills: sharedSkills.size,
     codes: [...codes].sort(),
+    targetCoreVersion: targetVersion,
+    context: {
+      before: safeRevisionContext(before, "before"),
+      after: safeRevisionContext(after, "after"),
+    },
   };
 }
 
@@ -334,10 +389,38 @@ export function adapterUpgradeCliResult(beforeRoot, afterRoot, options = {}) {
   }
 
   const result = checkAdapterUpgrade(beforeRoot, afterRoot, options);
+  const evidence = buildAdapterUpgradeEvidence(result, options);
+  if (options.output) {
+    const written = writeSafeEvidenceJson(options.output, evidence, {
+      baseDirectory: options.outputBase,
+    });
+    if (!written.ok) {
+      return {
+        exitCode: 2,
+        stream: "stderr",
+        lines: [`adapter upgrade evidence output failed: ${written.code}`],
+        result,
+        evidence,
+      };
+    }
+  }
+  if (options.json) {
+    return {
+      exitCode: result.ok ? 0 : 1,
+      stream: "stdout",
+      lines: [JSON.stringify(evidence, null, 2)],
+      result,
+      evidence,
+    };
+  }
   return {
     exitCode: result.ok ? 0 : 1,
     stream: result.ok ? "stdout" : "stderr",
-    lines: formatAdapterUpgradeSummary(result),
+    lines: [
+      ...formatAdapterUpgradeSummary(result),
+      ...(options.output ? ["sanitized evidence output written"] : []),
+    ],
     result,
+    evidence,
   };
 }

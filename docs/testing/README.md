@@ -7,6 +7,7 @@ The v0.1.x harness is dependency-free and runs through:
 - `node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic`
 - `node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin`
 - `node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after`
+- `node scripts/check-adapter-upgrade-chain.mjs tests/fixtures/project-adapter-upgrade-chains/valid-chain`
 - `node --test`
 
 ## Trigger Classification
@@ -56,6 +57,17 @@ ranges, unsupported old and future cores, adapter schema drift, skill compatibil
 restriction weakening, mode escalation, evidence removal, failure suppression, completion
 override, secret exposure, unknown skills, and traversal. CLI tests confirm stable exit
 codes and summaries that do not echo adapter identifiers or secret-like values.
+
+## Upgrade Evidence And Chains
+
+Upgrade evidence examples validate against a dedicated JSON Schema and always declare
+`changedState.changed: false`. Pair and chain CLIs support sanitized `--json` output and a
+non-overwriting relative `--output` file.
+
+Ordered chain fixtures cover accepted patch progression, stale pins, broken core and skill
+compatibility, schema drift, restriction weakening, evidence removal, failure suppression,
+completion override, mode escalation, `.env` avoidance, traversal, symlinks, and mutation
+snapshots. Chain summaries use ordinal revision labels rather than directory names.
 
 ## False Completion
 

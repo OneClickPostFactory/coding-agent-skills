@@ -364,6 +364,9 @@ export function validateExternalAdapters(adapterRootInput, options = {}) {
         }))
         .sort((left, right) => left.id.localeCompare(right.id)),
       requiredEvidence: [...record.value.extensions.requiredEvidence].sort(),
+      approvalRequirements: record.value.approvalRequirements
+        .map((requirement) => requirement.operation)
+        .sort(),
       deniedOperationCategories: [
         ...record.value.inheritance.deniedOperationCategories,
       ].sort(),

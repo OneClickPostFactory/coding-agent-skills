@@ -43,6 +43,11 @@ pins or manifests, and reject stale targets, unsupported cores, schema or skill 
 restriction weakening, audit-mode escalation, evidence removal, failure suppression,
 completion override, secret exposure, scope expansion, traversal, and symlink escape.
 
+Compatibility-chain checks apply the same boundary to every adjacent revision and require a
+current final target. They never apply upgrades. Optional evidence output is permitted only
+when explicitly requested, uses a new relative `.json` file beneath a non-symlink output
+base, and never overwrites existing content. Evidence omits raw project paths and project IDs.
+
 ## Command Policy Limits
 
 Command policies declare executable families, argument strategy, parser invariants, composition rules, and denied categories. Property-style tests exercise obvious bypass combinations, but the parser is not a complete shell implementation. Unsupported syntax fails closed.
