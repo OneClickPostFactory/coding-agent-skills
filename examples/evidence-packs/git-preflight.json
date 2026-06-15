@@ -1,6 +1,6 @@
 {
   "contractVersion": "1.0.0",
-  "skill": {"name": "git-preflight", "version": "0.1.6"},
+  "skill": {"name": "git-preflight", "version": "0.2.0"},
   "invocation": {
     "id": "example-git-preflight",
     "startedAt": "2026-06-12T12:00:00Z",

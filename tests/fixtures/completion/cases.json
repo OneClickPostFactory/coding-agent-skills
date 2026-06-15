@@ -4,7 +4,7 @@
     "contractVersion": "1.0.0",
     "skill": {
       "name": "repo-map",
-      "version": "0.1.6"
+      "version": "0.2.0"
     },
     "invocation": {
       "id": "fixture-completion-case",

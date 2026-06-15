@@ -39,10 +39,14 @@ const requiredSkillHeadings = [
 ];
 const requiredRootFiles = [
   ".gitignore",
+  "AGENTS.md",
   "README.md",
+  "RUNBOOK.md",
   "CHANGELOG.md",
   "ROADMAP.md",
   "CONTRIBUTING.md",
+  "work-ledger.md",
+  "runs/skill-runs.md",
   ".github/workflows/validate.yml",
   "docs/architecture/README.md",
   "docs/authoring/README.md",
@@ -76,6 +80,8 @@ const requiredRootFiles = [
   "examples/upgrade-evidence/valid-upgrade.evidence.md",
   "examples/upgrade-evidence/chain-fail.evidence.md",
   "scripts/test-pack.mjs",
+  "scripts/run-next",
+  "scripts/validate-maintainer-loop.mjs",
   "scripts/check-adapter-upgrade.mjs",
   "scripts/check-adapter-upgrade-chain.mjs",
   "scripts/validate-adapters.mjs",
@@ -595,7 +601,7 @@ for (const [file, patterns] of [
   ],
   [
     "docs/versioning/README.md",
-    [/exact pin/i, /compatible range/i, />=0\.1\.3 <0\.2\.0/],
+    [/exact pin/i, /compatible range/i, />=0\.2\.0 <0\.3\.0/],
   ],
   [
     "docs/testing/README.md",
@@ -719,6 +725,7 @@ for (const expected of [
   "permissions:\n  contents: read",
   "node scripts/validate-pack.mjs .",
   "node scripts/test-pack.mjs",
+  "node scripts/validate-maintainer-loop.mjs .",
   "node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic",
   "node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin",
   "node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after",

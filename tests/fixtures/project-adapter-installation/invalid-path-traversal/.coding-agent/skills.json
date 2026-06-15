@@ -5,8 +5,8 @@
   "adapterSchemaVersion": "1.0.0",
   "core": {
     "id": "coding-agent-skills",
-    "expectedVersion": "0.1.6",
-    "versionPin": "0.1.6"
+    "expectedVersion": "0.2.0",
+    "versionPin": "0.2.0"
   },
   "compatibleSkillIds": ["repo-map"],
   "adapters": [

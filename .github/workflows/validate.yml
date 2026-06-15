@@ -25,6 +25,9 @@ jobs:
       - name: Run adapter and command-policy harness
         run: node scripts/test-pack.mjs
 
+      - name: Validate autonomous maintainer loop
+        run: node scripts/validate-maintainer-loop.mjs .
+
       - name: Validate disposable external adapter
         run: node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic
 

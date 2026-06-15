@@ -11,10 +11,16 @@ The pilot release remains limited to five approved skills. Future work requires 
 - `v0.1.4`: project-owned installation declarations, version pins, and disposable adoption fixtures.
 - `v0.1.5`: paired adapter upgrade checks, stale-pin detection, and compatibility-drift rejection.
 - `v0.1.6`: structured upgrade evidence and multi-step compatibility-chain validation.
+- `v0.2.0`: fail-closed local maintainer loop with an explicit work ledger, run evidence,
+  permission gates, and approval stop boundaries.
 
-The next milestone should exercise evidence-bundle verification, deterministic replay, and
-cross-release regression reporting without applying changes. Real project adapters and new
-skills remain separately gated.
+The next milestone is recorded in [work-ledger.md](work-ledger.md). The
+[maintainer loop](RUNBOOK.md) may select and evidence that milestone, but it must stop
+before implementation until the relevant human approval is granted.
+
+The queued milestone is evidence-bundle verification, deterministic replay, and
+cross-release regression reporting without applying changes. It is not implemented in
+`v0.2.0`. Real project adapters and new skills remain separately gated.
 
 | Candidate | Scope | Mode | Current gate |
 |---|---|---|---|

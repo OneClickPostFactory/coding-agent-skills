@@ -52,3 +52,21 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 
 Governance lives in [CONTRIBUTING.md](CONTRIBUTING.md), [ROADMAP.md](ROADMAP.md), and the [release policy](docs/release/README.md).
 The [harness guide](docs/testing/README.md) explains trigger, command, mutation, privacy, adapter, and completion checks.
+
+## Autonomous Maintainer Loop
+
+The local maintainer loop reads Git tags, `ROADMAP.md`, `CHANGELOG.md`, and
+`work-ledger.md`, validates the pack, then selects the next bounded milestone. It fails
+closed unless the required action is named explicitly:
+
+```bash
+./scripts/run-next --allow evidence-harness
+```
+
+Supported permissions are `harness-hardening`, `docs-hardening`, `test-hardening`,
+`adapter-harness`, `evidence-harness`, `release-preflight`, `commit`, `tag`, and `push`.
+These flags are approval gates, not permission to weaken shared restrictions.
+
+The runner may update `work-ledger.md` and `runs/skill-runs.md` after a successful bounded
+run. It stops before implementing an unapproved milestone or performing release
+publication. See [the runbook](RUNBOOK.md) and [agent contract](AGENTS.md).

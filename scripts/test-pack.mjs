@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
@@ -64,9 +65,15 @@ const requiredSkillHeadings = [
 ];
 const requiredReleaseFiles = [
   ".github/workflows/validate.yml",
+  "AGENTS.md",
   "CHANGELOG.md",
   "CONTRIBUTING.md",
+  "RUNBOOK.md",
   "ROADMAP.md",
+  "work-ledger.md",
+  "runs/skill-runs.md",
+  "scripts/run-next",
+  "scripts/validate-maintainer-loop.mjs",
   "docs/versioning/README.md",
   "docs/privacy/README.md",
   "docs/adapters/README.md",
@@ -179,12 +186,48 @@ test("release governance and safe CI files are present", () => {
   assert.deepEqual(runCommands, [
     "node scripts/validate-pack.mjs .",
     "node scripts/test-pack.mjs",
+    "node scripts/validate-maintainer-loop.mjs .",
     "node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic",
     "node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin",
     "node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after",
     "node scripts/check-adapter-upgrade-chain.mjs tests/fixtures/project-adapter-upgrade-chains/valid-chain",
     "node --test",
   ]);
+});
+
+test("the maintainer loop is present, executable, and fails closed", () => {
+  const runnerPath = path.join(root, "scripts/run-next");
+  const runner = read("scripts/run-next");
+  assert.notEqual(fs.statSync(runnerPath).mode & 0o111, 0);
+  assert.ok(runner.includes("failClosed"));
+  assert.ok(runner.includes("blockedMilestoneReason"));
+  assert.ok(runner.includes("work-ledger.md"));
+  assert.ok(runner.includes("runs/skill-runs.md"));
+  assert.ok(!runner.includes(".env"));
+
+  for (const permission of [
+    "harness-hardening",
+    "docs-hardening",
+    "test-hardening",
+    "adapter-harness",
+    "evidence-harness",
+    "release-preflight",
+    "commit",
+    "tag",
+    "push",
+  ]) {
+    assert.ok(runner.includes(permission), permission);
+  }
+
+  for (const args of [[], ["--allow", "unknown-permission"]]) {
+    const result = spawnSync(runnerPath, args, {
+      cwd: root,
+      encoding: "utf8",
+      stdio: "pipe",
+    });
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /run-next refused:/);
+  }
 });
 
 test("every skill has the required files and sections", () => {
@@ -1304,8 +1347,8 @@ test("adapter upgrade chains accept safe revisions and reject named fixture drif
     coreRoot: root,
   });
   assert.equal(valid.ok, true, valid.codes.join(","));
-  assert.equal(valid.revisionCount, 3);
-  assert.equal(valid.transitionCount, 2);
+  assert.equal(valid.revisionCount, 4);
+  assert.equal(valid.transitionCount, 3);
 
   for (const [fixture, code] of [
     ["stale-pin-chain", "stale-exact-pin"],
@@ -1550,7 +1593,7 @@ test("adapter chain discovery rejects symlink escapes and non-contiguous order",
 
     const gap = path.join(temporaryRoot, "gap");
     fs.cpSync(source, gap, { recursive: true });
-    fs.renameSync(path.join(gap, "03-upgrade"), path.join(gap, "04-upgrade"));
+    fs.renameSync(path.join(gap, "04-upgrade"), path.join(gap, "05-upgrade"));
     assert.ok(
       checkAdapterUpgradeChain(gap, { coreRoot: root }).codes.includes(
         "non-contiguous-chain-order",
@@ -1576,7 +1619,7 @@ test("adapter chain CLI uses stable exits, safe JSON, and bounded output", () =>
     });
     assert.equal(valid.exitCode, 0);
     assert.equal(valid.stream, "stdout");
-    assert.match(valid.lines.join("\n"), /2 transitions accepted/);
+    assert.match(valid.lines.join("\n"), /3 transitions accepted/);
 
     const invalid = adapterChainCliResult(
       path.join(fixtureRoot, "stale-pin-chain"),

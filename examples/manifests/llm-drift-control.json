@@ -1,6 +1,6 @@
 {
   "name": "llm-drift-control",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "mode": "audit-only",
   "evidenceContract": "../../contracts/evidence-pack/evidence-pack.schema.json",
   "commandPolicy": "../command-policies/llm-drift-control.json",

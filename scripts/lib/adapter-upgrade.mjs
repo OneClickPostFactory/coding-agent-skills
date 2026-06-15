@@ -2,7 +2,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { validateExternalAdapters } from "./adapter-discovery.mjs";
-import { PILOT_SKILLS, PILOT_VERSION } from "./pack-rules.mjs";
+import {
+  PILOT_SKILLS,
+  PILOT_VERSION,
+  PREVIOUS_PILOT_VERSION,
+} from "./pack-rules.mjs";
 import {
   readProjectAdapterDeclaration,
   validateProjectAdapters,
@@ -26,6 +30,10 @@ function previousPatch(version) {
   const parsed = parseSemver(version);
   if (!parsed || parsed[2] === 0) return null;
   return `${parsed[0]}.${parsed[1]}.${parsed[2] - 1}`;
+}
+
+function previousSupportedVersion(version) {
+  return version === PILOT_VERSION ? PREVIOUS_PILOT_VERSION : previousPatch(version);
 }
 
 function pinKind(pin) {
@@ -134,7 +142,7 @@ function addValidationCodes(codes, state, revision) {
 }
 
 function addCoreVersionCodes(codes, before, after, targetVersion) {
-  const previous = previousPatch(targetVersion);
+  const previous = previousSupportedVersion(targetVersion);
   const beforeVersion = before.loaded.declaration?.core?.expectedVersion;
   const afterVersion = after.loaded.declaration?.core?.expectedVersion;
   const beforePin = before.loaded.declaration?.core?.versionPin;

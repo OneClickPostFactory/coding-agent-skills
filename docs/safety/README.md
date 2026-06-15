@@ -48,6 +48,23 @@ current final target. They never apply upgrades. Optional evidence output is per
 when explicitly requested, uses a new relative `.json` file beneath a non-symlink output
 base, and never overwrites existing content. Evidence omits raw project paths and project IDs.
 
+## Maintainer Loop
+
+The local maintainer loop is a bounded repository coordinator. It may read repository Git
+state, tags, the roadmap, changelog, and work ledger; run local validators; select the next
+declared milestone; and append evidence to the repository-owned ledger files.
+
+Permission flags are explicit gates. They do not authorize new skills, real project
+adapters, external project changes, infrastructure work, credential access, policy
+weakening, or destructive Git operations.
+
+### Stop Boundaries
+
+The runner stops when the worktree is dirty, validation fails, no permission matches the
+next action, scope is blocked by the ledger, or human approval is required. It does not read
+local environment files, publish releases, apply database changes, mutate services, or
+perform deployment work.
+
 ## Command Policy Limits
 
 Command policies declare executable families, argument strategy, parser invariants, composition rules, and denied categories. Property-style tests exercise obvious bypass combinations, but the parser is not a complete shell implementation. Unsupported syntax fails closed.

@@ -17,7 +17,7 @@ Both roots must use the project installation convention in
 [project-installation.md](project-installation.md). The before revision declares its current
 core compatibility. The after revision declares the proposed target compatibility.
 
-For a direct `0.1.6` check, `0.1.5` is the supported upgrade source and `0.1.6` is the target.
+For a direct `0.2.0` check, `0.1.6` is the supported upgrade source and `0.2.0` is the target.
 Older sources and future targets fail closed.
 
 ## Compatibility Chains
@@ -38,7 +38,7 @@ node scripts/check-adapter-upgrade-chain.mjs <chain-root>
 
 Every revision validates against its declared core. Every adjacent transition reuses the
 pair validator with that transition's target version. Patch versions must advance by one,
-and the final revision must target the running `0.1.6` core. Repeated versions are stale;
+and the final revision must target the running `0.2.0` core. Repeated versions are stale;
 gaps, reversals, old sources, and future targets fail.
 
 ## Stale Pins

@@ -1,0 +1,220 @@
+#!/usr/bin/env node
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+
+const SUPPORTED_FLAGS = [
+  "harness-hardening",
+  "docs-hardening",
+  "test-hardening",
+  "adapter-harness",
+  "evidence-harness",
+  "release-preflight",
+  "commit",
+  "tag",
+  "push",
+];
+const BLOCKED_MILESTONE_PATTERNS = [
+  [/\b(?:add|create|implement)\b.*\bnew skills?\b/i, "new skills"],
+  [/\breal project adapters?\b/i, "real project adapters"],
+  [/\bmodify\b.*\breal project repositor/i, "real project repositories"],
+  [/\bdeploy(?:ment|s)?\b/i, "deployment"],
+  [/\bmigrations?\b/i, "migration"],
+  [/\b(?:service|process) mutation\b/i, "service or process mutation"],
+  [/\b(?:read|print|expose)\b.*\b(?:secret|credential|token)s?\b/i, "secret access"],
+  [/\bweaken\b.*\b(?:safety|restriction|policy|evidence)\b/i, "safety weakening"],
+];
+
+function failClosed(message) {
+  console.error(`run-next refused: ${message}`);
+  process.exit(1);
+}
+
+function usage() {
+  return [
+    "usage: ./scripts/run-next --allow <permission>",
+    `supported permissions: ${SUPPORTED_FLAGS.join(", ")}`,
+  ].join("\n");
+}
+
+function parseArgs(argv) {
+  const allowed = new Set();
+  for (let index = 0; index < argv.length; index += 1) {
+    const value = argv[index];
+    if (value === "--help" || value === "-h") {
+      console.log(usage());
+      process.exit(0);
+    }
+    if (value !== "--allow") failClosed(`unknown argument ${value}`);
+    const permission = argv[index + 1];
+    if (!permission) failClosed("missing permission after --allow");
+    if (!SUPPORTED_FLAGS.includes(permission)) {
+      failClosed(`unknown permission ${permission}`);
+    }
+    allowed.add(permission);
+    index += 1;
+  }
+  if (allowed.size === 0) failClosed("at least one --allow flag is required");
+  return allowed;
+}
+
+function run(command, args, options = {}) {
+  const result = spawnSync(command, args, {
+    cwd: options.cwd,
+    encoding: "utf8",
+    stdio: options.capture ? "pipe" : "inherit",
+  });
+  if (result.error) failClosed(`${command} could not start`);
+  if (result.status !== 0) {
+    if (options.capture && result.stderr) process.stderr.write(result.stderr);
+    failClosed(`${command} ${args.join(" ")} failed`);
+  }
+  return options.capture ? result.stdout.trim() : "";
+}
+
+function readRequired(root, relativePath) {
+  const file = path.join(root, relativePath);
+  if (!fs.existsSync(file)) failClosed(`missing ${relativePath}`);
+  return fs.readFileSync(file, "utf8");
+}
+
+function latestTag(tags) {
+  const versions = tags
+    .split(/\r?\n/)
+    .map((tagName) => /^v(\d+)\.(\d+)\.(\d+)$/.exec(tagName))
+    .filter(Boolean)
+    .map((match) => ({
+      tag: match[0],
+      parts: match.slice(1).map(Number),
+    }))
+    .sort((left, right) => {
+      for (let index = 0; index < 3; index += 1) {
+        if (left.parts[index] !== right.parts[index]) {
+          return left.parts[index] - right.parts[index];
+        }
+      }
+      return 0;
+    });
+  return versions.at(-1)?.tag ?? "unknown";
+}
+
+function recommendedMilestone(ledger) {
+  const match = /^## Current Recommended Milestone\s+([\s\S]*?)(?:\n## |\s*$)/m.exec(
+    ledger,
+  );
+  const value = match?.[1]?.trim();
+  if (!value) failClosed("work-ledger.md does not declare a recommended milestone");
+  return value.replace(/\s+/g, " ");
+}
+
+function requiredPermissionFor(milestone) {
+  if (/evidence|replay|regression/i.test(milestone)) return "evidence-harness";
+  if (/adapter/i.test(milestone)) return "adapter-harness";
+  if (/test/i.test(milestone)) return "test-hardening";
+  if (/doc/i.test(milestone)) return "docs-hardening";
+  return "harness-hardening";
+}
+
+function blockedMilestoneReason(milestone) {
+  for (const [pattern, reason] of BLOCKED_MILESTONE_PATTERNS) {
+    if (pattern.test(milestone)) return reason;
+  }
+  return null;
+}
+
+function appendRunEvidence(root, entry) {
+  const runLog = path.join(root, "runs", "skill-runs.md");
+  const ledger = path.join(root, "work-ledger.md");
+  fs.appendFileSync(runLog, entry.runLog);
+  fs.appendFileSync(ledger, entry.ledger);
+}
+
+const allowed = parseArgs(process.argv.slice(2));
+const initialRoot = run("git", ["rev-parse", "--show-toplevel"], {
+  cwd: process.cwd(),
+  capture: true,
+});
+const root = path.resolve(initialRoot);
+process.chdir(root);
+
+const status = run("git", ["status", "--short", "--branch"], {
+  cwd: root,
+  capture: true,
+});
+const dirty = status
+  .split(/\r?\n/)
+  .slice(1)
+  .some((line) => line.trim());
+if (dirty) failClosed("working tree must be clean before run-next writes evidence");
+
+const tags = run("git", ["tag", "--list"], { cwd: root, capture: true });
+const latest = latestTag(tags);
+const roadmap = readRequired(root, "ROADMAP.md");
+const changelog = readRequired(root, "CHANGELOG.md");
+const ledger = readRequired(root, "work-ledger.md");
+if (!roadmap.includes("Roadmap")) failClosed("ROADMAP.md could not be recognized");
+if (!changelog.includes("Changelog")) failClosed("CHANGELOG.md could not be recognized");
+
+const milestone = recommendedMilestone(ledger);
+const blockedReason = blockedMilestoneReason(milestone);
+if (blockedReason) {
+  failClosed(`ledger milestone is out of scope: ${blockedReason}`);
+}
+const requiredPermission = requiredPermissionFor(milestone);
+if (!allowed.has(requiredPermission)) {
+  failClosed(`next action requires --allow ${requiredPermission}`);
+}
+
+const validationCommands = [
+  ["node", ["scripts/validate-pack.mjs", "."]],
+  ["node", ["scripts/test-pack.mjs"]],
+  ["node", ["scripts/validate-maintainer-loop.mjs", "."]],
+  ["node", ["--test"]],
+];
+for (const [command, args] of validationCommands) run(command, args, { cwd: root });
+
+const timestamp = new Date().toISOString();
+const runId = `run-${timestamp.replace(/[-:.TZ]/g, "").slice(0, 14)}`;
+const permissions = [...allowed].sort().join(", ");
+const commandUsed = `./scripts/run-next ${[...allowed]
+  .sort()
+  .map((permission) => `--allow ${permission}`)
+  .join(" ")}`;
+const validationList = validationCommands
+  .map(([command, args]) => `  - \`${command} ${args.join(" ")}\``)
+  .join("\n");
+
+appendRunEvidence(root, {
+  runLog: `
+
+## ${runId}
+
+- Run ID: \`${runId}\`
+- Timestamp: \`${timestamp}\`
+- Command used: \`${commandUsed}\`
+- Permissions granted: \`${permissions}\`
+- Files changed: \`runs/skill-runs.md\`, \`work-ledger.md\`
+- Validation commands:
+${validationList}
+- Validation result: pass
+- Commit/tag/push status: not performed by runner
+- Next state: selected \`${milestone}\`; human approval required before implementation
+`,
+  ledger: `
+
+### ${timestamp}
+
+- Latest tag observed: \`${latest}\`
+- Selected milestone: ${milestone}
+- Required permission: \`${requiredPermission}\`
+- Validation result: pass
+- Stop boundary: implementation requires human approval
+`,
+});
+
+console.log("run-next complete");
+console.log(`latest tag: ${latest}`);
+console.log(`selected milestone: ${milestone}`);
+console.log(`required permission: ${requiredPermission}`);
+console.log("validation result: pass");
+console.log("next state: human approval required before implementation");

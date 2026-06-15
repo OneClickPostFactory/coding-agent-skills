@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { checkAdapterUpgrade } from "./adapter-upgrade.mjs";
-import { PILOT_VERSION } from "./pack-rules.mjs";
+import { PILOT_VERSION, PREVIOUS_PILOT_VERSION } from "./pack-rules.mjs";
 import { readProjectAdapterDeclaration } from "./project-adapter-installation.mjs";
 import { writeSafeEvidenceJson } from "./safe-evidence-output.mjs";
 import { compareSemver, parseSemver } from "./semver.mjs";
@@ -117,13 +117,17 @@ function progressionCodes(beforeRoot, afterRoot) {
 
   const parsedBefore = parseSemver(beforeVersion);
   const parsedAfter = parseSemver(afterVersion);
-  const adjacent =
+  const adjacentPatch =
     parsedBefore &&
     parsedAfter &&
     parsedBefore[0] === parsedAfter[0] &&
     parsedBefore[1] === parsedAfter[1] &&
     parsedAfter[2] === parsedBefore[2] + 1;
-  return adjacent ? [] : ["incompatible-core-chain"];
+  const currentReleaseBoundary =
+    beforeVersion === PREVIOUS_PILOT_VERSION && afterVersion === PILOT_VERSION;
+  return adjacentPatch || currentReleaseBoundary
+    ? []
+    : ["incompatible-core-chain"];
 }
 
 export function checkAdapterUpgradeChain(chainRootInput, options = {}) {

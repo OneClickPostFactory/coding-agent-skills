@@ -2,6 +2,22 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.0] - 2026-06-15
+
+### Added
+
+- Root agent contract, maintainer runbook, explicit work ledger, and append-only run log.
+- Dependency-free `scripts/run-next` coordinator with fail-closed permission gates.
+- Dedicated maintainer-loop validator covering required files, ledger shape, executable
+  mode, permission declarations, unsafe-command absence, docs, and CI integration.
+
+### Changed
+
+- CI and the release harness now validate the maintainer loop.
+- README, roadmap, contribution, release, testing, and safety documentation now define
+  autonomous milestone selection and human approval stop boundaries.
+- Evidence-bundle verification remains queued in the ledger and is not implemented.
+
 ## [0.1.6] - 2026-06-14
 
 ### Added

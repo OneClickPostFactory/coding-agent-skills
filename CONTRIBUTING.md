@@ -37,6 +37,18 @@ Run:
 ```bash
 node scripts/validate-pack.mjs .
 node scripts/test-pack.mjs
+node scripts/validate-maintainer-loop.mjs .
+node --test
 ```
 
 Update the changelog and roadmap when behavior or scope changes.
+
+## Maintainer Loop
+
+`./scripts/run-next --allow <permission>` may inspect local repository state, validate the
+pack, select the next ledger milestone, and append bounded run evidence. It must start from
+a clean worktree and fails closed for missing, unknown, or mismatched permissions.
+
+The loop does not replace human approval for scope changes, new skills, real adapters,
+release publication, dependencies, or weakened safety rules. Update `work-ledger.md` when
+the approved next milestone or its stop conditions change.

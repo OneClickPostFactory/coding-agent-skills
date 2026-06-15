@@ -1,9 +1,10 @@
 # Harness
 
-The v0.1.x harness is dependency-free and runs through:
+The harness is dependency-free and runs through:
 
 - `node scripts/validate-pack.mjs .`
 - `node scripts/test-pack.mjs`
+- `node scripts/validate-maintainer-loop.mjs .`
 - `node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic`
 - `node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin`
 - `node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after`
@@ -68,6 +69,17 @@ Ordered chain fixtures cover accepted patch progression, stale pins, broken core
 compatibility, schema drift, restriction weakening, evidence removal, failure suppression,
 completion override, mode escalation, `.env` avoidance, traversal, symlinks, and mutation
 snapshots. Chain summaries use ordinal revision labels rather than directory names.
+
+## Maintainer Loop
+
+The maintainer-loop validator checks the required root files, ledger sections, run-log
+fields, executable runner mode, documented permission flags, unknown-flag rejection,
+restricted-command absence, documentation links, and CI integration.
+
+Release tests also invoke the runner without permissions and with an unknown permission.
+Both cases must fail before repository inspection or mutation. A successful autonomous run
+is intentionally tested after release from a clean worktree because it appends bounded
+ledger and run evidence.
 
 ## False Completion
 
