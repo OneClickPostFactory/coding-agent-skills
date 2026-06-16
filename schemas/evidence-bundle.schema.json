@@ -10,6 +10,9 @@
     "generatedAt",
     "core",
     "replay",
+    "retention",
+    "provenance",
+    "archive",
     "entries",
     "regression",
     "changedState",
@@ -17,7 +20,7 @@
   ],
   "properties": {
     "bundleVersion": {
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "bundleId": {
       "type": "string",
@@ -55,6 +58,146 @@
         },
         "strategy": {
           "const": "canonical-report-hash"
+        }
+      }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policyVersion",
+        "classification",
+        "minimumDays",
+        "retainUntil",
+        "disposition",
+        "redaction",
+        "storage"
+      ],
+      "properties": {
+        "policyVersion": {
+          "const": "1.0.0"
+        },
+        "classification": {
+          "enum": ["synthetic-test-evidence", "maintainer-release-evidence"]
+        },
+        "minimumDays": {
+          "type": "integer"
+        },
+        "retainUntil": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "disposition": {
+          "enum": ["retain-then-review", "retain-until-superseded"]
+        },
+        "redaction": {
+          "const": "secret-values-prohibited"
+        },
+        "storage": {
+          "enum": ["repository-fixture", "local-artifact", "external-archive-deferred"]
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "source", "producer", "sourceCommit", "sourceTag", "signature"],
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "source": {
+          "enum": ["synthetic-fixture", "maintainer-loop"]
+        },
+        "producer": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:[-./][a-z0-9]+)*$"
+        },
+        "sourceCommit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "sourceTag": {
+          "type": "string",
+          "pattern": "^v\\d+\\.\\d+\\.\\d+$"
+        },
+        "signature": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "status",
+            "identityRef",
+            "canonicalization",
+            "digestAlgorithm"
+          ],
+          "properties": {
+            "mode": {
+              "const": "detached-signature-design"
+            },
+            "status": {
+              "enum": ["unsigned-fixture", "verification-deferred", "detached-signature-present"]
+            },
+            "identityRef": {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(?:[-./][a-z0-9]+)*$"
+            },
+            "canonicalization": {
+              "const": "canonical-json-v1"
+            },
+            "digestAlgorithm": {
+              "const": "sha256"
+            },
+            "signaturePath": {
+              "type": "string",
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.env(?:\\.|/|$)).+\\.(?:sig|jsonl)$"
+            },
+            "signatureSha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        }
+      }
+    },
+    "archive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "reportPath",
+        "format",
+        "includeRawEvidence",
+        "includeSecretValues",
+        "writePolicy",
+        "maxReportBytes",
+        "retentionLinked"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "reportPath": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.env(?:\\.|/|$)).+\\.json$"
+        },
+        "format": {
+          "const": "sanitized-json-summary"
+        },
+        "includeRawEvidence": {
+          "type": "boolean"
+        },
+        "includeSecretValues": {
+          "type": "boolean"
+        },
+        "writePolicy": {
+          "const": "no-write-without-approval"
+        },
+        "maxReportBytes": {
+          "type": "integer"
+        },
+        "retentionLinked": {
+          "const": true
         }
       }
     },

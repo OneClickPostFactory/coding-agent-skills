@@ -13,7 +13,7 @@
   "supportedSkills": [
     {
       "id": "future-skill",
-      "compatibleVersions": ["0.2.1"],
+      "compatibleVersions": ["0.2.2"],
       "declaredMode": "audit-only"
     }
   ],

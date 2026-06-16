@@ -2,6 +2,27 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.2] - 2026-06-16
+
+### Added
+
+- Evidence-bundle retention metadata for bounded review windows, storage class, and
+  redaction policy.
+- Provenance metadata for producer, source commit, target tag, canonicalization, digest
+  algorithm, and detached-signature design.
+- Sanitized evidence archive report schema and read-only renderer.
+- Disposable invalid fixtures for retention-window, provenance-tag, and archive-policy
+  rejection.
+
+### Changed
+
+- Evidence-bundle verification now rejects unsafe retention, provenance, and archive
+  declarations before claiming replay or regression success.
+- CI, pack validation, release tests, safety docs, privacy docs, authoring docs, and
+  testing docs now include archive-report rendering.
+- Current synthetic examples and fixtures now target `0.2.2` with `0.2.1` as the previous
+  release boundary.
+
 ## [0.2.1] - 2026-06-16
 
 ### Added

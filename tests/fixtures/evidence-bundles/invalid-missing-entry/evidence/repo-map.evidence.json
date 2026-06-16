@@ -1,6 +1,9 @@
 {
   "contractVersion": "1.0.0",
-  "skill": {"name": "repo-map", "version": "0.2.1"},
+  "skill": {
+    "name": "repo-map",
+    "version": "0.2.2"
+  },
   "invocation": {
     "id": "example-repo-map",
     "startedAt": "2026-06-12T10:00:00Z",
@@ -13,9 +16,14 @@
     "workingTreeState": "clean"
   },
   "userIntent": "Map the repository before planning an API change.",
-  "declaredScope": ["/workspace/example-project"],
+  "declaredScope": [
+    "/workspace/example-project"
+  ],
   "projectAdapter": null,
-  "environmentSummary": {"platform": "linux", "shell": "bash"},
+  "environmentSummary": {
+    "platform": "linux",
+    "shell": "bash"
+  },
   "status": "complete",
   "confidence": {
     "level": "high",
@@ -40,7 +48,12 @@
   "findings": [
     {
       "summary": "The project has separate application, test, and documentation areas.",
-      "evidence": ["package.json", "src/", "test/", "docs/"]
+      "evidence": [
+        "package.json",
+        "src/",
+        "test/",
+        "docs/"
+      ]
     }
   ],
   "risks": [],

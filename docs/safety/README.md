@@ -53,6 +53,11 @@ directory, avoid local environment-file paths, avoid symlink escapes, match decl
 validate against known evidence contracts, and preserve baseline status. The verifier emits
 sanitized reports only and never executes commands from evidence.
 
+Evidence retention, provenance, and archive-report checks are also read-only. Retention is
+validated as metadata only; it does not delete or move files. Signed provenance is a
+detached-signature design contract, not a private-key operation. Archive reports are
+sanitized stdout summaries unless a future milestone separately approves storage.
+
 ## Maintainer Loop
 
 The local maintainer loop is a bounded repository coordinator. It may read repository Git

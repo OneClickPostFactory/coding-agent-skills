@@ -43,3 +43,9 @@ For multiple revisions, use contiguous ordinal directories and run
 `--json` or an explicitly requested relative `--output` file. Validate evidence against
 `schemas/adapter-upgrade-evidence.schema.json`, keep `changedState.changed` false, and never
 store raw project paths, project IDs, `.env` values, credentials, or applied changes.
+
+Evidence bundles must declare retention, provenance, and archive policy metadata. Use
+`node scripts/verify-evidence-bundle.mjs <bundle-file>` before claiming replay or regression
+success, and use `node scripts/render-evidence-archive-report.mjs <bundle-file>` when a
+sanitized archive summary is needed. Do not inline signatures, raw evidence bodies, command
+output, local paths, or secret-like values into archive reports.

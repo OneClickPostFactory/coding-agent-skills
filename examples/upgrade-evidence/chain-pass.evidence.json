@@ -2,7 +2,7 @@
   "contractVersion": "1.0.0",
   "validator": {
     "name": "check-adapter-upgrade-chain",
-    "version": "0.2.1"
+    "version": "0.2.2"
   },
   "invocation": {
     "id": "example-chain-pass-001",
@@ -20,7 +20,7 @@
   },
   "coreVersions": {
     "before": "0.1.4",
-    "after": "0.2.1"
+    "after": "0.2.2"
   },
   "adapterIds": [
     "fixture-chain-adapter"
@@ -67,7 +67,7 @@
         "adapterId": "fixture-chain-adapter",
         "skillId": "repo-map",
         "versions": [
-          "0.2.1"
+          "0.2.2"
         ],
         "mode": "audit-only"
       }
@@ -75,7 +75,7 @@
   },
   "pinStatus": {
     "before": "0.1.4",
-    "after": "0.2.1",
+    "after": "0.2.2",
     "result": "accepted",
     "staleClassification": "none"
   },

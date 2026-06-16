@@ -25,6 +25,11 @@ const STATUS_RANK = new Map([
   ["failed", 0],
   ["fail", 0],
 ]);
+const MIN_SYNTHETIC_RETENTION_DAYS = 30;
+const MIN_MAINTAINER_RETENTION_DAYS = 90;
+const MAX_RETENTION_DAYS = 3650;
+const MIN_ARCHIVE_REPORT_BYTES = 512;
+const MAX_ARCHIVE_REPORT_BYTES = 250000;
 
 function readText(file) {
   return fs.readFileSync(file, "utf8");
@@ -59,23 +64,161 @@ function inside(root, candidate) {
   return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
 }
 
-function safeEntryPath(bundleRoot, relativePath) {
+function safeRelativePath(bundleRoot, relativePath, options = {}) {
+  const extension = options.extension ?? ".json";
+  const missingCode = options.missingCode ?? "missing-path";
+  const traversalCode = options.traversalCode ?? "path-traversal";
+  const secretCode = options.secretCode ?? "secret-path";
+  const missingFileCode = options.missingFileCode ?? "path-missing";
+  const symlinkCode = options.symlinkCode ?? "path-symlink-escape";
+  const notFileCode = options.notFileCode ?? "path-not-file";
+  const requireExists = options.requireExists ?? true;
+
   if (!relativePath || typeof relativePath !== "string") {
-    return { ok: false, code: "missing-entry-path" };
+    return { ok: false, code: missingCode };
   }
   if (path.isAbsolute(relativePath) || relativePath.split(/[\\/]+/).includes("..")) {
-    return { ok: false, code: "entry-path-traversal" };
+    return { ok: false, code: traversalCode };
   }
   if (relativePath.split(/[\\/]+/).some((part) => /^\.env(?:\.|$)/.test(part))) {
-    return { ok: false, code: "entry-secret-path" };
+    return { ok: false, code: secretCode };
+  }
+  if (extension && !relativePath.endsWith(extension)) {
+    return { ok: false, code: notFileCode };
   }
   const resolved = path.resolve(bundleRoot, relativePath);
-  if (!inside(bundleRoot, resolved)) return { ok: false, code: "entry-path-traversal" };
-  if (!fs.existsSync(resolved)) return { ok: false, code: "entry-missing" };
+  if (!inside(bundleRoot, resolved)) return { ok: false, code: traversalCode };
+  if (!fs.existsSync(resolved)) {
+    return requireExists ? { ok: false, code: missingFileCode } : { ok: true, path: resolved };
+  }
   const stat = fs.lstatSync(resolved);
-  if (stat.isSymbolicLink()) return { ok: false, code: "entry-symlink-escape" };
-  if (!stat.isFile()) return { ok: false, code: "entry-not-file" };
+  if (stat.isSymbolicLink()) return { ok: false, code: symlinkCode };
+  if (!stat.isFile()) return { ok: false, code: notFileCode };
   return { ok: true, path: resolved };
+}
+
+function safeEntryPath(bundleRoot, relativePath) {
+  return safeRelativePath(bundleRoot, relativePath, {
+    extension: ".json",
+    missingCode: "missing-entry-path",
+    traversalCode: "entry-path-traversal",
+    secretCode: "entry-secret-path",
+    missingFileCode: "entry-missing",
+    symlinkCode: "entry-symlink-escape",
+    notFileCode: "entry-not-file",
+  });
+}
+
+function safeArchivePath(bundleRoot, relativePath) {
+  return safeRelativePath(bundleRoot, relativePath, {
+    extension: ".json",
+    requireExists: false,
+    missingCode: "missing-archive-path",
+    traversalCode: "archive-path-traversal",
+    secretCode: "archive-secret-path",
+    symlinkCode: "archive-symlink-escape",
+    notFileCode: "archive-not-file",
+  });
+}
+
+function dateValue(value) {
+  const parsed = Date.parse(value ?? "");
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function daysBetween(start, end) {
+  return (end - start) / (24 * 60 * 60 * 1000);
+}
+
+function retentionIssues(bundle) {
+  const issues = [];
+  const retention = bundle.retention ?? {};
+  const minimumDays = retention.minimumDays;
+  const minAllowed =
+    retention.classification === "maintainer-release-evidence"
+      ? MIN_MAINTAINER_RETENTION_DAYS
+      : MIN_SYNTHETIC_RETENTION_DAYS;
+
+  if (!Number.isInteger(minimumDays)) {
+    issues.push("retention-minimum-days-invalid");
+  } else {
+    if (minimumDays < minAllowed) issues.push("retention-window-too-short");
+    if (minimumDays > MAX_RETENTION_DAYS) issues.push("retention-window-too-long");
+  }
+
+  const generatedAt = dateValue(bundle.generatedAt);
+  const retainUntil = dateValue(retention.retainUntil);
+  if (generatedAt === null || retainUntil === null) {
+    issues.push("retention-date-invalid");
+  } else if (retainUntil <= generatedAt) {
+    issues.push("retention-expired");
+  } else if (Number.isInteger(minimumDays) && daysBetween(generatedAt, retainUntil) < minimumDays) {
+    issues.push("retention-retain-until-too-soon");
+  }
+
+  if (retention.redaction !== "secret-values-prohibited") {
+    issues.push("retention-redaction-weakened");
+  }
+  return issues.sort();
+}
+
+function provenanceIssues(bundle) {
+  const issues = [];
+  const provenance = bundle.provenance ?? {};
+  const signature = provenance.signature ?? {};
+  if (provenance.sourceTag !== `v${bundle.core?.currentVersion}`) {
+    issues.push("provenance-tag-mismatch");
+  }
+  if (detectSensitiveValues(JSON.stringify(provenance)).length) {
+    issues.push("provenance-secret-like-content");
+  }
+  if (signature.mode !== "detached-signature-design") {
+    issues.push("provenance-signature-mode-invalid");
+  }
+  if (signature.canonicalization !== "canonical-json-v1") {
+    issues.push("provenance-canonicalization-invalid");
+  }
+  if (signature.digestAlgorithm !== "sha256") {
+    issues.push("provenance-digest-invalid");
+  }
+  if (signature.status === "unsigned-fixture" && provenance.source !== "synthetic-fixture") {
+    issues.push("provenance-unsigned-nonfixture");
+  }
+  if (signature.status === "detached-signature-present") {
+    if (!signature.signaturePath || !signature.signatureSha256) {
+      issues.push("provenance-detached-signature-missing");
+    }
+  } else if (signature.signaturePath || signature.signatureSha256) {
+    issues.push("provenance-unexpected-signature-artifact");
+  }
+  if (signature.status === "verification-deferred") {
+    issues.push("provenance-signature-verification-deferred");
+  }
+  return issues.sort();
+}
+
+function archiveIssues(bundle, bundleRoot) {
+  const issues = [];
+  const archive = bundle.archive ?? {};
+  const safePath = safeArchivePath(bundleRoot, archive.reportPath);
+  if (!safePath.ok) issues.push(safePath.code);
+  if (archive.includeRawEvidence !== false) issues.push("archive-raw-evidence-enabled");
+  if (archive.includeSecretValues !== false) issues.push("archive-secret-values-enabled");
+  if (archive.writePolicy !== "no-write-without-approval") {
+    issues.push("archive-write-policy-weakened");
+  }
+  if (archive.retentionLinked !== true) issues.push("archive-retention-unlinked");
+  if (!Number.isInteger(archive.maxReportBytes)) {
+    issues.push("archive-max-bytes-invalid");
+  } else {
+    if (archive.maxReportBytes < MIN_ARCHIVE_REPORT_BYTES) {
+      issues.push("archive-max-bytes-too-small");
+    }
+    if (archive.maxReportBytes > MAX_ARCHIVE_REPORT_BYTES) {
+      issues.push("archive-max-bytes-too-large");
+    }
+  }
+  return issues.sort();
 }
 
 function statusOfEvidence(kind, evidence) {
@@ -173,6 +316,12 @@ export function verifyEvidenceBundle(bundleFile, options = {}) {
     codes.add("previous-version-mismatch");
   }
   if (bundle.changedState?.changed !== false) codes.add("changed-state-detected");
+  const retentionCodes = retentionIssues(bundle);
+  const provenanceCodes = provenanceIssues(bundle);
+  const archiveCodes = archiveIssues(bundle, bundleRoot);
+  for (const code of [...retentionCodes, ...provenanceCodes, ...archiveCodes]) {
+    codes.add(code);
+  }
 
   const verifiedEntries = [];
   const seenIds = new Set();
@@ -225,6 +374,35 @@ export function verifyEvidenceBundle(bundleFile, options = {}) {
       currentVersion: bundle.core?.currentVersion ?? null,
       previousVersion: bundle.core?.previousVersion ?? null,
     },
+    retention: {
+      classification: bundle.retention?.classification ?? null,
+      minimumDays: bundle.retention?.minimumDays ?? null,
+      retainUntil: bundle.retention?.retainUntil ?? null,
+      disposition: bundle.retention?.disposition ?? null,
+      storage: bundle.retention?.storage ?? null,
+      codes: retentionCodes,
+    },
+    provenance: {
+      source: bundle.provenance?.source ?? null,
+      producer: bundle.provenance?.producer ?? null,
+      sourceCommit: bundle.provenance?.sourceCommit ?? null,
+      sourceTag: bundle.provenance?.sourceTag ?? null,
+      signature: {
+        mode: bundle.provenance?.signature?.mode ?? null,
+        status: bundle.provenance?.signature?.status ?? null,
+        identityRef: bundle.provenance?.signature?.identityRef ?? null,
+        canonicalization: bundle.provenance?.signature?.canonicalization ?? null,
+        digestAlgorithm: bundle.provenance?.signature?.digestAlgorithm ?? null,
+      },
+      codes: provenanceCodes,
+    },
+    archive: {
+      format: bundle.archive?.format ?? null,
+      reportPath: bundle.archive?.reportPath ?? null,
+      writePolicy: bundle.archive?.writePolicy ?? null,
+      maxReportBytes: bundle.archive?.maxReportBytes ?? null,
+      codes: archiveCodes,
+    },
     entries: verifiedEntries,
     regression: {
       baselineVersion: bundle.regression?.baselineVersion ?? null,
@@ -240,6 +418,7 @@ export function verifyEvidenceBundle(bundleFile, options = {}) {
     ok: codes.size === 0,
     status: codes.size === 0 ? "complete" : "failed",
     bundleId: bundle.bundleId ?? null,
+    core: stableReport.core,
     entryCount: verifiedEntries.length,
     verifiedEntries,
     replay: {
@@ -251,6 +430,9 @@ export function verifyEvidenceBundle(bundleFile, options = {}) {
       targetVersion: bundle.regression?.targetVersion ?? null,
       codes: regressionCodes,
     },
+    retention: stableReport.retention,
+    provenance: stableReport.provenance,
+    archive: stableReport.archive,
     codes: [...codes].sort(),
     failures,
     changedState: {
@@ -259,6 +441,89 @@ export function verifyEvidenceBundle(bundleFile, options = {}) {
     },
   };
   return report;
+}
+
+export function buildEvidenceArchiveReport(bundleFile, options = {}) {
+  const coreRoot = path.resolve(options.coreRoot ?? DEFAULT_CORE_ROOT);
+  const verification = verifyEvidenceBundle(bundleFile, options);
+  const schemas = {
+    archiveReport: readJson(path.join(coreRoot, "schemas/archive-report.schema.json")),
+  };
+  const report = {
+    reportVersion: "1.0.0",
+    bundleId: verification.bundleId ?? "unknown-bundle",
+    core: verification.core ?? {
+      currentVersion: null,
+      previousVersion: null,
+    },
+    verification: {
+      status: verification.status,
+      entryCount: verification.entryCount ?? 0,
+      entryIds: (verification.verifiedEntries ?? []).map((entry) => entry.id).sort(),
+      codes: verification.codes ?? [],
+      replayHash: verification.replay?.reportHash ?? "0".repeat(64),
+      regression: verification.regression ?? {
+        baselineVersion: null,
+        targetVersion: null,
+        codes: [],
+      },
+    },
+    retention: {
+      classification: verification.retention?.classification ?? "synthetic-test-evidence",
+      minimumDays: verification.retention?.minimumDays ?? 0,
+      retainUntil: verification.retention?.retainUntil ?? "1970-01-01T00:00:00Z",
+      disposition: verification.retention?.disposition ?? "retain-then-review",
+      storage: verification.retention?.storage ?? "repository-fixture",
+    },
+    provenance: {
+      source: verification.provenance?.source ?? "synthetic-fixture",
+      producer: verification.provenance?.producer ?? "unknown-producer",
+      sourceCommit: verification.provenance?.sourceCommit ?? "0".repeat(40),
+      sourceTag: verification.provenance?.sourceTag ?? "v0.0.0",
+      signature: verification.provenance?.signature ?? {
+        mode: "detached-signature-design",
+        status: "unsigned-fixture",
+        identityRef: "unknown-identity",
+        canonicalization: "canonical-json-v1",
+        digestAlgorithm: "sha256",
+      },
+    },
+    archive: {
+      format: verification.archive?.format ?? "sanitized-json-summary",
+      reportPath: verification.archive?.reportPath ?? "archive/evidence-archive-report.json",
+      writePolicy: verification.archive?.writePolicy ?? "no-write-without-approval",
+      maxReportBytes: verification.archive?.maxReportBytes ?? MAX_ARCHIVE_REPORT_BYTES,
+    },
+    changedState: {
+      changed: false,
+      summary:
+        "Evidence archive report rendering did not write files or mutate project, runtime, service, database, or remote state.",
+    },
+    recommendedNextAction:
+      "Store the sanitized report only after explicit approval and keep raw evidence out of archive summaries.",
+  };
+  const reportText = JSON.stringify(canonical(report), null, 2);
+  const schemaErrors = validateValue(schemas.archiveReport, report);
+  const codes = new Set(verification.codes ?? []);
+  if (schemaErrors.length) codes.add("archive-report-schema-invalid");
+  if (detectSensitiveValues(reportText).length) codes.add("archive-report-secret-like-content");
+  if (Buffer.byteLength(reportText, "utf8") > report.archive.maxReportBytes) {
+    codes.add("archive-report-too-large");
+  }
+  const firstHash = reportHash(report);
+  const secondHash = reportHash(report);
+  if (firstHash !== secondHash) codes.add("archive-report-nondeterministic");
+
+  return {
+    ok: verification.ok && codes.size === 0,
+    status: verification.ok && codes.size === 0 ? "complete" : "failed",
+    report,
+    reportHash: firstHash,
+    deterministic: firstHash === secondHash,
+    codes: [...codes].sort(),
+    schemaErrors,
+    changedState: report.changedState,
+  };
 }
 
 export function formatEvidenceBundleSummary(result) {
@@ -295,6 +560,44 @@ export function evidenceBundleCliResult(bundleFile, options = {}) {
     exitCode: result.ok ? 0 : 1,
     stream: result.ok ? "stdout" : "stderr",
     lines: formatEvidenceBundleSummary(result),
+    result,
+  };
+}
+
+export function formatEvidenceArchiveSummary(result) {
+  if (result.ok) {
+    return [
+      `evidence archive report rendered: ${result.report.verification.entryCount} entries, sanitized summary accepted`,
+      `archive report hash ${result.reportHash}`,
+    ];
+  }
+  return [
+    "evidence archive report failed safely",
+    `rejection codes: ${(result.codes ?? []).join(",")}`,
+  ];
+}
+
+export function evidenceArchiveCliResult(bundleFile, options = {}) {
+  if (!bundleFile) {
+    return {
+      exitCode: 2,
+      stream: "stderr",
+      lines: ["usage: node scripts/render-evidence-archive-report.mjs <bundle-file> [--json]"],
+    };
+  }
+  const result = buildEvidenceArchiveReport(bundleFile, options);
+  if (options.json) {
+    return {
+      exitCode: result.ok ? 0 : 1,
+      stream: "stdout",
+      lines: [JSON.stringify(result.report, null, 2)],
+      result,
+    };
+  }
+  return {
+    exitCode: result.ok ? 0 : 1,
+    stream: result.ok ? "stdout" : "stderr",
+    lines: formatEvidenceArchiveSummary(result),
     result,
   };
 }

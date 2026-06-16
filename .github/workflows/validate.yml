@@ -43,5 +43,8 @@ jobs:
       - name: Verify disposable evidence bundle
         run: node scripts/verify-evidence-bundle.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json
 
+      - name: Render disposable evidence archive report
+        run: node scripts/render-evidence-archive-report.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json
+
       - name: Run built-in Node tests
         run: node --test

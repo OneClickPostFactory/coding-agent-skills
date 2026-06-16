@@ -11,6 +11,8 @@ import {
   validateExternalAdapters,
 } from "./lib/adapter-discovery.mjs";
 import {
+  buildEvidenceArchiveReport,
+  evidenceArchiveCliResult,
   evidenceBundleCliResult,
   verifyEvidenceBundle,
 } from "./lib/evidence-bundle.mjs";
@@ -165,6 +167,7 @@ const upgradeEvidenceSchema = readJson(
   "schemas/adapter-upgrade-evidence.schema.json",
 );
 const evidenceBundleSchema = readJson("schemas/evidence-bundle.schema.json");
+const evidenceArchiveReportSchema = readJson("schemas/archive-report.schema.json");
 const evidenceSchema = readJson("contracts/evidence-pack/evidence-pack.schema.json");
 const policiesBySkill = Object.fromEntries(
   PILOT_SKILLS.map((skill) => [
@@ -197,6 +200,7 @@ test("release governance and safe CI files are present", () => {
     "node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after",
     "node scripts/check-adapter-upgrade-chain.mjs tests/fixtures/project-adapter-upgrade-chains/valid-chain",
     "node scripts/verify-evidence-bundle.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json",
+    "node scripts/render-evidence-archive-report.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json",
     "node --test",
   ]);
 });
@@ -1353,8 +1357,8 @@ test("adapter upgrade chains accept safe revisions and reject named fixture drif
     coreRoot: root,
   });
   assert.equal(valid.ok, true, valid.codes.join(","));
-  assert.equal(valid.revisionCount, 5);
-  assert.equal(valid.transitionCount, 4);
+  assert.equal(valid.revisionCount, 6);
+  assert.equal(valid.transitionCount, 5);
 
   for (const [fixture, code] of [
     ["stale-pin-chain", "stale-exact-pin"],
@@ -1599,7 +1603,7 @@ test("adapter chain discovery rejects symlink escapes and non-contiguous order",
 
     const gap = path.join(temporaryRoot, "gap");
     fs.cpSync(source, gap, { recursive: true });
-    fs.renameSync(path.join(gap, "05-upgrade"), path.join(gap, "06-upgrade"));
+    fs.renameSync(path.join(gap, "06-upgrade"), path.join(gap, "07-upgrade"));
     assert.ok(
       checkAdapterUpgradeChain(gap, { coreRoot: root }).codes.includes(
         "non-contiguous-chain-order",
@@ -1625,7 +1629,7 @@ test("adapter chain CLI uses stable exits, safe JSON, and bounded output", () =>
     });
     assert.equal(valid.exitCode, 0);
     assert.equal(valid.stream, "stdout");
-    assert.match(valid.lines.join("\n"), /4 transitions accepted/);
+    assert.match(valid.lines.join("\n"), /5 transitions accepted/);
 
     const invalid = adapterChainCliResult(
       path.join(fixtureRoot, "stale-pin-chain"),
@@ -1684,16 +1688,22 @@ test("evidence bundles verify hashes, schemas, replay, and regression state", ()
   assert.equal(first.replay.deterministic, true);
   assert.equal(first.replay.reportHash, second.replay.reportHash);
   assert.deepEqual(first.regression.codes, []);
+  assert.deepEqual(first.retention.codes, []);
+  assert.deepEqual(first.provenance.codes, []);
+  assert.deepEqual(first.archive.codes, []);
   assert.equal(first.changedState.changed, false);
 });
 
-test("evidence bundles reject hash, missing-entry, regression, and path failures", () => {
+test("evidence bundles reject hash, missing-entry, regression, path, and archive failures", () => {
   const fixtureRoot = path.join(root, "tests", "fixtures", "evidence-bundles");
   for (const [fixture, code] of [
     ["invalid-hash", "hash-mismatch"],
     ["invalid-missing-entry", "entry-missing"],
     ["invalid-regression", "missing-baseline-entry"],
     ["invalid-path", "entry-path-traversal"],
+    ["invalid-retention", "retention-retain-until-too-soon"],
+    ["invalid-provenance", "provenance-tag-mismatch"],
+    ["invalid-archive", "archive-raw-evidence-enabled"],
   ]) {
     const result = verifyEvidenceBundle(
       path.join(fixtureRoot, fixture, "evidence-bundle.json"),
@@ -1728,6 +1738,64 @@ test("evidence bundle CLI uses stable exits and sanitized reports", () => {
   );
   assert.equal(json.exitCode, 0);
   assert.doesNotMatch(json.lines[0], /Repository identity|outputSummary/);
+  assert.doesNotMatch(json.lines[0], /\/home\/|github_pat_|Authorization: Bearer/);
+});
+
+test("evidence archive reports are schema-valid, deterministic, and sanitized", () => {
+  const fixtureRoot = path.join(root, "tests", "fixtures", "evidence-bundles");
+  const first = buildEvidenceArchiveReport(
+    path.join(fixtureRoot, "valid-bundle", "evidence-bundle.json"),
+    { coreRoot: root },
+  );
+  const second = buildEvidenceArchiveReport(
+    path.join(fixtureRoot, "valid-bundle", "evidence-bundle.json"),
+    { coreRoot: root },
+  );
+  assert.equal(first.ok, true, first.codes.join(","));
+  assert.equal(first.deterministic, true);
+  assert.equal(first.reportHash, second.reportHash);
+  assertSchemaValid(evidenceArchiveReportSchema, first.report, "archive report");
+  assert.equal(first.report.changedState.changed, false);
+  assert.equal(first.report.archive.writePolicy, "no-write-without-approval");
+  const encoded = JSON.stringify(first.report);
+  assert.doesNotMatch(
+    encoded,
+    /commandExecutionRecords|rawEvidence|github_pat_|Authorization: Bearer|\/home\//,
+  );
+});
+
+test("evidence archive CLI uses stable exits and bounded sanitized summaries", () => {
+  const fixtureRoot = path.join(root, "tests", "fixtures", "evidence-bundles");
+  const valid = evidenceArchiveCliResult(
+    path.join(fixtureRoot, "valid-bundle", "evidence-bundle.json"),
+    { coreRoot: root },
+  );
+  assert.equal(valid.exitCode, 0);
+  assert.equal(valid.stream, "stdout");
+  assert.match(valid.lines.join("\n"), /sanitized summary accepted/);
+
+  const json = evidenceArchiveCliResult(
+    path.join(fixtureRoot, "valid-bundle", "evidence-bundle.json"),
+    { coreRoot: root, json: true },
+  );
+  assert.equal(json.exitCode, 0);
+  assertSchemaValid(evidenceArchiveReportSchema, JSON.parse(json.lines[0]), "archive CLI JSON");
+
+  const invalid = evidenceArchiveCliResult(
+    path.join(fixtureRoot, "invalid-archive", "evidence-bundle.json"),
+    { coreRoot: root },
+  );
+  assert.equal(invalid.exitCode, 1);
+  assert.equal(invalid.stream, "stderr");
+  assert.match(invalid.lines.join("\n"), /archive-raw-evidence-enabled/);
+  assert.doesNotMatch(
+    invalid.lines.join("\n"),
+    /repo-map\.evidence|valid-upgrade\.evidence|\/home\//,
+  );
+
+  const usage = evidenceArchiveCliResult(undefined, { coreRoot: root });
+  assert.equal(usage.exitCode, 2);
+  assert.match(usage.lines.join("\n"), /usage:/i);
 });
 
 test("audit-only agent prompts preserve their non-mutation boundary", () => {

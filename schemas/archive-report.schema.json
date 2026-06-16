@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oneclickpostfactory.invalid/coding-agent-skills/archive-report.schema.json",
+  "title": "Coding Agent Evidence Archive Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reportVersion",
+    "bundleId",
+    "core",
+    "verification",
+    "retention",
+    "provenance",
+    "archive",
+    "changedState",
+    "recommendedNextAction"
+  ],
+  "properties": {
+    "reportVersion": {
+      "const": "1.0.0"
+    },
+    "bundleId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "core": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["currentVersion", "previousVersion"],
+      "properties": {
+        "currentVersion": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "previousVersion": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "entryCount", "entryIds", "codes", "replayHash", "regression"],
+      "properties": {
+        "status": {
+          "enum": ["complete", "failed"]
+        },
+        "entryCount": {
+          "type": "integer"
+        },
+        "entryIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          }
+        },
+        "codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "replayHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "regression": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["baselineVersion", "targetVersion", "codes"],
+          "properties": {
+            "baselineVersion": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+\\.\\d+$"
+            },
+            "targetVersion": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+\\.\\d+$"
+            },
+            "codes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification", "minimumDays", "retainUntil", "disposition", "storage"],
+      "properties": {
+        "classification": {
+          "enum": ["synthetic-test-evidence", "maintainer-release-evidence"]
+        },
+        "minimumDays": {
+          "type": "integer"
+        },
+        "retainUntil": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "disposition": {
+          "enum": ["retain-then-review", "retain-until-superseded"]
+        },
+        "storage": {
+          "enum": ["repository-fixture", "local-artifact", "external-archive-deferred"]
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "producer", "sourceCommit", "sourceTag", "signature"],
+      "properties": {
+        "source": {
+          "enum": ["synthetic-fixture", "maintainer-loop"]
+        },
+        "producer": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:[-./][a-z0-9]+)*$"
+        },
+        "sourceCommit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "sourceTag": {
+          "type": "string",
+          "pattern": "^v\\d+\\.\\d+\\.\\d+$"
+        },
+        "signature": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "status", "identityRef", "canonicalization", "digestAlgorithm"],
+          "properties": {
+            "mode": {
+              "const": "detached-signature-design"
+            },
+            "status": {
+              "enum": ["unsigned-fixture", "verification-deferred", "detached-signature-present"]
+            },
+            "identityRef": {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(?:[-./][a-z0-9]+)*$"
+            },
+            "canonicalization": {
+              "const": "canonical-json-v1"
+            },
+            "digestAlgorithm": {
+              "const": "sha256"
+            }
+          }
+        }
+      }
+    },
+    "archive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "reportPath", "writePolicy", "maxReportBytes"],
+      "properties": {
+        "format": {
+          "const": "sanitized-json-summary"
+        },
+        "reportPath": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.env(?:\\.|/|$)).+\\.json$"
+        },
+        "writePolicy": {
+          "const": "no-write-without-approval"
+        },
+        "maxReportBytes": {
+          "type": "integer"
+        }
+      }
+    },
+    "changedState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["changed", "summary"],
+      "properties": {
+        "changed": {
+          "const": false
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "recommendedNextAction": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

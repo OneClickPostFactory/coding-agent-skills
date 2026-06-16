@@ -6,8 +6,8 @@ export const PILOT_SKILLS = [
   "llm-drift-control",
 ];
 
-export const PILOT_VERSION = "0.2.1";
-export const PREVIOUS_PILOT_VERSION = "0.2.0";
+export const PILOT_VERSION = "0.2.2";
+export const PREVIOUS_PILOT_VERSION = "0.2.1";
 
 export const AUDIT_ONLY_SKILLS = [
   "repo-map",
@@ -500,7 +500,7 @@ function classifySegment(segment, options = {}) {
   }
   if (
     executable === "node" &&
-    !/^node\s+(?:--check\b|--test\b|scripts\/(?:validate-pack|validate-maintainer-loop|validate-adapters|validate-project-adapters|check-adapter-upgrade|check-adapter-upgrade-chain|verify-evidence-bundle|test-pack)\.mjs\b)/.test(
+    !/^node\s+(?:--check\b|--test\b|scripts\/(?:validate-pack|validate-maintainer-loop|validate-adapters|validate-project-adapters|check-adapter-upgrade|check-adapter-upgrade-chain|verify-evidence-bundle|render-evidence-archive-report|test-pack)\.mjs\b)/.test(
       segment,
     )
   ) {

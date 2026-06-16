@@ -5,17 +5,17 @@
 - Repository: `coding-agent-skills`
 - Branch: `main`
 - Pilot skills: `repo-map`, `build-verify`, `git-preflight`, `runtime-truth`, `llm-drift-control`
-- Adapter discovery, project adapter installation, stale-pin detection, upgrade evidence, compatibility-chain validation, and evidence-bundle verification are implemented.
+- Adapter discovery, project adapter installation, stale-pin detection, upgrade evidence, compatibility-chain validation, evidence-bundle verification, retention policy, provenance design, and archive-report rendering are implemented.
 - Real project adapters are not implemented.
 - New skills are not approved.
 
 ## Last Completed Version
 
-`v0.2.1`
+`v0.2.2`
 
 ## Current Recommended Milestone
 
-Evidence-bundle retention policy, signed provenance design, and report archival hardening.
+Evidence-bundle archive index fixtures, retention-expiry advisory reporting, and detached-signature verification planning.
 
 ## Allowed Next Actions
 
@@ -87,10 +87,28 @@ No autonomous maintainer-loop run has been recorded yet.
 - Stop boundary: implementation requires human approval
 
 
-### 2026-06-16T00:00:00Z
+### 2026-06-16T12:16:32Z
 
 - Latest tag observed: `v0.2.0`
 - Implemented milestone: Evidence-bundle verification, deterministic replay, and cross-release compatibility regression reporting.
 - Required permission: `evidence-harness`
 - Validation result: pass
 - Next recommended milestone: Evidence-bundle retention policy, signed provenance design, and report archival hardening.
+
+
+### 2026-06-16T11:48:47.963Z
+
+- Latest tag observed: `v0.2.1`
+- Selected milestone: Evidence-bundle retention policy, signed provenance design, and report archival hardening.
+- Required permission: `evidence-harness`
+- Validation result: pass
+- Stop boundary: implementation requires human approval
+
+
+### 2026-06-16T00:00:00Z
+
+- Latest tag observed: `v0.2.1`
+- Implemented milestone: Evidence-bundle retention policy, signed provenance design, and report archival hardening.
+- Required permission: `evidence-harness`
+- Validation result: pass
+- Next recommended milestone: Evidence-bundle archive index fixtures, retention-expiry advisory reporting, and detached-signature verification planning.

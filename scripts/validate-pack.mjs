@@ -4,7 +4,10 @@ import path from "node:path";
 import { checkAdapterUpgrade } from "./lib/adapter-upgrade.mjs";
 import { checkAdapterUpgradeChain } from "./lib/adapter-upgrade-chain.mjs";
 import { validateExternalAdapters } from "./lib/adapter-discovery.mjs";
-import { verifyEvidenceBundle } from "./lib/evidence-bundle.mjs";
+import {
+  buildEvidenceArchiveReport,
+  verifyEvidenceBundle,
+} from "./lib/evidence-bundle.mjs";
 import {
   adapterIssues,
   AUDIT_ONLY_SKILLS,
@@ -74,6 +77,7 @@ const requiredRootFiles = [
   "schemas/project-adapter-installation.schema.json",
   "schemas/adapter-upgrade-evidence.schema.json",
   "schemas/evidence-bundle.schema.json",
+  "schemas/archive-report.schema.json",
   "examples/upgrade-evidence/README.md",
   "examples/upgrade-evidence/valid-upgrade.evidence.json",
   "examples/upgrade-evidence/stale-pin.evidence.json",
@@ -86,6 +90,7 @@ const requiredRootFiles = [
   "scripts/run-next",
   "scripts/validate-maintainer-loop.mjs",
   "scripts/verify-evidence-bundle.mjs",
+  "scripts/render-evidence-archive-report.mjs",
   "scripts/check-adapter-upgrade.mjs",
   "scripts/check-adapter-upgrade-chain.mjs",
   "scripts/validate-adapters.mjs",
@@ -424,6 +429,7 @@ const upgradeEvidenceSchema = readJson(
   "schemas/adapter-upgrade-evidence.schema.json",
 );
 const evidenceBundleSchema = readJson("schemas/evidence-bundle.schema.json");
+const evidenceArchiveReportSchema = readJson("schemas/archive-report.schema.json");
 
 if (
   manifestSchema &&
@@ -432,7 +438,8 @@ if (
   projectInstallationSchema &&
   evidenceSchema &&
   upgradeEvidenceSchema &&
-  evidenceBundleSchema
+  evidenceBundleSchema &&
+  evidenceArchiveReportSchema
 ) {
   const policiesBySkill = Object.fromEntries(
     PILOT_SKILLS.map((skill) => [
@@ -589,6 +596,19 @@ if (
       { coreRoot: root },
     );
     if (!result.ok) failures.push(`valid evidence bundle was rejected: ${result.codes}`);
+    const archiveReport = buildEvidenceArchiveReport(
+      path.join(
+        root,
+        "tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json",
+      ),
+      { coreRoot: root },
+    );
+    if (!archiveReport.ok) {
+      failures.push(`valid evidence archive report was rejected: ${archiveReport.codes}`);
+    }
+    for (const error of validateValue(evidenceArchiveReportSchema, archiveReport.report)) {
+      failures.push(`valid evidence archive report: ${error}`);
+    }
   }
 }
 
@@ -624,7 +644,7 @@ for (const [file, patterns] of [
   ],
   [
     "docs/evidence-bundles/README.md",
-    [/deterministic/i, /regression/i, /verify-evidence-bundle/i, /read-only/i],
+    [/deterministic/i, /regression/i, /retention/i, /provenance/i, /archive/i, /read-only/i],
   ],
   [
     "docs/versioning/adapter-compatibility.md",
@@ -632,7 +652,7 @@ for (const [file, patterns] of [
   ],
   [
     "docs/versioning/README.md",
-    [/exact pin/i, /compatible range/i, />=0\.2\.0 <0\.3\.0/],
+    [/exact pin/i, /compatible range/i, />=0\.2\.1 <0\.3\.0/],
   ],
   [
     "docs/testing/README.md",
@@ -762,6 +782,7 @@ for (const expected of [
   "node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after",
   "node scripts/check-adapter-upgrade-chain.mjs tests/fixtures/project-adapter-upgrade-chains/valid-chain",
   "node scripts/verify-evidence-bundle.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json",
+  "node scripts/render-evidence-archive-report.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json",
   "node --test",
 ]) {
   if (!ci.includes(expected)) failures.push(`CI missing safe validation step: ${expected}`);

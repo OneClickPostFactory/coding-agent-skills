@@ -49,6 +49,8 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 - Review [evidence bundle verification](docs/evidence-bundles/README.md).
 - Run `node scripts/verify-evidence-bundle.mjs <bundle-file>` for deterministic
   evidence-bundle replay and regression checks.
+- Run `node scripts/render-evidence-archive-report.mjs <bundle-file>` for a sanitized,
+  read-only archive report summary.
 - Run `node scripts/validate-pack.mjs .` for structural validation.
 - Run `node scripts/test-pack.mjs` for executable release tests.
 - Run `node --test` for built-in Node fixture tests.

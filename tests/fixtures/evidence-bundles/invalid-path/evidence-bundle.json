@@ -1,32 +1,76 @@
 {
-  "bundleVersion": "1.0.0",
-  "bundleId": "fixture-invalid-path",
+  "bundleVersion": "1.1.0",
+  "bundleId": "fixture-evidence-bundle",
   "generatedAt": "2026-06-16T12:00:00Z",
   "core": {
     "id": "coding-agent-skills",
-    "currentVersion": "0.2.1",
-    "previousVersion": "0.2.0"
+    "currentVersion": "0.2.2",
+    "previousVersion": "0.2.1"
   },
   "replay": {
     "deterministic": true,
     "strategy": "canonical-report-hash"
   },
+  "retention": {
+    "policyVersion": "1.0.0",
+    "classification": "synthetic-test-evidence",
+    "minimumDays": 30,
+    "retainUntil": "2026-09-16T12:00:00Z",
+    "disposition": "retain-then-review",
+    "redaction": "secret-values-prohibited",
+    "storage": "repository-fixture"
+  },
+  "provenance": {
+    "schemaVersion": "1.0.0",
+    "source": "synthetic-fixture",
+    "producer": "coding-agent-skills/tests",
+    "sourceCommit": "0123456789abcdef0123456789abcdef01234567",
+    "sourceTag": "v0.2.2",
+    "signature": {
+      "mode": "detached-signature-design",
+      "status": "unsigned-fixture",
+      "identityRef": "fixture-signing-policy",
+      "canonicalization": "canonical-json-v1",
+      "digestAlgorithm": "sha256"
+    }
+  },
+  "archive": {
+    "schemaVersion": "1.0.0",
+    "reportPath": "archive/evidence-archive-report.json",
+    "format": "sanitized-json-summary",
+    "includeRawEvidence": false,
+    "includeSecretValues": false,
+    "writePolicy": "no-write-without-approval",
+    "maxReportBytes": 200000,
+    "retentionLinked": true
+  },
   "entries": [
     {
-      "id": "path-escape",
+      "id": "repo-map-evidence",
       "kind": "evidence-pack",
-      "path": "../outside.evidence.json",
-      "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "path": "../repo-map.evidence.json",
+      "sha256": "35fa1a0e2016dfbc05555c01707b8518a7a634f7feee60a7bb5a405d58810e16",
       "expectedStatus": "complete"
+    },
+    {
+      "id": "upgrade-evidence",
+      "kind": "adapter-upgrade-evidence",
+      "path": "evidence/valid-upgrade.evidence.json",
+      "sha256": "2d796633202529d2fb2e74cd5b0e3351058cdb827a210a6390c61639e37a82fd",
+      "expectedStatus": "pass"
     }
   ],
   "regression": {
-    "baselineVersion": "0.2.0",
-    "targetVersion": "0.2.1",
+    "baselineVersion": "0.2.1",
+    "targetVersion": "0.2.2",
     "baselineEntries": [
       {
-        "id": "path-escape",
+        "id": "repo-map-evidence",
         "status": "complete"
+      },
+      {
+        "id": "upgrade-evidence",
+        "status": "pass"
       }
     ]
   },
@@ -34,5 +78,5 @@
     "changed": false,
     "summary": "Fixture verification is read-only and uses disposable evidence files."
   },
-  "recommendedNextAction": "Use the report to decide whether a future release needs deeper evidence review."
+  "recommendedNextAction": "Use the sanitized archive report to decide whether a future release needs deeper evidence review."
 }

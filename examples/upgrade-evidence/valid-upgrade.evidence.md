@@ -1,7 +1,7 @@
 # Valid Upgrade Evidence
 
-- Validator: `check-adapter-upgrade` `0.2.1`
-- Core transition: `0.2.0` to `0.2.1`
+- Validator: `check-adapter-upgrade` `0.2.2`
+- Core transition: `0.2.1` to `0.2.2`
 - Pin status: accepted
 - Compatibility: pass
 - Restriction inheritance: pass

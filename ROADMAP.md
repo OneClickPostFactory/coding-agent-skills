@@ -15,14 +15,16 @@ The pilot release remains limited to five approved skills. Future work requires 
   permission gates, and approval stop boundaries.
 - `v0.2.1`: evidence-bundle verification, deterministic replay hash, and cross-release
   compatibility regression reporting over disposable evidence fixtures.
+- `v0.2.2`: evidence-bundle retention policy, detached-signature provenance design, and
+  sanitized archive-report rendering.
 
 The next milestone is recorded in [work-ledger.md](work-ledger.md). The
 [maintainer loop](RUNBOOK.md) may select and evidence that milestone, but it must stop
 before implementation until the relevant human approval is granted.
 
-The queued milestone after `v0.2.1` is evidence-bundle retention policy, signed provenance
-design, and report archival hardening. Real project adapters and new skills remain
-separately gated.
+The queued milestone after `v0.2.2` is evidence-bundle archive index fixtures,
+retention-expiry advisory reporting, and detached-signature verification planning. Real
+project adapters and new skills remain separately gated.
 
 | Candidate | Scope | Mode | Current gate |
 |---|---|---|---|

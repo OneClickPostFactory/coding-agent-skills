@@ -55,3 +55,33 @@ This file records bounded maintainer-loop runs. Entries must not contain secrets
 - Validation result: pass
 - Commit/tag/push status: pending approved release workflow
 - Next state: release `v0.2.1`, then run `./scripts/run-next --allow evidence-harness`
+
+
+## run-20260616114847
+
+- Run ID: `run-20260616114847`
+- Timestamp: `2026-06-16T11:48:47.963Z`
+- Command used: `./scripts/run-next --allow evidence-harness`
+- Permissions granted: `evidence-harness`
+- Files changed: `runs/skill-runs.md`, `work-ledger.md`
+- Validation commands:
+  - `node scripts/validate-pack.mjs .`
+  - `node scripts/test-pack.mjs`
+  - `node scripts/validate-maintainer-loop.mjs .`
+  - `node --test`
+- Validation result: pass
+- Commit/tag/push status: not performed by runner
+- Next state: selected `Evidence-bundle retention policy, signed provenance design, and report archival hardening.`; human approval required before implementation
+
+
+## implementation-v0.2.2-evidence-retention-provenance-archive
+
+- Run ID: `implementation-v0.2.2-evidence-retention-provenance-archive`
+- Timestamp: `2026-06-16T12:16:32Z`
+- Command used: `implement approved evidence-harness milestone selected by run-20260616114847`
+- Permissions granted: `commit, docs-hardening, evidence-harness, push, release-preflight, tag, test-hardening`
+- Files changed: evidence-bundle schema, archive-report schema, verifier and archive renderer, synthetic fixtures, tests, CI, docs, changelog, roadmap, ledger, run log, and versioned examples
+- Validation commands: `node scripts/validate-pack.mjs .`; `node scripts/test-pack.mjs`; `node scripts/validate-maintainer-loop.mjs .`; `node scripts/verify-evidence-bundle.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json`; `node scripts/render-evidence-archive-report.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json`; `node --test`; JSON parsing; diff and secret-pattern checks
+- Validation result: pass
+- Commit/tag/push status: pending approved release workflow
+- Next state: release `v0.2.2`, then run `./scripts/run-next --allow evidence-harness`
