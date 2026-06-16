@@ -2,7 +2,7 @@
   "contractVersion": "1.0.0",
   "validator": {
     "name": "check-adapter-upgrade",
-    "version": "0.2.0"
+    "version": "0.2.1"
   },
   "invocation": {
     "id": "example-unsafe-upgrade-001",
@@ -19,8 +19,8 @@
     "validationStatus": "fail"
   },
   "coreVersions": {
-    "before": "0.1.6",
-    "after": "0.2.0"
+    "before": "0.2.0",
+    "after": "0.2.1"
   },
   "adapterIds": [
     "fixture-upgrade-adapter"
@@ -57,7 +57,7 @@
         "adapterId": "fixture-upgrade-adapter",
         "skillId": "repo-map",
         "versions": [
-          "0.1.6"
+          "0.2.0"
         ],
         "mode": "audit-only"
       }
@@ -65,8 +65,8 @@
     "after": []
   },
   "pinStatus": {
-    "before": "0.1.6",
-    "after": "0.2.0",
+    "before": "0.2.0",
+    "after": "0.2.1",
     "result": "accepted",
     "staleClassification": "none"
   },

@@ -4,6 +4,7 @@ import path from "node:path";
 import { checkAdapterUpgrade } from "./lib/adapter-upgrade.mjs";
 import { checkAdapterUpgradeChain } from "./lib/adapter-upgrade-chain.mjs";
 import { validateExternalAdapters } from "./lib/adapter-discovery.mjs";
+import { verifyEvidenceBundle } from "./lib/evidence-bundle.mjs";
 import {
   adapterIssues,
   AUDIT_ONLY_SKILLS,
@@ -59,6 +60,7 @@ const requiredRootFiles = [
   "docs/adapters/project-installation.md",
   "docs/adapters/upgrades.md",
   "docs/adapters/upgrade-evidence.md",
+  "docs/evidence-bundles/README.md",
   "docs/versioning/adapter-compatibility.md",
   "docs/usage/README.md",
   "docs/release/README.md",
@@ -71,6 +73,7 @@ const requiredRootFiles = [
   "schemas/project-adapter.schema.json",
   "schemas/project-adapter-installation.schema.json",
   "schemas/adapter-upgrade-evidence.schema.json",
+  "schemas/evidence-bundle.schema.json",
   "examples/upgrade-evidence/README.md",
   "examples/upgrade-evidence/valid-upgrade.evidence.json",
   "examples/upgrade-evidence/stale-pin.evidence.json",
@@ -82,6 +85,7 @@ const requiredRootFiles = [
   "scripts/test-pack.mjs",
   "scripts/run-next",
   "scripts/validate-maintainer-loop.mjs",
+  "scripts/verify-evidence-bundle.mjs",
   "scripts/check-adapter-upgrade.mjs",
   "scripts/check-adapter-upgrade-chain.mjs",
   "scripts/validate-adapters.mjs",
@@ -95,6 +99,7 @@ const requiredRootFiles = [
   "scripts/lib/pack-rules.mjs",
   "scripts/lib/safe-evidence-output.mjs",
   "scripts/lib/upgrade-evidence.mjs",
+  "scripts/lib/evidence-bundle.mjs",
   "tests/README.md",
   "tests/fixtures/README.md",
   "tests/safety/README.md",
@@ -124,6 +129,9 @@ const requiredRootFiles = [
   "tests/fixtures/external-adapters/invalid-path-traversal/.coding-agent/adapters/path/adapter.json",
   "tests/fixtures/project-adapter-installation/valid-exact-pin/.coding-agent/skills.json",
   "tests/fixtures/project-adapter-installation/valid-exact-pin/.coding-agent/adapters/basic/adapter.json",
+  "tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json",
+  "tests/fixtures/evidence-bundles/valid-bundle/evidence/repo-map.evidence.json",
+  "tests/fixtures/evidence-bundles/valid-bundle/evidence/valid-upgrade.evidence.json",
   "tests/fixtures/project-adapter-installation/valid-compatible-range/coding-agent.skills.json",
   "tests/fixtures/project-adapter-installation/valid-multiple-adapters/.coding-agent/skills.json",
   "tests/fixtures/project-adapter-installation/invalid-missing-declaration/.coding-agent/adapters/basic/adapter.json",
@@ -415,6 +423,7 @@ const evidenceSchema = readJson("contracts/evidence-pack/evidence-pack.schema.js
 const upgradeEvidenceSchema = readJson(
   "schemas/adapter-upgrade-evidence.schema.json",
 );
+const evidenceBundleSchema = readJson("schemas/evidence-bundle.schema.json");
 
 if (
   manifestSchema &&
@@ -422,7 +431,8 @@ if (
   adapterSchema &&
   projectInstallationSchema &&
   evidenceSchema &&
-  upgradeEvidenceSchema
+  upgradeEvidenceSchema &&
+  evidenceBundleSchema
 ) {
   const policiesBySkill = Object.fromEntries(
     PILOT_SKILLS.map((skill) => [
@@ -563,6 +573,23 @@ if (
       failures.push(`${file}: upgrade evidence must declare no project state change`);
     }
   }
+
+  const evidenceBundle = readJson(
+    "tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json",
+  );
+  if (evidenceBundle) {
+    for (const error of validateValue(evidenceBundleSchema, evidenceBundle)) {
+      failures.push(`valid evidence bundle: ${error}`);
+    }
+    const result = verifyEvidenceBundle(
+      path.join(
+        root,
+        "tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json",
+      ),
+      { coreRoot: root },
+    );
+    if (!result.ok) failures.push(`valid evidence bundle was rejected: ${result.codes}`);
+  }
 }
 
 const contractExample = readJson("contracts/evidence-pack/evidence-pack.example.json");
@@ -594,6 +621,10 @@ for (const [file, patterns] of [
   [
     "docs/adapters/upgrade-evidence.md",
     [/changedState/i, /--json/i, /--output/i, /does not apply/i],
+  ],
+  [
+    "docs/evidence-bundles/README.md",
+    [/deterministic/i, /regression/i, /verify-evidence-bundle/i, /read-only/i],
   ],
   [
     "docs/versioning/adapter-compatibility.md",
@@ -730,6 +761,7 @@ for (const expected of [
   "node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin",
   "node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after",
   "node scripts/check-adapter-upgrade-chain.mjs tests/fixtures/project-adapter-upgrade-chains/valid-chain",
+  "node scripts/verify-evidence-bundle.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json",
   "node --test",
 ]) {
   if (!ci.includes(expected)) failures.push(`CI missing safe validation step: ${expected}`);

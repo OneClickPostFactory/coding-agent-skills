@@ -2,6 +2,24 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.1] - 2026-06-16
+
+### Added
+
+- Evidence-bundle JSON Schema and dependency-free verifier.
+- Deterministic replay through canonical report hashing.
+- Cross-release compatibility regression checks for baseline entry coverage and status
+  preservation.
+- Disposable valid and invalid evidence-bundle fixtures for hash mismatch, missing entry,
+  path traversal, and regression failures.
+
+### Changed
+
+- CI, pack validation, release tests, safety docs, testing docs, roadmap, and ledger now
+  include evidence-bundle verification.
+- Current synthetic examples and fixtures now target `0.2.1` with `0.2.0` as the previous
+  release boundary.
+
 ## [0.2.0] - 2026-06-15
 
 ### Added

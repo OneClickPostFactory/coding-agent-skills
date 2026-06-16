@@ -1,0 +1,38 @@
+{
+  "bundleVersion": "1.0.0",
+  "bundleId": "fixture-missing-entry",
+  "generatedAt": "2026-06-16T12:00:00Z",
+  "core": {
+    "id": "coding-agent-skills",
+    "currentVersion": "0.2.1",
+    "previousVersion": "0.2.0"
+  },
+  "replay": {
+    "deterministic": true,
+    "strategy": "canonical-report-hash"
+  },
+  "entries": [
+    {
+      "id": "missing-evidence",
+      "kind": "evidence-pack",
+      "path": "evidence/missing.evidence.json",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "expectedStatus": "complete"
+    }
+  ],
+  "regression": {
+    "baselineVersion": "0.2.0",
+    "targetVersion": "0.2.1",
+    "baselineEntries": [
+      {
+        "id": "missing-evidence",
+        "status": "complete"
+      }
+    ]
+  },
+  "changedState": {
+    "changed": false,
+    "summary": "Fixture verification is read-only and uses disposable evidence files."
+  },
+  "recommendedNextAction": "Use the report to decide whether a future release needs deeper evidence review."
+}

@@ -123,9 +123,15 @@ function progressionCodes(beforeRoot, afterRoot) {
     parsedBefore[0] === parsedAfter[0] &&
     parsedBefore[1] === parsedAfter[1] &&
     parsedAfter[2] === parsedBefore[2] + 1;
+  const adjacentMinorBoundary =
+    parsedBefore &&
+    parsedAfter &&
+    parsedBefore[0] === parsedAfter[0] &&
+    parsedAfter[1] === parsedBefore[1] + 1 &&
+    parsedAfter[2] === 0;
   const currentReleaseBoundary =
     beforeVersion === PREVIOUS_PILOT_VERSION && afterVersion === PILOT_VERSION;
-  return adjacentPatch || currentReleaseBoundary
+  return adjacentPatch || adjacentMinorBoundary || currentReleaseBoundary
     ? []
     : ["incompatible-core-chain"];
 }

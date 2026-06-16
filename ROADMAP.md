@@ -13,14 +13,16 @@ The pilot release remains limited to five approved skills. Future work requires 
 - `v0.1.6`: structured upgrade evidence and multi-step compatibility-chain validation.
 - `v0.2.0`: fail-closed local maintainer loop with an explicit work ledger, run evidence,
   permission gates, and approval stop boundaries.
+- `v0.2.1`: evidence-bundle verification, deterministic replay hash, and cross-release
+  compatibility regression reporting over disposable evidence fixtures.
 
 The next milestone is recorded in [work-ledger.md](work-ledger.md). The
 [maintainer loop](RUNBOOK.md) may select and evidence that milestone, but it must stop
 before implementation until the relevant human approval is granted.
 
-The queued milestone is evidence-bundle verification, deterministic replay, and
-cross-release regression reporting without applying changes. It is not implemented in
-`v0.2.0`. Real project adapters and new skills remain separately gated.
+The queued milestone after `v0.2.1` is evidence-bundle retention policy, signed provenance
+design, and report archival hardening. Real project adapters and new skills remain
+separately gated.
 
 | Candidate | Scope | Mode | Current gate |
 |---|---|---|---|

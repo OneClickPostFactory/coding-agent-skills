@@ -5,17 +5,17 @@
 - Repository: `coding-agent-skills`
 - Branch: `main`
 - Pilot skills: `repo-map`, `build-verify`, `git-preflight`, `runtime-truth`, `llm-drift-control`
-- Adapter discovery, project adapter installation, stale-pin detection, upgrade evidence, and compatibility-chain validation are implemented.
+- Adapter discovery, project adapter installation, stale-pin detection, upgrade evidence, compatibility-chain validation, and evidence-bundle verification are implemented.
 - Real project adapters are not implemented.
 - New skills are not approved.
 
 ## Last Completed Version
 
-`v0.1.6`
+`v0.2.1`
 
 ## Current Recommended Milestone
 
-Evidence-bundle verification, deterministic replay, and cross-release compatibility regression reporting.
+Evidence-bundle retention policy, signed provenance design, and report archival hardening.
 
 ## Allowed Next Actions
 
@@ -59,7 +59,7 @@ Evidence-bundle verification, deterministic replay, and cross-release compatibil
 
 ## Human Approval Required For
 
-- Implementing the evidence-bundle verification milestone.
+- Implementing the next evidence-retention or provenance milestone.
 - Creating, changing, or removing skills.
 - Adding real project adapters.
 - Touching real project repositories.
@@ -76,3 +76,21 @@ Evidence-bundle verification, deterministic replay, and cross-release compatibil
 ## Maintainer Decisions
 
 No autonomous maintainer-loop run has been recorded yet.
+
+
+### 2026-06-15T21:02:34.116Z
+
+- Latest tag observed: `v0.2.0`
+- Selected milestone: Evidence-bundle verification, deterministic replay, and cross-release compatibility regression reporting.
+- Required permission: `evidence-harness`
+- Validation result: pass
+- Stop boundary: implementation requires human approval
+
+
+### 2026-06-16T00:00:00Z
+
+- Latest tag observed: `v0.2.0`
+- Implemented milestone: Evidence-bundle verification, deterministic replay, and cross-release compatibility regression reporting.
+- Required permission: `evidence-harness`
+- Validation result: pass
+- Next recommended milestone: Evidence-bundle retention policy, signed provenance design, and report archival hardening.

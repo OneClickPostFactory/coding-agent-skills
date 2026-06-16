@@ -11,6 +11,10 @@ import {
   validateExternalAdapters,
 } from "./lib/adapter-discovery.mjs";
 import {
+  evidenceBundleCliResult,
+  verifyEvidenceBundle,
+} from "./lib/evidence-bundle.mjs";
+import {
   analyzeCommand,
   adapterIssues,
   AUDIT_ONLY_SKILLS,
@@ -160,6 +164,7 @@ const projectInstallationSchema = readJson(
 const upgradeEvidenceSchema = readJson(
   "schemas/adapter-upgrade-evidence.schema.json",
 );
+const evidenceBundleSchema = readJson("schemas/evidence-bundle.schema.json");
 const evidenceSchema = readJson("contracts/evidence-pack/evidence-pack.schema.json");
 const policiesBySkill = Object.fromEntries(
   PILOT_SKILLS.map((skill) => [
@@ -191,6 +196,7 @@ test("release governance and safe CI files are present", () => {
     "node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin",
     "node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after",
     "node scripts/check-adapter-upgrade-chain.mjs tests/fixtures/project-adapter-upgrade-chains/valid-chain",
+    "node scripts/verify-evidence-bundle.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json",
     "node --test",
   ]);
 });
@@ -1347,8 +1353,8 @@ test("adapter upgrade chains accept safe revisions and reject named fixture drif
     coreRoot: root,
   });
   assert.equal(valid.ok, true, valid.codes.join(","));
-  assert.equal(valid.revisionCount, 4);
-  assert.equal(valid.transitionCount, 3);
+  assert.equal(valid.revisionCount, 5);
+  assert.equal(valid.transitionCount, 4);
 
   for (const [fixture, code] of [
     ["stale-pin-chain", "stale-exact-pin"],
@@ -1593,7 +1599,7 @@ test("adapter chain discovery rejects symlink escapes and non-contiguous order",
 
     const gap = path.join(temporaryRoot, "gap");
     fs.cpSync(source, gap, { recursive: true });
-    fs.renameSync(path.join(gap, "04-upgrade"), path.join(gap, "05-upgrade"));
+    fs.renameSync(path.join(gap, "05-upgrade"), path.join(gap, "06-upgrade"));
     assert.ok(
       checkAdapterUpgradeChain(gap, { coreRoot: root }).codes.includes(
         "non-contiguous-chain-order",
@@ -1619,7 +1625,7 @@ test("adapter chain CLI uses stable exits, safe JSON, and bounded output", () =>
     });
     assert.equal(valid.exitCode, 0);
     assert.equal(valid.stream, "stdout");
-    assert.match(valid.lines.join("\n"), /3 transitions accepted/);
+    assert.match(valid.lines.join("\n"), /4 transitions accepted/);
 
     const invalid = adapterChainCliResult(
       path.join(fixtureRoot, "stale-pin-chain"),
@@ -1658,6 +1664,70 @@ test("adapter chain CLI uses stable exits, safe JSON, and bounded output", () =>
   } finally {
     fs.rmSync(temporaryRoot, { recursive: true, force: true });
   }
+});
+
+test("evidence bundles verify hashes, schemas, replay, and regression state", () => {
+  const fixtureRoot = path.join(root, "tests", "fixtures", "evidence-bundles");
+  const bundle = readJson("tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json");
+  assertSchemaValid(evidenceBundleSchema, bundle, "valid evidence bundle");
+
+  const first = verifyEvidenceBundle(
+    path.join(fixtureRoot, "valid-bundle", "evidence-bundle.json"),
+    { coreRoot: root },
+  );
+  const second = verifyEvidenceBundle(
+    path.join(fixtureRoot, "valid-bundle", "evidence-bundle.json"),
+    { coreRoot: root },
+  );
+  assert.equal(first.ok, true, first.codes.join(","));
+  assert.equal(first.entryCount, 2);
+  assert.equal(first.replay.deterministic, true);
+  assert.equal(first.replay.reportHash, second.replay.reportHash);
+  assert.deepEqual(first.regression.codes, []);
+  assert.equal(first.changedState.changed, false);
+});
+
+test("evidence bundles reject hash, missing-entry, regression, and path failures", () => {
+  const fixtureRoot = path.join(root, "tests", "fixtures", "evidence-bundles");
+  for (const [fixture, code] of [
+    ["invalid-hash", "hash-mismatch"],
+    ["invalid-missing-entry", "entry-missing"],
+    ["invalid-regression", "missing-baseline-entry"],
+    ["invalid-path", "entry-path-traversal"],
+  ]) {
+    const result = verifyEvidenceBundle(
+      path.join(fixtureRoot, fixture, "evidence-bundle.json"),
+      { coreRoot: root },
+    );
+    assert.equal(result.ok, false, fixture);
+    assert.ok(result.codes.includes(code), `${fixture}: ${result.codes}`);
+  }
+});
+
+test("evidence bundle CLI uses stable exits and sanitized reports", () => {
+  const fixtureRoot = path.join(root, "tests", "fixtures", "evidence-bundles");
+  const valid = evidenceBundleCliResult(
+    path.join(fixtureRoot, "valid-bundle", "evidence-bundle.json"),
+    { coreRoot: root },
+  );
+  assert.equal(valid.exitCode, 0);
+  assert.equal(valid.stream, "stdout");
+  assert.match(valid.lines.join("\n"), /deterministic replay accepted/);
+
+  const invalid = evidenceBundleCliResult(
+    path.join(fixtureRoot, "invalid-hash", "evidence-bundle.json"),
+    { coreRoot: root },
+  );
+  assert.equal(invalid.exitCode, 1);
+  assert.equal(invalid.stream, "stderr");
+  assert.match(invalid.lines.join("\n"), /hash-mismatch/);
+
+  const json = evidenceBundleCliResult(
+    path.join(fixtureRoot, "valid-bundle", "evidence-bundle.json"),
+    { coreRoot: root, json: true },
+  );
+  assert.equal(json.exitCode, 0);
+  assert.doesNotMatch(json.lines[0], /Repository identity|outputSummary/);
 });
 
 test("audit-only agent prompts preserve their non-mutation boundary", () => {

@@ -48,6 +48,11 @@ current final target. They never apply upgrades. Optional evidence output is per
 when explicitly requested, uses a new relative `.json` file beneath a non-symlink output
 base, and never overwrites existing content. Evidence omits raw project paths and project IDs.
 
+Evidence-bundle verification is read-only. Bundle entries must stay beneath the bundle
+directory, avoid local environment-file paths, avoid symlink escapes, match declared hashes,
+validate against known evidence contracts, and preserve baseline status. The verifier emits
+sanitized reports only and never executes commands from evidence.
+
 ## Maintainer Loop
 
 The local maintainer loop is a bounded repository coordinator. It may read repository Git

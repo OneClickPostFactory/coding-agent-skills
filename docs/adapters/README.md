@@ -42,10 +42,10 @@ before accepting any extension. It never executes adapter commands.
 Skill manifests declare the adapter contract and compatible adapter versions. An adapter separately declares supported skill IDs, compatible skill versions, and the unchanged skill mode.
 
 Compatibility requires both declarations to agree. Exact pilot versions and the `0.2.x`
-compatibility form are supported in v0.2.0. Upgrade comparisons also preserve adapter
+compatibility form are supported in v0.2.1. Upgrade comparisons also preserve adapter
 identity, inherited restrictions, and required evidence across revisions.
 
 The `inheritance` object is mandatory. Shared restrictions always win, and every permission-like safety flag is fixed to `false`.
 
-No real project adapter is implemented in the pilot release. The v0.2.0 harness uses only
+No real project adapter is implemented in the pilot release. The v0.2.1 harness uses only
 disposable synthetic fixture roots.

@@ -13,7 +13,7 @@
   "supportedSkills": [
     {
       "id": "runtime-truth",
-      "compatibleVersions": ["0.2.0"],
+      "compatibleVersions": ["0.2.1"],
       "declaredMode": "action-capable"
     }
   ],

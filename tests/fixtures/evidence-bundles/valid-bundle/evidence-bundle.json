@@ -1,0 +1,49 @@
+{
+  "bundleVersion": "1.0.0",
+  "bundleId": "fixture-evidence-bundle",
+  "generatedAt": "2026-06-16T12:00:00Z",
+  "core": {
+    "id": "coding-agent-skills",
+    "currentVersion": "0.2.1",
+    "previousVersion": "0.2.0"
+  },
+  "replay": {
+    "deterministic": true,
+    "strategy": "canonical-report-hash"
+  },
+  "entries": [
+    {
+      "id": "repo-map-evidence",
+      "kind": "evidence-pack",
+      "path": "evidence/repo-map.evidence.json",
+      "sha256": "96f3099543d1e49d904a73328d27c6b85b502ec3258305b565d5f7361d5e7f0c",
+      "expectedStatus": "complete"
+    },
+    {
+      "id": "upgrade-evidence",
+      "kind": "adapter-upgrade-evidence",
+      "path": "evidence/valid-upgrade.evidence.json",
+      "sha256": "bef54d3273958f46f402902554e2c8d4e5f8e80ee71190650fb55cee9e1f36e3",
+      "expectedStatus": "pass"
+    }
+  ],
+  "regression": {
+    "baselineVersion": "0.2.0",
+    "targetVersion": "0.2.1",
+    "baselineEntries": [
+      {
+        "id": "repo-map-evidence",
+        "status": "complete"
+      },
+      {
+        "id": "upgrade-evidence",
+        "status": "pass"
+      }
+    ]
+  },
+  "changedState": {
+    "changed": false,
+    "summary": "Fixture verification is read-only and uses disposable evidence files."
+  },
+  "recommendedNextAction": "Use the report to decide whether a future release needs deeper evidence review."
+}

@@ -40,5 +40,8 @@ jobs:
       - name: Check disposable adapter upgrade chain
         run: node scripts/check-adapter-upgrade-chain.mjs tests/fixtures/project-adapter-upgrade-chains/valid-chain
 
+      - name: Verify disposable evidence bundle
+        run: node scripts/verify-evidence-bundle.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json
+
       - name: Run built-in Node tests
         run: node --test

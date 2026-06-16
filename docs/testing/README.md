@@ -9,6 +9,7 @@ The harness is dependency-free and runs through:
 - `node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin`
 - `node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after`
 - `node scripts/check-adapter-upgrade-chain.mjs tests/fixtures/project-adapter-upgrade-chains/valid-chain`
+- `node scripts/verify-evidence-bundle.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json`
 - `node --test`
 
 ## Trigger Classification
@@ -69,6 +70,13 @@ Ordered chain fixtures cover accepted patch progression, stale pins, broken core
 compatibility, schema drift, restriction weakening, evidence removal, failure suppression,
 completion override, mode escalation, `.env` avoidance, traversal, symlinks, and mutation
 snapshots. Chain summaries use ordinal revision labels rather than directory names.
+
+## Evidence Bundles
+
+Disposable evidence bundles cover valid replay, hash mismatch, missing entries,
+cross-release regression, and path traversal. Tests verify schema validity, entry hashes,
+evidence-pack semantics, adapter-upgrade evidence semantics, deterministic report hashes,
+status preservation, and sanitized CLI output.
 
 ## Maintainer Loop
 

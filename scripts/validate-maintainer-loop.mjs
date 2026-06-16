@@ -61,9 +61,8 @@ if (fs.existsSync(path.join(root, "work-ledger.md"))) {
       failures.push(`work-ledger.md missing ${section}`);
     }
   }
-  if (!ledger.includes("v0.1.6")) failures.push("work-ledger.md must seed v0.1.6");
-  if (!ledger.includes("Evidence-bundle verification")) {
-    failures.push("work-ledger.md missing recommended evidence-bundle milestone");
+  if (!/## Last Completed Version\s+`v\d+\.\d+\.\d+`/m.test(ledger)) {
+    failures.push("work-ledger.md must declare a last completed version");
   }
 }
 

@@ -1,0 +1,38 @@
+{
+  "bundleVersion": "1.0.0",
+  "bundleId": "fixture-invalid-path",
+  "generatedAt": "2026-06-16T12:00:00Z",
+  "core": {
+    "id": "coding-agent-skills",
+    "currentVersion": "0.2.1",
+    "previousVersion": "0.2.0"
+  },
+  "replay": {
+    "deterministic": true,
+    "strategy": "canonical-report-hash"
+  },
+  "entries": [
+    {
+      "id": "path-escape",
+      "kind": "evidence-pack",
+      "path": "../outside.evidence.json",
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "expectedStatus": "complete"
+    }
+  ],
+  "regression": {
+    "baselineVersion": "0.2.0",
+    "targetVersion": "0.2.1",
+    "baselineEntries": [
+      {
+        "id": "path-escape",
+        "status": "complete"
+      }
+    ]
+  },
+  "changedState": {
+    "changed": false,
+    "summary": "Fixture verification is read-only and uses disposable evidence files."
+  },
+  "recommendedNextAction": "Use the report to decide whether a future release needs deeper evidence review."
+}
