@@ -115,3 +115,16 @@ This file records bounded maintainer-loop runs. Entries must not contain secrets
 - Validation result: pass
 - Commit/tag/push status: pending approved release workflow
 - Next state: release `v0.2.3`; no next repo-led runner command is queued without new human direction
+
+
+## planning-real-project-adapter-adoption-gate
+
+- Run ID: `planning-real-project-adapter-adoption-gate`
+- Timestamp: `2026-06-17T00:00:00Z`
+- Command used: `manual approval for planning-only real-project adapter adoption gate`
+- Permissions granted: `docs-hardening`, `adapter-harness`, `release-preflight`
+- Files changed: adapter planning documentation, roadmap, work ledger, and run log only
+- Validation commands: `node scripts/validate-pack.mjs .`; `node scripts/test-pack.mjs`; `node scripts/validate-maintainer-loop.mjs .`; `node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic`; `node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin`; `node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after`; `node scripts/check-adapter-upgrade-chain.mjs tests/fixtures/project-adapter-upgrade-chains/valid-chain`; `node --test`; JSON parsing; diff check
+- Validation result: pass
+- Commit/tag/push status: not approved for this planning milestone
+- Next state: human approval required before selecting a real project candidate, gathering real project evidence, creating a real adapter, or touching a real project repository

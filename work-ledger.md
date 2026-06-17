@@ -6,6 +6,7 @@
 - Branch: `main`
 - Pilot skills: `repo-map`, `build-verify`, `git-preflight`, `runtime-truth`, `llm-drift-control`
 - Adapter discovery, project adapter installation, stale-pin detection, upgrade evidence, compatibility-chain validation, evidence-bundle verification, retention policy, provenance design, archive-report rendering, archive-index fixtures, retention-expiry advisory reporting, and detached-signature verification planning are implemented.
+- Real-project adapter adoption readiness is documented as a planning-only approval gate.
 - Real project adapters are not implemented.
 - New skills are not approved.
 
@@ -15,7 +16,7 @@
 
 ## Current Recommended Milestone
 
-No repo-led milestone is queued. Human direction is required before selecting package work, CLI installation, new skills, platform skills, real adapters, signing infrastructure, or another evidence-harness milestone.
+Real-project adapter adoption readiness plan and approval gate is the current planning-only milestone. It does not approve creating real adapters, touching real project repositories, package work, CLI installation, new skills, platform skills, signing infrastructure, or another evidence-harness milestone.
 
 ## Allowed Next Actions
 
@@ -25,6 +26,7 @@ No repo-led milestone is queued. Human direction is required before selecting pa
 - Run release tests.
 - Run maintainer-loop validation.
 - Select the next bounded milestone.
+- Maintain planning documentation for the approved real-project adapter adoption gate.
 - Write maintainer-loop evidence to `runs/skill-runs.md`.
 - Update this ledger with local maintainer decisions.
 
@@ -60,6 +62,8 @@ No repo-led milestone is queued. Human direction is required before selecting pa
 ## Human Approval Required For
 
 - Implementing the next evidence-retention or provenance milestone.
+- Selecting a real project adapter candidate.
+- Gathering evidence from a real project repository.
 - Creating, changing, or removing skills.
 - Adding real project adapters.
 - Touching real project repositories.

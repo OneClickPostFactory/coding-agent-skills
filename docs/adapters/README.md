@@ -13,7 +13,9 @@ for path and symlink rules, [external validation](external-adapters.md) for mani
 CLI behavior, and [project installation](project-installation.md) for declaration and
 version-pinning rules. Use [upgrade checks](upgrades.md) to compare two declared revisions
 or a multi-step compatibility chain before changing a real project. The
-[upgrade evidence contract](upgrade-evidence.md) defines sanitized review output.
+[upgrade evidence contract](upgrade-evidence.md) defines sanitized review output. The
+[real project adoption gate](real-project-adoption.md) defines the approval and evidence
+requirements that must be met before any real project adapter is created.
 
 Discovery validates schema, skill compatibility, command policy, and inherited restrictions
 before accepting any extension. It never executes adapter commands.

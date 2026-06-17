@@ -28,6 +28,13 @@ No evidence-harness milestone is queued after `v0.2.3`. Real project adapters, n
 package publication, global CLI installation, platform work, and signing infrastructure
 remain separately gated.
 
+## Planning Gates
+
+- Real-project adapter adoption readiness is documented as a planning-only gate. It
+  defines candidate selection criteria, required pre-adoption evidence, validator commands,
+  safety boundaries, approval gates, stop conditions, rollback conditions, and forbidden
+  work before any real project adapter may be created.
+
 | Candidate | Scope | Mode | Current gate |
 |---|---|---|---|
 | `route-trace-skill` | General | Audit-only | Needs design review |

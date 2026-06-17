@@ -99,5 +99,9 @@ commands, deploys, migrates, or changes project state.
 Use [the upgrade checker](upgrades.md) to compare a current declaration with a proposed
 revision and detect stale pins or compatibility drift before adoption.
 
+Before any real project adapter is created, use the
+[real project adoption gate](real-project-adoption.md) to confirm candidate criteria,
+required evidence, approval gates, stop conditions, and rollback boundaries.
+
 All committed project roots in v0.2.3 are disposable synthetic fixtures. No real project
 adapter or real project repository is modified.
