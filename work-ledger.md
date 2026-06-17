@@ -5,17 +5,17 @@
 - Repository: `coding-agent-skills`
 - Branch: `main`
 - Pilot skills: `repo-map`, `build-verify`, `git-preflight`, `runtime-truth`, `llm-drift-control`
-- Adapter discovery, project adapter installation, stale-pin detection, upgrade evidence, compatibility-chain validation, evidence-bundle verification, retention policy, provenance design, and archive-report rendering are implemented.
+- Adapter discovery, project adapter installation, stale-pin detection, upgrade evidence, compatibility-chain validation, evidence-bundle verification, retention policy, provenance design, archive-report rendering, archive-index fixtures, retention-expiry advisory reporting, and detached-signature verification planning are implemented.
 - Real project adapters are not implemented.
 - New skills are not approved.
 
 ## Last Completed Version
 
-`v0.2.2`
+`v0.2.3`
 
 ## Current Recommended Milestone
 
-Evidence-bundle archive index fixtures, retention-expiry advisory reporting, and detached-signature verification planning.
+No repo-led milestone is queued. Human direction is required before selecting package work, CLI installation, new skills, platform skills, real adapters, signing infrastructure, or another evidence-harness milestone.
 
 ## Allowed Next Actions
 
@@ -70,7 +70,7 @@ Evidence-bundle archive index fixtures, retention-expiry advisory reporting, and
 ## Next Run Command
 
 ```bash
-./scripts/run-next --allow evidence-harness
+No next runner command is currently queued.
 ```
 
 ## Maintainer Decisions
@@ -112,3 +112,21 @@ No autonomous maintainer-loop run has been recorded yet.
 - Required permission: `evidence-harness`
 - Validation result: pass
 - Next recommended milestone: Evidence-bundle archive index fixtures, retention-expiry advisory reporting, and detached-signature verification planning.
+
+
+### 2026-06-16T22:56:07.929Z
+
+- Latest tag observed: `v0.2.2`
+- Selected milestone: Evidence-bundle archive index fixtures, retention-expiry advisory reporting, and detached-signature verification planning.
+- Required permission: `evidence-harness`
+- Validation result: pass
+- Stop boundary: implementation requires human approval
+
+
+### 2026-06-17T00:00:00Z
+
+- Latest tag observed: `v0.2.2`
+- Implemented milestone: Evidence-bundle archive index fixtures, retention-expiry advisory reporting, and detached-signature verification planning.
+- Required permission: `evidence-harness`
+- Validation result: pass
+- Next recommended milestone: human direction required before selecting the next bounded milestone.

@@ -168,6 +168,7 @@ const upgradeEvidenceSchema = readJson(
 );
 const evidenceBundleSchema = readJson("schemas/evidence-bundle.schema.json");
 const evidenceArchiveReportSchema = readJson("schemas/archive-report.schema.json");
+const evidenceArchiveIndexSchema = readJson("schemas/archive-index.schema.json");
 const evidenceSchema = readJson("contracts/evidence-pack/evidence-pack.schema.json");
 const policiesBySkill = Object.fromEntries(
   PILOT_SKILLS.map((skill) => [
@@ -1357,8 +1358,8 @@ test("adapter upgrade chains accept safe revisions and reject named fixture drif
     coreRoot: root,
   });
   assert.equal(valid.ok, true, valid.codes.join(","));
-  assert.equal(valid.revisionCount, 6);
-  assert.equal(valid.transitionCount, 5);
+  assert.equal(valid.revisionCount, 7);
+  assert.equal(valid.transitionCount, 6);
 
   for (const [fixture, code] of [
     ["stale-pin-chain", "stale-exact-pin"],
@@ -1603,7 +1604,7 @@ test("adapter chain discovery rejects symlink escapes and non-contiguous order",
 
     const gap = path.join(temporaryRoot, "gap");
     fs.cpSync(source, gap, { recursive: true });
-    fs.renameSync(path.join(gap, "06-upgrade"), path.join(gap, "07-upgrade"));
+    fs.renameSync(path.join(gap, "07-upgrade"), path.join(gap, "08-upgrade"));
     assert.ok(
       checkAdapterUpgradeChain(gap, { coreRoot: root }).codes.includes(
         "non-contiguous-chain-order",
@@ -1629,7 +1630,7 @@ test("adapter chain CLI uses stable exits, safe JSON, and bounded output", () =>
     });
     assert.equal(valid.exitCode, 0);
     assert.equal(valid.stream, "stdout");
-    assert.match(valid.lines.join("\n"), /5 transitions accepted/);
+    assert.match(valid.lines.join("\n"), /6 transitions accepted/);
 
     const invalid = adapterChainCliResult(
       path.join(fixtureRoot, "stale-pin-chain"),
@@ -1689,9 +1690,26 @@ test("evidence bundles verify hashes, schemas, replay, and regression state", ()
   assert.equal(first.replay.reportHash, second.replay.reportHash);
   assert.deepEqual(first.regression.codes, []);
   assert.deepEqual(first.retention.codes, []);
+  assert.equal(first.retention.expiryAdvisory.status, "retained");
+  assert.equal(first.retention.expiryAdvisory.deleteAutomatically, false);
   assert.deepEqual(first.provenance.codes, []);
+  assert.equal(first.provenance.signature.verificationPlan.validatesSignatureNow, false);
   assert.deepEqual(first.archive.codes, []);
+  assert.equal(first.archive.index.status, "present");
+  assert.deepEqual(first.archive.index.entryIds, ["repo-map-evidence", "upgrade-evidence"]);
   assert.equal(first.changedState.changed, false);
+});
+
+test("evidence bundles report retention-expiry advisories without deleting", () => {
+  const fixtureRoot = path.join(root, "tests", "fixtures", "evidence-bundles");
+  const result = verifyEvidenceBundle(
+    path.join(fixtureRoot, "advisory-review-soon", "evidence-bundle.json"),
+    { coreRoot: root },
+  );
+  assert.equal(result.ok, true, result.codes.join(","));
+  assert.equal(result.retention.expiryAdvisory.status, "review-soon");
+  assert.equal(result.retention.expiryAdvisory.advisoryOnly, true);
+  assert.equal(result.retention.expiryAdvisory.deleteAutomatically, false);
 });
 
 test("evidence bundles reject hash, missing-entry, regression, path, and archive failures", () => {
@@ -1704,6 +1722,8 @@ test("evidence bundles reject hash, missing-entry, regression, path, and archive
     ["invalid-retention", "retention-retain-until-too-soon"],
     ["invalid-provenance", "provenance-tag-mismatch"],
     ["invalid-archive", "archive-raw-evidence-enabled"],
+    ["invalid-archive-index", "archive-index-bundle-mismatch"],
+    ["invalid-signature-plan", "provenance-verification-plan-runs-signature-check"],
   ]) {
     const result = verifyEvidenceBundle(
       path.join(fixtureRoot, fixture, "evidence-bundle.json"),
@@ -1757,6 +1777,19 @@ test("evidence archive reports are schema-valid, deterministic, and sanitized", 
   assertSchemaValid(evidenceArchiveReportSchema, first.report, "archive report");
   assert.equal(first.report.changedState.changed, false);
   assert.equal(first.report.archive.writePolicy, "no-write-without-approval");
+  assert.equal(first.report.archive.index.status, "present");
+  assert.equal(first.report.retention.expiryAdvisory.status, "retained");
+  assert.equal(first.report.retention.expiryAdvisory.deleteAutomatically, false);
+  assert.equal(
+    first.report.provenance.signature.verificationPlan.mode,
+    "detached-signature-verification-plan",
+  );
+  assert.equal(first.report.provenance.signature.verificationPlan.validatesSignatureNow, false);
+  assertSchemaValid(
+    evidenceArchiveIndexSchema,
+    readJson("tests/fixtures/evidence-bundles/valid-bundle/archive/evidence-archive-index.json"),
+    "archive index",
+  );
   const encoded = JSON.stringify(first.report);
   assert.doesNotMatch(
     encoded,

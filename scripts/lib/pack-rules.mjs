@@ -6,8 +6,8 @@ export const PILOT_SKILLS = [
   "llm-drift-control",
 ];
 
-export const PILOT_VERSION = "0.2.2";
-export const PREVIOUS_PILOT_VERSION = "0.2.1";
+export const PILOT_VERSION = "0.2.3";
+export const PREVIOUS_PILOT_VERSION = "0.2.2";
 
 export const AUDIT_ONLY_SKILLS = [
   "repo-map",

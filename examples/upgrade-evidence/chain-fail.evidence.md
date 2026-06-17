@@ -1,6 +1,6 @@
 # Failed Chain Evidence
 
-- Validator: `check-adapter-upgrade-chain` `0.2.2`
+- Validator: `check-adapter-upgrade-chain` `0.2.3`
 - Revisions: 3
 - Transitions: 2
 - Failed transitions: 1

@@ -1,0 +1,109 @@
+{
+  "bundleVersion": "1.2.0",
+  "bundleId": "fixture-evidence-bundle",
+  "generatedAt": "2026-08-10T12:00:00Z",
+  "core": {
+    "id": "coding-agent-skills",
+    "currentVersion": "0.2.3",
+    "previousVersion": "0.2.2"
+  },
+  "replay": {
+    "deterministic": true,
+    "strategy": "canonical-report-hash"
+  },
+  "retention": {
+    "policyVersion": "1.0.0",
+    "classification": "synthetic-test-evidence",
+    "minimumDays": 30,
+    "retainUntil": "2026-09-16T12:00:00Z",
+    "disposition": "retain-then-review",
+    "redaction": "secret-values-prohibited",
+    "storage": "repository-fixture",
+    "expiryAdvisory": {
+      "mode": "retention-expiry-review",
+      "reviewThresholdDays": 45,
+      "action": "manual-review-only",
+      "advisoryOnly": true,
+      "deleteAutomatically": false
+    }
+  },
+  "provenance": {
+    "schemaVersion": "1.0.0",
+    "source": "synthetic-fixture",
+    "producer": "coding-agent-skills/tests",
+    "sourceCommit": "0123456789abcdef0123456789abcdef01234567",
+    "sourceTag": "v0.2.3",
+    "signature": {
+      "mode": "detached-signature-design",
+      "status": "unsigned-fixture",
+      "identityRef": "fixture-signing-policy",
+      "canonicalization": "canonical-json-v1",
+      "digestAlgorithm": "sha256",
+      "verificationPlan": {
+        "mode": "detached-signature-verification-plan",
+        "status": "fixture-unsigned-not-required",
+        "requiredArtifacts": [
+          "canonical-bundle-json",
+          "detached-signature",
+          "public-verification-identity"
+        ],
+        "validatesSignatureNow": false,
+        "failClosedWithoutValidSignature": true
+      }
+    }
+  },
+  "archive": {
+    "schemaVersion": "1.0.0",
+    "reportPath": "archive/evidence-archive-report.json",
+    "format": "sanitized-json-summary",
+    "includeRawEvidence": false,
+    "includeSecretValues": false,
+    "writePolicy": "no-write-without-approval",
+    "maxReportBytes": 200000,
+    "retentionLinked": true,
+    "index": {
+      "schemaVersion": "1.0.0",
+      "path": "archive/evidence-archive-index.json",
+      "format": "sanitized-json-index",
+      "includeRawEvidence": false,
+      "includeSecretValues": false,
+      "writePolicy": "no-write-without-approval",
+      "retentionLinked": true
+    }
+  },
+  "entries": [
+    {
+      "id": "repo-map-evidence",
+      "kind": "evidence-pack",
+      "path": "evidence/repo-map.evidence.json",
+      "sha256": "00b4ab33a8a926e4252095541478b42b9d1edb132ab0bf29da40a7ba2ebf94a7",
+      "expectedStatus": "complete"
+    },
+    {
+      "id": "upgrade-evidence",
+      "kind": "adapter-upgrade-evidence",
+      "path": "evidence/valid-upgrade.evidence.json",
+      "sha256": "0a6c5ad7dbf323a3e950e94cc110d5e2e5fa7388a7784f29bdc931485a22dc8b",
+      "expectedStatus": "pass"
+    }
+  ],
+  "regression": {
+    "baselineVersion": "0.2.2",
+    "targetVersion": "0.2.3",
+    "baselineEntries": [
+      {
+        "id": "repo-map-evidence",
+        "status": "complete"
+      },
+      {
+        "id": "upgrade-evidence",
+        "status": "pass"
+      }
+    ]
+  },
+  "changedState": {
+    "changed": false,
+    "summary": "Fixture verification is read-only and uses disposable evidence files."
+  },
+  "recommendedNextAction": "Use the sanitized archive report to decide whether a future release needs deeper evidence review."
+}

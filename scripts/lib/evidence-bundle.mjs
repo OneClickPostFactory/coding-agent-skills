@@ -30,6 +30,13 @@ const MIN_MAINTAINER_RETENTION_DAYS = 90;
 const MAX_RETENTION_DAYS = 3650;
 const MIN_ARCHIVE_REPORT_BYTES = 512;
 const MAX_ARCHIVE_REPORT_BYTES = 250000;
+const MIN_RETENTION_ADVISORY_THRESHOLD_DAYS = 1;
+const MAX_RETENTION_ADVISORY_THRESHOLD_DAYS = 365;
+const SIGNATURE_REQUIRED_ARTIFACTS = [
+  "canonical-bundle-json",
+  "detached-signature",
+  "public-verification-identity",
+];
 
 function readText(file) {
   return fs.readFileSync(file, "utf8");
@@ -121,6 +128,18 @@ function safeArchivePath(bundleRoot, relativePath) {
   });
 }
 
+function safeArchiveIndexPath(bundleRoot, relativePath) {
+  return safeRelativePath(bundleRoot, relativePath, {
+    extension: ".json",
+    missingCode: "missing-archive-index-path",
+    traversalCode: "archive-index-path-traversal",
+    secretCode: "archive-index-secret-path",
+    missingFileCode: "archive-index-missing",
+    symlinkCode: "archive-index-symlink-escape",
+    notFileCode: "archive-index-not-file",
+  });
+}
+
 function dateValue(value) {
   const parsed = Date.parse(value ?? "");
   return Number.isNaN(parsed) ? null : parsed;
@@ -128,6 +147,45 @@ function dateValue(value) {
 
 function daysBetween(start, end) {
   return (end - start) / (24 * 60 * 60 * 1000);
+}
+
+function retentionExpiryAdvisory(bundle) {
+  const retention = bundle.retention ?? {};
+  const advisory = retention.expiryAdvisory ?? {};
+  const generatedAt = dateValue(bundle.generatedAt);
+  const retainUntil = dateValue(retention.retainUntil);
+  const threshold = Number.isInteger(advisory.reviewThresholdDays)
+    ? advisory.reviewThresholdDays
+    : 0;
+
+  if (generatedAt === null || retainUntil === null || threshold <= 0) {
+    return {
+      status: "unknown",
+      daysUntilExpiry: 0,
+      reviewThresholdDays: threshold,
+      advisoryOnly: true,
+      deleteAutomatically: false,
+      recommendedAction: "manual-review-only",
+    };
+  }
+
+  const daysUntilExpiry = Math.floor(daysBetween(generatedAt, retainUntil));
+  const reviewAt = retainUntil - threshold * 24 * 60 * 60 * 1000;
+  let status = "retained";
+  if (retainUntil <= generatedAt) {
+    status = "expired-review-required";
+  } else if (generatedAt >= reviewAt) {
+    status = "review-soon";
+  }
+
+  return {
+    status,
+    daysUntilExpiry,
+    reviewThresholdDays: threshold,
+    advisoryOnly: true,
+    deleteAutomatically: false,
+    recommendedAction: "manual-review-only",
+  };
 }
 
 function retentionIssues(bundle) {
@@ -158,6 +216,29 @@ function retentionIssues(bundle) {
 
   if (retention.redaction !== "secret-values-prohibited") {
     issues.push("retention-redaction-weakened");
+  }
+  const advisory = retention.expiryAdvisory ?? {};
+  if (advisory.mode !== "retention-expiry-review") {
+    issues.push("retention-advisory-mode-invalid");
+  }
+  if (!Number.isInteger(advisory.reviewThresholdDays)) {
+    issues.push("retention-advisory-threshold-invalid");
+  } else {
+    if (advisory.reviewThresholdDays < MIN_RETENTION_ADVISORY_THRESHOLD_DAYS) {
+      issues.push("retention-advisory-threshold-too-small");
+    }
+    if (advisory.reviewThresholdDays > MAX_RETENTION_ADVISORY_THRESHOLD_DAYS) {
+      issues.push("retention-advisory-threshold-too-large");
+    }
+  }
+  if (advisory.action !== "manual-review-only") {
+    issues.push("retention-advisory-action-invalid");
+  }
+  if (advisory.advisoryOnly !== true) {
+    issues.push("retention-advisory-not-advisory");
+  }
+  if (advisory.deleteAutomatically !== false) {
+    issues.push("retention-advisory-delete-enabled");
   }
   return issues.sort();
 }
@@ -194,10 +275,102 @@ function provenanceIssues(bundle) {
   if (signature.status === "verification-deferred") {
     issues.push("provenance-signature-verification-deferred");
   }
+  const plan = signature.verificationPlan ?? {};
+  if (plan.mode !== "detached-signature-verification-plan") {
+    issues.push("provenance-verification-plan-mode-invalid");
+  }
+  if (plan.validatesSignatureNow !== false) {
+    issues.push("provenance-verification-plan-runs-signature-check");
+  }
+  if (plan.failClosedWithoutValidSignature !== true) {
+    issues.push("provenance-verification-plan-not-fail-closed");
+  }
+  const artifacts = Array.isArray(plan.requiredArtifacts) ? plan.requiredArtifacts : [];
+  for (const artifact of SIGNATURE_REQUIRED_ARTIFACTS) {
+    if (!artifacts.includes(artifact)) {
+      issues.push(`provenance-verification-plan-missing:${artifact}`);
+    }
+  }
+  if (signature.status === "unsigned-fixture") {
+    if (plan.status !== "fixture-unsigned-not-required") {
+      issues.push("provenance-verification-plan-status-invalid");
+    }
+  } else if (signature.status === "detached-signature-present") {
+    if (plan.status !== "ready-artifacts-required") {
+      issues.push("provenance-verification-plan-status-invalid");
+    }
+  } else if (signature.status === "verification-deferred" && plan.status !== "planned-not-run") {
+    issues.push("provenance-verification-plan-status-invalid");
+  }
   return issues.sort();
 }
 
-function archiveIssues(bundle, bundleRoot) {
+function archiveIndexIssues(bundle, bundleRoot, schema) {
+  const issues = [];
+  const archive = bundle.archive ?? {};
+  const index = archive.index ?? {};
+  const safePath = safeArchiveIndexPath(bundleRoot, index.path);
+  if (!safePath.ok) {
+    issues.push(safePath.code);
+    return { issues: issues.sort(), summary: null };
+  }
+
+  let parsedIndex;
+  const rawIndex = readText(safePath.path);
+  if (detectSensitiveValues(rawIndex).length) issues.push("archive-index-secret-like-content");
+  try {
+    parsedIndex = JSON.parse(rawIndex);
+  } catch {
+    issues.push("archive-index-json-invalid");
+    return { issues: issues.sort(), summary: null };
+  }
+
+  issues.push(...validateValue(schema, parsedIndex).map((issue) => `archive-index-schema:${issue}`));
+  const entryIds = (bundle.entries ?? []).map((entry) => entry.id).sort();
+  const indexEntryIds = (parsedIndex.entries ?? []).map((entry) => entry.id).sort();
+  if (parsedIndex.bundleId !== bundle.bundleId) issues.push("archive-index-bundle-mismatch");
+  if (parsedIndex.generatedAt !== bundle.generatedAt) issues.push("archive-index-generated-at-mismatch");
+  if (parsedIndex.core?.currentVersion !== bundle.core?.currentVersion) {
+    issues.push("archive-index-current-version-mismatch");
+  }
+  if (parsedIndex.core?.previousVersion !== bundle.core?.previousVersion) {
+    issues.push("archive-index-previous-version-mismatch");
+  }
+  if (parsedIndex.retention?.retainUntil !== bundle.retention?.retainUntil) {
+    issues.push("archive-index-retention-mismatch");
+  }
+  if (parsedIndex.retention?.advisory?.status !== retentionExpiryAdvisory(bundle).status) {
+    issues.push("archive-index-advisory-mismatch");
+  }
+  if (parsedIndex.provenance?.sourceTag !== bundle.provenance?.sourceTag) {
+    issues.push("archive-index-provenance-mismatch");
+  }
+  if (JSON.stringify(indexEntryIds) !== JSON.stringify(entryIds)) {
+    issues.push("archive-index-entry-mismatch");
+  }
+  for (const entry of bundle.entries ?? []) {
+    const indexed = (parsedIndex.entries ?? []).find((candidate) => candidate.id === entry.id);
+    if (!indexed) continue;
+    if (indexed.kind !== entry.kind || indexed.sha256 !== entry.sha256) {
+      issues.push(`archive-index-entry-metadata-mismatch:${entry.id}`);
+    }
+  }
+  if (parsedIndex.changedState?.changed !== false) {
+    issues.push("archive-index-changed-state-detected");
+  }
+
+  return {
+    issues: issues.sort(),
+    summary: {
+      path: index.path,
+      format: index.format ?? null,
+      entryCount: indexEntryIds.length,
+      entryIds: indexEntryIds,
+    },
+  };
+}
+
+function archiveIssues(bundle, bundleRoot, schemas) {
   const issues = [];
   const archive = bundle.archive ?? {};
   const safePath = safeArchivePath(bundleRoot, archive.reportPath);
@@ -208,6 +381,14 @@ function archiveIssues(bundle, bundleRoot) {
     issues.push("archive-write-policy-weakened");
   }
   if (archive.retentionLinked !== true) issues.push("archive-retention-unlinked");
+  const index = archive.index ?? {};
+  if (index.format !== "sanitized-json-index") issues.push("archive-index-format-invalid");
+  if (index.includeRawEvidence !== false) issues.push("archive-index-raw-evidence-enabled");
+  if (index.includeSecretValues !== false) issues.push("archive-index-secret-values-enabled");
+  if (index.writePolicy !== "no-write-without-approval") {
+    issues.push("archive-index-write-policy-weakened");
+  }
+  if (index.retentionLinked !== true) issues.push("archive-index-retention-unlinked");
   if (!Number.isInteger(archive.maxReportBytes)) {
     issues.push("archive-max-bytes-invalid");
   } else {
@@ -218,7 +399,9 @@ function archiveIssues(bundle, bundleRoot) {
       issues.push("archive-max-bytes-too-large");
     }
   }
-  return issues.sort();
+  const indexResult = archiveIndexIssues(bundle, bundleRoot, schemas.archiveIndex);
+  issues.push(...indexResult.issues);
+  return { issues: issues.sort(), indexSummary: indexResult.summary };
 }
 
 function statusOfEvidence(kind, evidence) {
@@ -233,7 +416,7 @@ function schemaForKind(kind, schemas) {
   return null;
 }
 
-function entryIssues(entry, evidence, schemas) {
+function entryIssues(entry, evidence, schemas, bundle) {
   const issues = [];
   const schema = schemaForKind(entry.kind, schemas);
   if (!schema) {
@@ -243,6 +426,14 @@ function entryIssues(entry, evidence, schemas) {
   issues.push(...validateValue(schema, evidence).map((issue) => `schema:${issue}`));
   if (entry.kind === "evidence-pack") {
     issues.push(...completionIssues(evidence).map((issue) => `completion:${issue}`));
+  }
+  if (entry.kind === "adapter-upgrade-evidence") {
+    if (evidence.validator?.version !== bundle.core?.currentVersion) {
+      issues.push("upgrade-evidence-validator-version-mismatch");
+    }
+    if (evidence.coreVersions?.after !== bundle.core?.currentVersion) {
+      issues.push("upgrade-evidence-target-version-mismatch");
+    }
   }
   const actualStatus = statusOfEvidence(entry.kind, evidence);
   if (actualStatus !== entry.expectedStatus) issues.push("status-mismatch");
@@ -294,6 +485,7 @@ export function verifyEvidenceBundle(bundleFile, options = {}) {
     adapterUpgradeEvidence: readJson(
       path.join(coreRoot, "schemas/adapter-upgrade-evidence.schema.json"),
     ),
+    archiveIndex: readJson(path.join(coreRoot, "schemas/archive-index.schema.json")),
   };
   const codes = new Set();
   const failures = [];
@@ -318,7 +510,10 @@ export function verifyEvidenceBundle(bundleFile, options = {}) {
   if (bundle.changedState?.changed !== false) codes.add("changed-state-detected");
   const retentionCodes = retentionIssues(bundle);
   const provenanceCodes = provenanceIssues(bundle);
-  const archiveCodes = archiveIssues(bundle, bundleRoot);
+  const retentionAdvisory = retentionExpiryAdvisory(bundle);
+  const archiveResult = archiveIssues(bundle, bundleRoot, schemas);
+  const archiveCodes = archiveResult.issues;
+  const archiveIndexCodes = archiveCodes.filter((code) => code.startsWith("archive-index"));
   for (const code of [...retentionCodes, ...provenanceCodes, ...archiveCodes]) {
     codes.add(code);
   }
@@ -354,7 +549,7 @@ export function verifyEvidenceBundle(bundleFile, options = {}) {
       entryCodes.push("entry-json-invalid");
       evidence = {};
     }
-    entryCodes.push(...entryIssues(entry, evidence, schemas));
+    entryCodes.push(...entryIssues(entry, evidence, schemas, bundle));
     for (const code of entryCodes) codes.add(code.split(":")[0]);
     verifiedEntries.push({
       id: entry.id,
@@ -380,6 +575,7 @@ export function verifyEvidenceBundle(bundleFile, options = {}) {
       retainUntil: bundle.retention?.retainUntil ?? null,
       disposition: bundle.retention?.disposition ?? null,
       storage: bundle.retention?.storage ?? null,
+      expiryAdvisory: retentionAdvisory,
       codes: retentionCodes,
     },
     provenance: {
@@ -393,6 +589,7 @@ export function verifyEvidenceBundle(bundleFile, options = {}) {
         identityRef: bundle.provenance?.signature?.identityRef ?? null,
         canonicalization: bundle.provenance?.signature?.canonicalization ?? null,
         digestAlgorithm: bundle.provenance?.signature?.digestAlgorithm ?? null,
+        verificationPlan: bundle.provenance?.signature?.verificationPlan ?? null,
       },
       codes: provenanceCodes,
     },
@@ -401,6 +598,14 @@ export function verifyEvidenceBundle(bundleFile, options = {}) {
       reportPath: bundle.archive?.reportPath ?? null,
       writePolicy: bundle.archive?.writePolicy ?? null,
       maxReportBytes: bundle.archive?.maxReportBytes ?? null,
+      index: {
+        status: archiveResult.indexSummary && archiveIndexCodes.length === 0 ? "present" : "failed",
+        path: archiveResult.indexSummary?.path ?? bundle.archive?.index?.path ?? null,
+        format: archiveResult.indexSummary?.format ?? bundle.archive?.index?.format ?? null,
+        entryCount: archiveResult.indexSummary?.entryCount ?? 0,
+        entryIds: archiveResult.indexSummary?.entryIds ?? [],
+        codes: archiveIndexCodes,
+      },
       codes: archiveCodes,
     },
     entries: verifiedEntries,
@@ -450,7 +655,7 @@ export function buildEvidenceArchiveReport(bundleFile, options = {}) {
     archiveReport: readJson(path.join(coreRoot, "schemas/archive-report.schema.json")),
   };
   const report = {
-    reportVersion: "1.0.0",
+    reportVersion: "1.1.0",
     bundleId: verification.bundleId ?? "unknown-bundle",
     core: verification.core ?? {
       currentVersion: null,
@@ -474,6 +679,14 @@ export function buildEvidenceArchiveReport(bundleFile, options = {}) {
       retainUntil: verification.retention?.retainUntil ?? "1970-01-01T00:00:00Z",
       disposition: verification.retention?.disposition ?? "retain-then-review",
       storage: verification.retention?.storage ?? "repository-fixture",
+      expiryAdvisory: verification.retention?.expiryAdvisory ?? {
+        status: "unknown",
+        daysUntilExpiry: 0,
+        reviewThresholdDays: 0,
+        advisoryOnly: true,
+        deleteAutomatically: false,
+        recommendedAction: "manual-review-only",
+      },
     },
     provenance: {
       source: verification.provenance?.source ?? "synthetic-fixture",
@@ -486,6 +699,13 @@ export function buildEvidenceArchiveReport(bundleFile, options = {}) {
         identityRef: "unknown-identity",
         canonicalization: "canonical-json-v1",
         digestAlgorithm: "sha256",
+        verificationPlan: {
+          mode: "detached-signature-verification-plan",
+          status: "fixture-unsigned-not-required",
+          requiredArtifacts: SIGNATURE_REQUIRED_ARTIFACTS,
+          validatesSignatureNow: false,
+          failClosedWithoutValidSignature: true,
+        },
       },
     },
     archive: {
@@ -493,6 +713,14 @@ export function buildEvidenceArchiveReport(bundleFile, options = {}) {
       reportPath: verification.archive?.reportPath ?? "archive/evidence-archive-report.json",
       writePolicy: verification.archive?.writePolicy ?? "no-write-without-approval",
       maxReportBytes: verification.archive?.maxReportBytes ?? MAX_ARCHIVE_REPORT_BYTES,
+      index: verification.archive?.index ?? {
+        status: "missing",
+        path: "archive/evidence-archive-index.json",
+        format: "sanitized-json-index",
+        entryCount: 0,
+        entryIds: [],
+        codes: ["archive-index-missing"],
+      },
     },
     changedState: {
       changed: false,

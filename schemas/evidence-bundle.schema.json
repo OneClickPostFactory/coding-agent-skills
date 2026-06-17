@@ -20,7 +20,7 @@
   ],
   "properties": {
     "bundleVersion": {
-      "const": "1.1.0"
+      "const": "1.2.0"
     },
     "bundleId": {
       "type": "string",
@@ -71,7 +71,8 @@
         "retainUntil",
         "disposition",
         "redaction",
-        "storage"
+        "storage",
+        "expiryAdvisory"
       ],
       "properties": {
         "policyVersion": {
@@ -95,6 +96,34 @@
         },
         "storage": {
           "enum": ["repository-fixture", "local-artifact", "external-archive-deferred"]
+        },
+        "expiryAdvisory": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "reviewThresholdDays",
+            "action",
+            "advisoryOnly",
+            "deleteAutomatically"
+          ],
+          "properties": {
+            "mode": {
+              "const": "retention-expiry-review"
+            },
+            "reviewThresholdDays": {
+              "type": "integer"
+            },
+            "action": {
+              "const": "manual-review-only"
+            },
+            "advisoryOnly": {
+              "const": true
+            },
+            "deleteAutomatically": {
+              "const": false
+            }
+          }
         }
       }
     },
@@ -129,7 +158,8 @@
             "status",
             "identityRef",
             "canonicalization",
-            "digestAlgorithm"
+            "digestAlgorithm",
+            "verificationPlan"
           ],
           "properties": {
             "mode": {
@@ -155,6 +185,47 @@
             "signatureSha256": {
               "type": "string",
               "pattern": "^[a-f0-9]{64}$"
+            },
+            "verificationPlan": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "mode",
+                "status",
+                "requiredArtifacts",
+                "validatesSignatureNow",
+                "failClosedWithoutValidSignature"
+              ],
+              "properties": {
+                "mode": {
+                  "const": "detached-signature-verification-plan"
+                },
+                "status": {
+                  "enum": [
+                    "fixture-unsigned-not-required",
+                    "planned-not-run",
+                    "ready-artifacts-required"
+                  ]
+                },
+                "requiredArtifacts": {
+                  "type": "array",
+                  "minItems": 3,
+                  "uniqueItems": true,
+                  "items": {
+                    "enum": [
+                      "canonical-bundle-json",
+                      "detached-signature",
+                      "public-verification-identity"
+                    ]
+                  }
+                },
+                "validatesSignatureNow": {
+                  "const": false
+                },
+                "failClosedWithoutValidSignature": {
+                  "const": true
+                }
+              }
             }
           }
         }
@@ -171,7 +242,8 @@
         "includeSecretValues",
         "writePolicy",
         "maxReportBytes",
-        "retentionLinked"
+        "retentionLinked",
+        "index"
       ],
       "properties": {
         "schemaVersion": {
@@ -198,6 +270,43 @@
         },
         "retentionLinked": {
           "const": true
+        },
+        "index": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "path",
+            "format",
+            "includeRawEvidence",
+            "includeSecretValues",
+            "writePolicy",
+            "retentionLinked"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "1.0.0"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.env(?:\\.|/|$)).+\\.json$"
+            },
+            "format": {
+              "const": "sanitized-json-index"
+            },
+            "includeRawEvidence": {
+              "const": false
+            },
+            "includeSecretValues": {
+              "const": false
+            },
+            "writePolicy": {
+              "const": "no-write-without-approval"
+            },
+            "retentionLinked": {
+              "const": true
+            }
+          }
         }
       }
     },

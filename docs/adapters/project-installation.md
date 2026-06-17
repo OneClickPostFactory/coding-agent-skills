@@ -53,8 +53,8 @@ The validator checks this field; it does not execute it.
 Two version pin forms are supported:
 
 ```text
-0.2.2
->=0.2.1 <0.3.0
+0.2.3
+>=0.2.2 <0.3.0
 ```
 
 The expected version must equal the running shared core version. The pin must contain both
@@ -99,5 +99,5 @@ commands, deploys, migrates, or changes project state.
 Use [the upgrade checker](upgrades.md) to compare a current declaration with a proposed
 revision and detect stale pins or compatibility drift before adoption.
 
-All committed project roots in v0.2.2 are disposable synthetic fixtures. No real project
+All committed project roots in v0.2.3 are disposable synthetic fixtures. No real project
 adapter or real project repository is modified.

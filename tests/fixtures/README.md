@@ -13,7 +13,9 @@ Current synthetic fixtures include:
 - `project-adapter-installation/`: disposable repositories with declarations and version pins.
 - `project-adapter-upgrades/`: paired disposable revisions for safe upgrades and drift rejection.
 - `project-adapter-upgrade-chains/`: ordered disposable revisions for chain-level compatibility.
-- `evidence-bundles/`: disposable evidence bundles for hash, replay, regression, retention, provenance, archive, and path checks.
+- `evidence-bundles/`: disposable evidence bundles for hash, replay, regression,
+  retention, retention-expiry advisory, provenance, archive index, archive report,
+  signature-plan, and path checks.
 - `completion/`: single and matrix-style schema-valid false completions.
 
 Future fixtures may cover dirty monorepos, non-Git projects, nested repositories, malformed manifests, bounded large trees, and secret-like filenames.

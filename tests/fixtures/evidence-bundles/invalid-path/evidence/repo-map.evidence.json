@@ -2,7 +2,7 @@
   "contractVersion": "1.0.0",
   "skill": {
     "name": "repo-map",
-    "version": "0.2.2"
+    "version": "0.2.3"
   },
   "invocation": {
     "id": "example-repo-map",

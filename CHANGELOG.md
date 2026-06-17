@@ -2,6 +2,26 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.3] - 2026-06-17
+
+### Added
+
+- Synthetic evidence archive index schema and fixture files linked from evidence bundles.
+- Retention-expiry advisory metadata and report output with manual-review-only semantics.
+- Detached-signature verification planning metadata that records required future artifacts
+  without running signing or verification infrastructure.
+- Disposable advisory, archive-index, and signature-plan fixtures for safe acceptance and
+  rejection coverage.
+
+### Changed
+
+- Evidence-bundle verification now validates archive indexes, reports retention-expiry
+  advisory status, and rejects unsafe signature-verification plans.
+- Archive reports now include archive-index summary, retention advisory status, and
+  detached-signature verification planning metadata.
+- Current synthetic examples and fixtures now target `0.2.3` with `0.2.2` as the previous
+  release boundary.
+
 ## [0.2.2] - 2026-06-16
 
 ### Added

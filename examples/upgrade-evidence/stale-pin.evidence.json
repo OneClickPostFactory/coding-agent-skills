@@ -2,7 +2,7 @@
   "contractVersion": "1.0.0",
   "validator": {
     "name": "check-adapter-upgrade",
-    "version": "0.2.2"
+    "version": "0.2.3"
   },
   "invocation": {
     "id": "example-stale-pin-001",
@@ -19,8 +19,8 @@
     "validationStatus": "pass"
   },
   "coreVersions": {
-    "before": "0.2.1",
-    "after": "0.2.1"
+    "before": "0.2.2",
+    "after": "0.2.2"
   },
   "adapterIds": [
     "fixture-upgrade-adapter"
@@ -57,7 +57,7 @@
         "adapterId": "fixture-upgrade-adapter",
         "skillId": "repo-map",
         "versions": [
-          "0.2.1"
+          "0.2.2"
         ],
         "mode": "audit-only"
       }
@@ -67,15 +67,15 @@
         "adapterId": "fixture-upgrade-adapter",
         "skillId": "repo-map",
         "versions": [
-          "0.2.1"
+          "0.2.2"
         ],
         "mode": "audit-only"
       }
     ]
   },
   "pinStatus": {
-    "before": "0.2.1",
-    "after": "0.2.1",
+    "before": "0.2.2",
+    "after": "0.2.2",
     "result": "stale",
     "staleClassification": "stale-exact-pin"
   },

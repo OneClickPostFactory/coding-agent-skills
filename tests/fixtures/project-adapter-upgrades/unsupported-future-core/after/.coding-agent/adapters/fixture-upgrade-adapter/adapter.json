@@ -19,7 +19,7 @@
     {
       "id": "repo-map",
       "compatibleVersions": [
-        "0.2.3"
+        "0.2.4"
       ],
       "declaredMode": "audit-only"
     }

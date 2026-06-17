@@ -75,11 +75,12 @@ snapshots. Chain summaries use ordinal revision labels rather than directory nam
 ## Evidence Bundles
 
 Disposable evidence bundles cover valid replay, hash mismatch, missing entries,
-cross-release regression, path traversal, invalid retention windows, provenance tag
-mismatch, and unsafe archive policy. Tests verify schema validity, entry hashes,
+cross-release regression, path traversal, invalid retention windows, retention-expiry
+advisory status, provenance tag mismatch, unsafe archive policy, archive-index mismatch,
+and unsafe signature-verification planning. Tests verify schema validity, entry hashes,
 evidence-pack semantics, adapter-upgrade evidence semantics, deterministic report hashes,
-status preservation, detached-signature design metadata, sanitized archive reports, and
-sanitized CLI output.
+status preservation, detached-signature design metadata, verification-plan metadata,
+sanitized archive indexes, sanitized archive reports, and sanitized CLI output.
 
 ## Maintainer Loop
 

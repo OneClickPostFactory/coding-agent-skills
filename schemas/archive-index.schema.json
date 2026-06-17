@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oneclickpostfactory.invalid/coding-agent-skills/archive-index.schema.json",
+  "title": "Coding Agent Evidence Archive Index",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "indexVersion",
+    "bundleId",
+    "generatedAt",
+    "core",
+    "retention",
+    "provenance",
+    "contentPolicy",
+    "entries",
+    "changedState",
+    "recommendedNextAction"
+  ],
+  "properties": {
+    "indexVersion": {
+      "const": "1.0.0"
+    },
+    "bundleId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "core": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["currentVersion", "previousVersion"],
+      "properties": {
+        "currentVersion": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "previousVersion": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        }
+      }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["retainUntil", "advisory"],
+      "properties": {
+        "retainUntil": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "advisory": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "advisoryOnly", "deleteAutomatically"],
+          "properties": {
+            "status": {
+              "enum": ["retained", "review-soon", "expired-review-required", "unknown"]
+            },
+            "advisoryOnly": {
+              "const": true
+            },
+            "deleteAutomatically": {
+              "const": false
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceTag", "signature"],
+      "properties": {
+        "sourceTag": {
+          "type": "string",
+          "pattern": "^v\\d+\\.\\d+\\.\\d+$"
+        },
+        "signature": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "verificationPlan"],
+          "properties": {
+            "status": {
+              "enum": ["unsigned-fixture", "verification-deferred", "detached-signature-present"]
+            },
+            "verificationPlan": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["mode", "status", "validatesSignatureNow"],
+              "properties": {
+                "mode": {
+                  "const": "detached-signature-verification-plan"
+                },
+                "status": {
+                  "enum": [
+                    "fixture-unsigned-not-required",
+                    "planned-not-run",
+                    "ready-artifacts-required"
+                  ]
+                },
+                "validatesSignatureNow": {
+                  "const": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "contentPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "includeRawEvidence", "includeSecretValues"],
+      "properties": {
+        "format": {
+          "const": "sanitized-json-index"
+        },
+        "includeRawEvidence": {
+          "const": false
+        },
+        "includeSecretValues": {
+          "const": false
+        }
+      }
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "sha256", "expectedStatus"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "kind": {
+            "enum": ["evidence-pack", "adapter-upgrade-evidence"]
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "expectedStatus": {
+            "enum": ["complete", "partial", "failed", "blocked", "pass", "warn", "fail"]
+          }
+        }
+      }
+    },
+    "changedState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["changed", "summary"],
+      "properties": {
+        "changed": {
+          "const": false
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "recommendedNextAction": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

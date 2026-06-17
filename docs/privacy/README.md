@@ -12,10 +12,10 @@ Never retain token values, cookies, private keys, authenticated headers, connect
 
 - Ephemeral command output should remain in the active task unless retention is explicitly required.
 - Persisted evidence packs must be sanitized before writing.
-- Evidence bundles must declare retention and redaction metadata before archive reports are
-  treated as reviewable release evidence.
-- Archive reports must be sanitized summaries; they must not retain raw evidence bodies,
-  command output, local home paths, credentials, or secret-like values.
+- Evidence bundles must declare retention, expiry-advisory, archive-index, provenance, and
+  redaction metadata before archive reports are treated as reviewable release evidence.
+- Archive indexes and reports must be sanitized summaries; they must not retain raw
+  evidence bodies, command output, local home paths, credentials, or secret-like values.
 - Validation output belongs in ignored `validation-output/` or `test-results/` directories.
 - Delete temporary authentication helpers immediately after use.
 

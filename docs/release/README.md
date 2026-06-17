@@ -8,6 +8,8 @@
 4. Run `node scripts/validate-maintainer-loop.mjs .`.
 5. Run `node scripts/verify-evidence-bundle.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json`.
 6. Run `node scripts/render-evidence-archive-report.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json`.
+   Confirm the sanitized report includes archive-index status, retention-expiry advisory
+   status, and detached-signature verification planning metadata without raw evidence.
 7. Run `node --test`.
 8. Parse every JSON file.
 9. Run a secret-pattern scan without printing values.

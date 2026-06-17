@@ -78,6 +78,7 @@ const requiredRootFiles = [
   "schemas/adapter-upgrade-evidence.schema.json",
   "schemas/evidence-bundle.schema.json",
   "schemas/archive-report.schema.json",
+  "schemas/archive-index.schema.json",
   "examples/upgrade-evidence/README.md",
   "examples/upgrade-evidence/valid-upgrade.evidence.json",
   "examples/upgrade-evidence/stale-pin.evidence.json",
@@ -137,6 +138,10 @@ const requiredRootFiles = [
   "tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json",
   "tests/fixtures/evidence-bundles/valid-bundle/evidence/repo-map.evidence.json",
   "tests/fixtures/evidence-bundles/valid-bundle/evidence/valid-upgrade.evidence.json",
+  "tests/fixtures/evidence-bundles/valid-bundle/archive/evidence-archive-index.json",
+  "tests/fixtures/evidence-bundles/advisory-review-soon/evidence-bundle.json",
+  "tests/fixtures/evidence-bundles/invalid-archive-index/evidence-bundle.json",
+  "tests/fixtures/evidence-bundles/invalid-signature-plan/evidence-bundle.json",
   "tests/fixtures/project-adapter-installation/valid-compatible-range/coding-agent.skills.json",
   "tests/fixtures/project-adapter-installation/valid-multiple-adapters/.coding-agent/skills.json",
   "tests/fixtures/project-adapter-installation/invalid-missing-declaration/.coding-agent/adapters/basic/adapter.json",
@@ -430,6 +435,7 @@ const upgradeEvidenceSchema = readJson(
 );
 const evidenceBundleSchema = readJson("schemas/evidence-bundle.schema.json");
 const evidenceArchiveReportSchema = readJson("schemas/archive-report.schema.json");
+const evidenceArchiveIndexSchema = readJson("schemas/archive-index.schema.json");
 
 if (
   manifestSchema &&
@@ -439,7 +445,8 @@ if (
   evidenceSchema &&
   upgradeEvidenceSchema &&
   evidenceBundleSchema &&
-  evidenceArchiveReportSchema
+  evidenceArchiveReportSchema &&
+  evidenceArchiveIndexSchema
 ) {
   const policiesBySkill = Object.fromEntries(
     PILOT_SKILLS.map((skill) => [
@@ -609,6 +616,12 @@ if (
     for (const error of validateValue(evidenceArchiveReportSchema, archiveReport.report)) {
       failures.push(`valid evidence archive report: ${error}`);
     }
+    const archiveIndex = readJson(
+      "tests/fixtures/evidence-bundles/valid-bundle/archive/evidence-archive-index.json",
+    );
+    for (const error of validateValue(evidenceArchiveIndexSchema, archiveIndex)) {
+      failures.push(`valid evidence archive index: ${error}`);
+    }
   }
 }
 
@@ -652,7 +665,7 @@ for (const [file, patterns] of [
   ],
   [
     "docs/versioning/README.md",
-    [/exact pin/i, /compatible range/i, />=0\.2\.1 <0\.3\.0/],
+    [/exact pin/i, /compatible range/i, />=0\.2\.2 <0\.3\.0/],
   ],
   [
     "docs/testing/README.md",

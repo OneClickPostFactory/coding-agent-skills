@@ -1,11 +1,11 @@
 {
-  "bundleVersion": "1.1.0",
+  "bundleVersion": "1.2.0",
   "bundleId": "fixture-evidence-bundle",
   "generatedAt": "2026-06-16T12:00:00Z",
   "core": {
     "id": "coding-agent-skills",
-    "currentVersion": "0.2.2",
-    "previousVersion": "0.2.1"
+    "currentVersion": "0.2.3",
+    "previousVersion": "0.2.2"
   },
   "replay": {
     "deterministic": true,
@@ -18,20 +18,38 @@
     "retainUntil": "2026-09-16T12:00:00Z",
     "disposition": "retain-then-review",
     "redaction": "secret-values-prohibited",
-    "storage": "repository-fixture"
+    "storage": "repository-fixture",
+    "expiryAdvisory": {
+      "mode": "retention-expiry-review",
+      "reviewThresholdDays": 45,
+      "action": "manual-review-only",
+      "advisoryOnly": true,
+      "deleteAutomatically": false
+    }
   },
   "provenance": {
     "schemaVersion": "1.0.0",
     "source": "synthetic-fixture",
     "producer": "coding-agent-skills/tests",
     "sourceCommit": "0123456789abcdef0123456789abcdef01234567",
-    "sourceTag": "v0.2.2",
+    "sourceTag": "v0.2.3",
     "signature": {
       "mode": "detached-signature-design",
       "status": "unsigned-fixture",
       "identityRef": "fixture-signing-policy",
       "canonicalization": "canonical-json-v1",
-      "digestAlgorithm": "sha256"
+      "digestAlgorithm": "sha256",
+      "verificationPlan": {
+        "mode": "detached-signature-verification-plan",
+        "status": "fixture-unsigned-not-required",
+        "requiredArtifacts": [
+          "canonical-bundle-json",
+          "detached-signature",
+          "public-verification-identity"
+        ],
+        "validatesSignatureNow": false,
+        "failClosedWithoutValidSignature": true
+      }
     }
   },
   "archive": {
@@ -42,7 +60,16 @@
     "includeSecretValues": false,
     "writePolicy": "no-write-without-approval",
     "maxReportBytes": 200000,
-    "retentionLinked": true
+    "retentionLinked": true,
+    "index": {
+      "schemaVersion": "1.0.0",
+      "path": "archive/evidence-archive-index.json",
+      "format": "sanitized-json-index",
+      "includeRawEvidence": false,
+      "includeSecretValues": false,
+      "writePolicy": "no-write-without-approval",
+      "retentionLinked": true
+    }
   },
   "entries": [
     {
@@ -56,13 +83,13 @@
       "id": "upgrade-evidence",
       "kind": "adapter-upgrade-evidence",
       "path": "evidence/valid-upgrade.evidence.json",
-      "sha256": "2d796633202529d2fb2e74cd5b0e3351058cdb827a210a6390c61639e37a82fd",
+      "sha256": "0a6c5ad7dbf323a3e950e94cc110d5e2e5fa7388a7784f29bdc931485a22dc8b",
       "expectedStatus": "pass"
     }
   ],
   "regression": {
-    "baselineVersion": "0.2.1",
-    "targetVersion": "0.2.2",
+    "baselineVersion": "0.2.2",
+    "targetVersion": "0.2.3",
     "baselineEntries": [
       {
         "id": "repo-map-evidence",

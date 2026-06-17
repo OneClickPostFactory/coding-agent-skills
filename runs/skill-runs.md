@@ -85,3 +85,33 @@ This file records bounded maintainer-loop runs. Entries must not contain secrets
 - Validation result: pass
 - Commit/tag/push status: pending approved release workflow
 - Next state: release `v0.2.2`, then run `./scripts/run-next --allow evidence-harness`
+
+
+## run-20260616225607
+
+- Run ID: `run-20260616225607`
+- Timestamp: `2026-06-16T22:56:07.929Z`
+- Command used: `./scripts/run-next --allow evidence-harness`
+- Permissions granted: `evidence-harness`
+- Files changed: `runs/skill-runs.md`, `work-ledger.md`
+- Validation commands:
+  - `node scripts/validate-pack.mjs .`
+  - `node scripts/test-pack.mjs`
+  - `node scripts/validate-maintainer-loop.mjs .`
+  - `node --test`
+- Validation result: pass
+- Commit/tag/push status: not performed by runner
+- Next state: selected `Evidence-bundle archive index fixtures, retention-expiry advisory reporting, and detached-signature verification planning.`; human approval required before implementation
+
+
+## implementation-v0.2.3-evidence-archive-index-advisory-signature-plan
+
+- Run ID: `implementation-v0.2.3-evidence-archive-index-advisory-signature-plan`
+- Timestamp: `2026-06-17T00:00:00Z`
+- Command used: `implement approved evidence-harness milestone selected by run-20260616225607`
+- Permissions granted: `commit, docs-hardening, evidence-harness, push, release-preflight, tag, test-hardening`
+- Files changed: evidence-bundle schema, archive-report schema, archive-index schema, verifier, synthetic fixtures, tests, CI-adjacent validator expectations, docs, changelog, roadmap, ledger, run log, and versioned examples
+- Validation commands: `node scripts/validate-pack.mjs .`; `node scripts/test-pack.mjs`; `node scripts/validate-maintainer-loop.mjs .`; `node scripts/verify-evidence-bundle.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json`; `node scripts/render-evidence-archive-report.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json`; `node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic`; `node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin`; `node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after`; `node scripts/check-adapter-upgrade-chain.mjs tests/fixtures/project-adapter-upgrade-chains/valid-chain`; `node --test`; JSON parsing; diff and secret-pattern checks
+- Validation result: pass
+- Commit/tag/push status: pending approved release workflow
+- Next state: release `v0.2.3`; no next repo-led runner command is queued without new human direction

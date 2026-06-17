@@ -17,14 +17,16 @@ The pilot release remains limited to five approved skills. Future work requires 
   compatibility regression reporting over disposable evidence fixtures.
 - `v0.2.2`: evidence-bundle retention policy, detached-signature provenance design, and
   sanitized archive-report rendering.
+- `v0.2.3`: synthetic evidence-bundle archive indexes, retention-expiry advisory
+  reporting, and detached-signature verification planning.
 
 The next milestone is recorded in [work-ledger.md](work-ledger.md). The
 [maintainer loop](RUNBOOK.md) may select and evidence that milestone, but it must stop
 before implementation until the relevant human approval is granted.
 
-The queued milestone after `v0.2.2` is evidence-bundle archive index fixtures,
-retention-expiry advisory reporting, and detached-signature verification planning. Real
-project adapters and new skills remain separately gated.
+No evidence-harness milestone is queued after `v0.2.3`. Real project adapters, new skills,
+package publication, global CLI installation, platform work, and signing infrastructure
+remain separately gated.
 
 | Candidate | Scope | Mode | Current gate |
 |---|---|---|---|

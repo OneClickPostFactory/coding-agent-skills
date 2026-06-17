@@ -4,7 +4,7 @@ Run the dependency-free release suite with:
 
 `node scripts/test-pack.mjs`
 
-The current suite verifies 56 release conditions, including:
+The current suite verifies 63 release conditions, including:
 
 - The exact approved five-skill inventory.
 - Manifest, command-policy, and evidence-pack schema validity.
@@ -35,6 +35,7 @@ The current suite verifies 56 release conditions, including:
 - Machine-readable upgrade evidence schema validity and no-change declarations.
 - Safe JSON and explicit non-overwriting evidence output.
 - Multi-step chain acceptance, stale pins, compatibility gaps, policy weakening, and privacy.
+- Evidence-bundle archive indexes, retention-expiry advisories, and signature-plan checks.
 - Property-generated command-policy bypass combinations.
 - A matrix of schema-valid but semantically false completion claims.
 

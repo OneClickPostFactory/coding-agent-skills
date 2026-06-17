@@ -9,7 +9,7 @@ Adapter upgrades compare four independent version surfaces:
 
 ## Supported Transition
 
-The `v0.2.2` pair harness recognizes `0.2.1` as its supported source and `0.2.2` as its target.
+The `v0.2.3` pair harness recognizes `0.2.2` as its supported source and `0.2.3` as its target.
 The source revision is validated against the version it declares. The target revision is
 then required to match the running core.
 
@@ -19,7 +19,7 @@ target newer than the running core is an unsupported future core.
 
 Multi-step chains may retain earlier synthetic revisions when every adjacent transition is
 a contiguous patch upgrade. Each step is evaluated against its own target core, while the
-last revision must target `0.2.2`.
+last revision must target `0.2.3`.
 
 ## Drift Rules
 

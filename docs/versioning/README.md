@@ -15,8 +15,8 @@ Tags use `vMAJOR.MINOR.PATCH`. Tags are created only after validation passes, `m
 A project-owned adapter declaration records the expected shared core version and one version
 pin. Supported forms are:
 
-- Exact pin: `0.2.2`
-- Compatible range: `>=0.2.1 <0.3.0`
+- Exact pin: `0.2.3`
+- Compatible range: `>=0.2.2 <0.3.0`
 
 Ranges are conjunctions of plain Semantic Versioning comparators. Caret, tilde, wildcard,
 prerelease, build metadata, and logical-OR forms are not supported by the dependency-free

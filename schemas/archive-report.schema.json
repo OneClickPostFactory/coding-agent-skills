@@ -17,7 +17,7 @@
   ],
   "properties": {
     "reportVersion": {
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "bundleId": {
       "type": "string",
@@ -94,7 +94,14 @@
     "retention": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["classification", "minimumDays", "retainUntil", "disposition", "storage"],
+      "required": [
+        "classification",
+        "minimumDays",
+        "retainUntil",
+        "disposition",
+        "storage",
+        "expiryAdvisory"
+      ],
       "properties": {
         "classification": {
           "enum": ["synthetic-test-evidence", "maintainer-release-evidence"]
@@ -111,6 +118,38 @@
         },
         "storage": {
           "enum": ["repository-fixture", "local-artifact", "external-archive-deferred"]
+        },
+        "expiryAdvisory": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "daysUntilExpiry",
+            "reviewThresholdDays",
+            "advisoryOnly",
+            "deleteAutomatically",
+            "recommendedAction"
+          ],
+          "properties": {
+            "status": {
+              "enum": ["retained", "review-soon", "expired-review-required", "unknown"]
+            },
+            "daysUntilExpiry": {
+              "type": "integer"
+            },
+            "reviewThresholdDays": {
+              "type": "integer"
+            },
+            "advisoryOnly": {
+              "const": true
+            },
+            "deleteAutomatically": {
+              "const": false
+            },
+            "recommendedAction": {
+              "const": "manual-review-only"
+            }
+          }
         }
       }
     },
@@ -137,7 +176,14 @@
         "signature": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["mode", "status", "identityRef", "canonicalization", "digestAlgorithm"],
+          "required": [
+            "mode",
+            "status",
+            "identityRef",
+            "canonicalization",
+            "digestAlgorithm",
+            "verificationPlan"
+          ],
           "properties": {
             "mode": {
               "const": "detached-signature-design"
@@ -154,6 +200,47 @@
             },
             "digestAlgorithm": {
               "const": "sha256"
+            },
+            "verificationPlan": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "mode",
+                "status",
+                "requiredArtifacts",
+                "validatesSignatureNow",
+                "failClosedWithoutValidSignature"
+              ],
+              "properties": {
+                "mode": {
+                  "const": "detached-signature-verification-plan"
+                },
+                "status": {
+                  "enum": [
+                    "fixture-unsigned-not-required",
+                    "planned-not-run",
+                    "ready-artifacts-required"
+                  ]
+                },
+                "requiredArtifacts": {
+                  "type": "array",
+                  "minItems": 3,
+                  "uniqueItems": true,
+                  "items": {
+                    "enum": [
+                      "canonical-bundle-json",
+                      "detached-signature",
+                      "public-verification-identity"
+                    ]
+                  }
+                },
+                "validatesSignatureNow": {
+                  "const": false
+                },
+                "failClosedWithoutValidSignature": {
+                  "const": true
+                }
+              }
             }
           }
         }
@@ -162,7 +249,7 @@
     "archive": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["format", "reportPath", "writePolicy", "maxReportBytes"],
+      "required": ["format", "reportPath", "writePolicy", "maxReportBytes", "index"],
       "properties": {
         "format": {
           "const": "sanitized-json-summary"
@@ -176,6 +263,40 @@
         },
         "maxReportBytes": {
           "type": "integer"
+        },
+        "index": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "path", "format", "entryCount", "entryIds", "codes"],
+          "properties": {
+            "status": {
+              "enum": ["present", "missing", "failed"]
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.env(?:\\.|/|$)).+\\.json$"
+            },
+            "format": {
+              "const": "sanitized-json-index"
+            },
+            "entryCount": {
+              "type": "integer"
+            },
+            "entryIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              }
+            },
+            "codes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
         }
       }
     },

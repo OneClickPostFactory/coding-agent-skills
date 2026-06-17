@@ -2,7 +2,7 @@
   "contractVersion": "1.0.0",
   "validator": {
     "name": "check-adapter-upgrade-chain",
-    "version": "0.2.2"
+    "version": "0.2.3"
   },
   "invocation": {
     "id": "example-chain-pass-001",
@@ -20,7 +20,7 @@
   },
   "coreVersions": {
     "before": "0.1.4",
-    "after": "0.2.2"
+    "after": "0.2.3"
   },
   "adapterIds": [
     "fixture-chain-adapter"
@@ -67,7 +67,7 @@
         "adapterId": "fixture-chain-adapter",
         "skillId": "repo-map",
         "versions": [
-          "0.2.2"
+          "0.2.3"
         ],
         "mode": "audit-only"
       }
@@ -75,7 +75,7 @@
   },
   "pinStatus": {
     "before": "0.1.4",
-    "after": "0.2.2",
+    "after": "0.2.3",
     "result": "accepted",
     "staleClassification": "none"
   },
@@ -104,9 +104,9 @@
   "recommendedNextAction": "Request human approval before adopting this upgrade in a real project.",
   "chainId": "example-safe-chain",
   "chainSummary": {
-    "revisionCount": 5,
-    "transitionCount": 4,
-    "passedTransitions": 4,
+    "revisionCount": 7,
+    "transitionCount": 6,
+    "passedTransitions": 6,
     "failedTransitions": 0,
     "steps": [
       {
@@ -134,6 +134,20 @@
         "stepIndex": 4,
         "beforeRevision": "revision-4",
         "afterRevision": "revision-5",
+        "status": "pass",
+        "codes": []
+      },
+      {
+        "stepIndex": 5,
+        "beforeRevision": "revision-5",
+        "afterRevision": "revision-6",
+        "status": "pass",
+        "codes": []
+      },
+      {
+        "stepIndex": 6,
+        "beforeRevision": "revision-6",
+        "afterRevision": "revision-7",
         "status": "pass",
         "codes": []
       }

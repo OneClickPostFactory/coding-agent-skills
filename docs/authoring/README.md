@@ -44,8 +44,11 @@ For multiple revisions, use contiguous ordinal directories and run
 `schemas/adapter-upgrade-evidence.schema.json`, keep `changedState.changed` false, and never
 store raw project paths, project IDs, `.env` values, credentials, or applied changes.
 
-Evidence bundles must declare retention, provenance, and archive policy metadata. Use
-`node scripts/verify-evidence-bundle.mjs <bundle-file>` before claiming replay or regression
-success, and use `node scripts/render-evidence-archive-report.mjs <bundle-file>` when a
-sanitized archive summary is needed. Do not inline signatures, raw evidence bodies, command
-output, local paths, or secret-like values into archive reports.
+Evidence bundles must declare retention, expiry-advisory, provenance, archive-index, and
+archive policy metadata. Use `node scripts/verify-evidence-bundle.mjs <bundle-file>` before
+claiming replay or regression success, and use
+`node scripts/render-evidence-archive-report.mjs <bundle-file>` when a sanitized archive
+summary is needed. Do not inline signatures, raw evidence bodies, command output, local
+paths, or secret-like values into archive indexes or reports. Detached-signature
+verification planning is metadata only until a future milestone explicitly approves real
+verification infrastructure.
