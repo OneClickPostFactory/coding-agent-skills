@@ -49,6 +49,7 @@ const requiredRootFiles = [
   "CHANGELOG.md",
   "ROADMAP.md",
   "CONTRIBUTING.md",
+  "package.json",
   "bin/coding-agent-skills",
   "work-ledger.md",
   "runs/skill-runs.md",
@@ -68,6 +69,7 @@ const requiredRootFiles = [
   "docs/versioning/adapter-compatibility.md",
   "docs/usage/README.md",
   "docs/release/README.md",
+  "docs/release/npm-package.md",
   "docs/testing/README.md",
   "contracts/evidence-pack/README.md",
   "contracts/evidence-pack/evidence-pack.schema.json",
@@ -633,6 +635,54 @@ if (contractExample?.skill?.version !== PILOT_VERSION) {
   failures.push("evidence-pack contract example has a stale skill version");
 }
 
+const packageJson = readJson("package.json");
+if (packageJson) {
+  const expectedFiles = [
+    "bin/",
+    "scripts/",
+    "skills/",
+    "schemas/",
+    "contracts/",
+    "docs/",
+    "examples/",
+    "tests/",
+    ".github/workflows/validate.yml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "README.md",
+    "ROADMAP.md",
+    "RUNBOOK.md",
+    "work-ledger.md",
+    "runs/skill-runs.md",
+  ];
+  if (packageJson.name !== "coding-agent-skills") {
+    failures.push("package.json has unexpected package name");
+  }
+  if (packageJson.version !== "0.2.6") {
+    failures.push("package.json version must be 0.2.6 for the npm readiness scaffold");
+  }
+  if (packageJson.type !== "module") failures.push("package.json must preserve ESM mode");
+  if (packageJson.private !== true) {
+    failures.push("package.json must keep private true until publication approval");
+  }
+  if (packageJson.license !== "UNLICENSED") {
+    failures.push("package.json license must remain UNLICENSED until approved");
+  }
+  if (packageJson.bin?.["coding-agent-skills"] !== "./bin/coding-agent-skills") {
+    failures.push("package.json bin mapping is missing coding-agent-skills");
+  }
+  if (packageJson.dependencies || packageJson.devDependencies) {
+    failures.push("package.json must remain dependency-free");
+  }
+  if (JSON.stringify(packageJson.files) !== JSON.stringify(expectedFiles)) {
+    failures.push("package.json files allowlist has drifted");
+  }
+  if (packageJson.scripts?.["pack:dry-run"] !== "npm pack --dry-run") {
+    failures.push("package.json must expose a dry-run pack script only");
+  }
+}
+
 for (const [file, patterns] of [
   [
     "docs/adapters/README.md",
@@ -661,6 +711,10 @@ for (const [file, patterns] of [
   [
     "docs/evidence-bundles/README.md",
     [/deterministic/i, /regression/i, /retention/i, /provenance/i, /archive/i, /read-only/i],
+  ],
+  [
+    "docs/release/npm-package.md",
+    [/private: true/i, /npm pack --dry-run/i, /Publication remains blocked/i],
   ],
   [
     "docs/versioning/adapter-compatibility.md",

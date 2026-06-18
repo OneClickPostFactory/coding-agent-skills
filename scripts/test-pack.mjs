@@ -81,6 +81,7 @@ const requiredReleaseFiles = [
   "CONTRIBUTING.md",
   "RUNBOOK.md",
   "ROADMAP.md",
+  "package.json",
   "work-ledger.md",
   "runs/skill-runs.md",
   "bin/coding-agent-skills",
@@ -91,6 +92,7 @@ const requiredReleaseFiles = [
   "docs/adapters/README.md",
   "docs/usage/README.md",
   "docs/release/README.md",
+  "docs/release/npm-package.md",
   "docs/testing/README.md",
 ];
 
@@ -294,6 +296,43 @@ test("local CLI maps approved commands to existing safe scripts", () => {
   });
   assert.equal(unknown.status, 2);
   assert.match(unknown.stderr, /unknown command: deploy/);
+});
+
+test("npm package scaffold is dependency-free and publish-guarded", () => {
+  const packageJson = readJson("package.json");
+  assert.equal(packageJson.name, "coding-agent-skills");
+  assert.equal(packageJson.version, "0.2.6");
+  assert.equal(packageJson.type, "module");
+  assert.equal(packageJson.private, true);
+  assert.equal(packageJson.license, "UNLICENSED");
+  assert.deepEqual(packageJson.bin, {
+    "coding-agent-skills": "./bin/coding-agent-skills",
+  });
+  assert.equal(packageJson.dependencies, undefined);
+  assert.equal(packageJson.devDependencies, undefined);
+  assert.deepEqual(packageJson.files, [
+    "bin/",
+    "scripts/",
+    "skills/",
+    "schemas/",
+    "contracts/",
+    "docs/",
+    "examples/",
+    "tests/",
+    ".github/workflows/validate.yml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "README.md",
+    "ROADMAP.md",
+    "RUNBOOK.md",
+    "work-ledger.md",
+    "runs/skill-runs.md",
+  ]);
+  assert.equal(packageJson.scripts.validate, "node scripts/validate-pack.mjs .");
+  assert.equal(packageJson.scripts["pack:dry-run"], "npm pack --dry-run");
+  assert.equal(restrictedShellReason("npm pack --dry-run"), null);
+  assert.match(read("docs/release/npm-package.md"), /Publication remains blocked/);
 });
 
 test("every skill has the required files and sections", () => {

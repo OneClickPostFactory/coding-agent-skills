@@ -492,7 +492,7 @@ function classifySegment(segment, options = {}) {
       return "Git command is not read-only allowlisted";
     }
   }
-  if (executable === "npm" && !/^npm\s+(?:run\s+(?:lint|typecheck|test|build|check|validate)|test)\b/.test(segment)) {
+  if (executable === "npm" && !/^npm\s+(?:run\s+(?:lint|typecheck|test|build|check|validate)|test|pack\s+--dry-run\b)\b/.test(segment)) {
     if (!/^npm\s+pkg\s+get\s+scripts\b/.test(segment)) return "unsafe npm script";
   }
   if (executable === "pnpm" && !/^pnpm\s+(?:run\s+)?(?:lint|typecheck|test|build|check|validate)\b/.test(segment)) {

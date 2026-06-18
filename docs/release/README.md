@@ -22,6 +22,9 @@
 
 Release automation, package publication, deployments, migrations, and GitHub Release pages are outside the pilot release.
 
+The [npm package readiness scaffold](npm-package.md) documents the local package shape,
+dry-run inspection, and publish safety gates. It is not publication approval.
+
 ## Maintainer-Loop Boundary
 
 The maintainer loop may run release preflight when `release-preflight` is explicitly

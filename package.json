@@ -1,0 +1,38 @@
+{
+  "name": "coding-agent-skills",
+  "version": "0.2.6",
+  "description": "Shared, versioned workflows for evidence-driven coding agents.",
+  "type": "module",
+  "private": true,
+  "license": "UNLICENSED",
+  "bin": {
+    "coding-agent-skills": "./bin/coding-agent-skills"
+  },
+  "files": [
+    "bin/",
+    "scripts/",
+    "skills/",
+    "schemas/",
+    "contracts/",
+    "docs/",
+    "examples/",
+    "tests/",
+    ".github/workflows/validate.yml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "README.md",
+    "ROADMAP.md",
+    "RUNBOOK.md",
+    "work-ledger.md",
+    "runs/skill-runs.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "validate": "node scripts/validate-pack.mjs .",
+    "test": "node scripts/test-pack.mjs && node --test",
+    "pack:dry-run": "npm pack --dry-run"
+  }
+}
