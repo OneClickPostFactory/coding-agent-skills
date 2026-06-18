@@ -1,0 +1,75 @@
+#!/usr/bin/env node
+import { spawnSync } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+const commands = {
+  "validate-pack": {
+    script: "scripts/validate-pack.mjs",
+    args: () => ["."],
+    usage: "coding-agent-skills validate-pack",
+  },
+  "validate-project": {
+    script: "scripts/validate-project-adapters.mjs",
+    args: ([projectRoot]) => [projectRoot],
+    usage: "coding-agent-skills validate-project <project-root>",
+    requiredArgs: 1,
+  },
+  "repo-map": {
+    script: "scripts/render-adapter-repo-map.mjs",
+    args: ([projectRoot]) => [projectRoot],
+    usage: "coding-agent-skills repo-map <project-root>",
+    requiredArgs: 1,
+  },
+  "validate-adapters": {
+    script: "scripts/validate-adapters.mjs",
+    args: ([adapterRoot]) => [adapterRoot],
+    usage: "coding-agent-skills validate-adapters <adapter-root>",
+    requiredArgs: 1,
+  },
+};
+
+function usage(exitCode = 0) {
+  const lines = [
+    "usage: coding-agent-skills <command> [args]",
+    "",
+    "commands:",
+    "  validate-pack",
+    "  validate-project <project-root>",
+    "  repo-map <project-root>",
+    "  validate-adapters <adapter-root>",
+    "",
+    "local-only wrapper; no npm package or global install is implied",
+  ];
+  const stream = exitCode === 0 ? process.stdout : process.stderr;
+  stream.write(`${lines.join("\n")}\n`);
+  process.exitCode = exitCode;
+}
+
+const [commandName, ...args] = process.argv.slice(2);
+if (!commandName || commandName === "help" || commandName === "--help" || commandName === "-h") {
+  usage(commandName ? 0 : 2);
+} else if (!Object.hasOwn(commands, commandName)) {
+  process.stderr.write(`unknown command: ${commandName}\n`);
+  usage(2);
+} else {
+  const command = commands[commandName];
+  if ((command.requiredArgs ?? 0) !== args.length) {
+    process.stderr.write(`usage: ${command.usage}\n`);
+    process.exitCode = 2;
+  } else {
+    const result = spawnSync(
+      process.execPath,
+      [path.join(repoRoot, command.script), ...command.args(args)],
+      {
+        cwd: repoRoot,
+        encoding: "utf8",
+        stdio: "inherit",
+        shell: false,
+      },
+    );
+    process.exitCode = result.status ?? 1;
+  }
+}

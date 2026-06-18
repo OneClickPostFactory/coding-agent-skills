@@ -34,6 +34,8 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 
 - Read [usage guidance](docs/usage/README.md) before selecting a skill.
 - Browse [safe examples](examples/README.md) for manifests, policies, evidence packs, and workflows.
+- Use the local command wrapper from a clone:
+  `bin/coding-agent-skills validate-pack`.
 - Validate project adapters against [the formal adapter schema](schemas/project-adapter.schema.json).
 - Review [external adapter discovery](docs/adapters/discovery.md).
 - Run `node scripts/validate-adapters.mjs <adapter-root>` for a disposable external root.

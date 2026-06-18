@@ -49,6 +49,7 @@ const requiredRootFiles = [
   "CHANGELOG.md",
   "ROADMAP.md",
   "CONTRIBUTING.md",
+  "bin/coding-agent-skills",
   "work-ledger.md",
   "runs/skill-runs.md",
   ".github/workflows/validate.yml",

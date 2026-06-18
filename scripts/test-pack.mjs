@@ -83,6 +83,7 @@ const requiredReleaseFiles = [
   "ROADMAP.md",
   "work-ledger.md",
   "runs/skill-runs.md",
+  "bin/coding-agent-skills",
   "scripts/run-next",
   "scripts/validate-maintainer-loop.mjs",
   "docs/versioning/README.md",
@@ -244,6 +245,55 @@ test("the maintainer loop is present, executable, and fails closed", () => {
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, /run-next refused:/);
   }
+});
+
+test("local CLI maps approved commands to existing safe scripts", () => {
+  const cliPath = path.join(root, "bin", "coding-agent-skills");
+  const cliText = read("bin/coding-agent-skills");
+  assert.notEqual(fs.statSync(cliPath).mode & 0o111, 0);
+  assert.ok(cliText.includes("scripts/validate-pack.mjs"));
+  assert.ok(cliText.includes("scripts/validate-project-adapters.mjs"));
+  assert.ok(cliText.includes("scripts/render-adapter-repo-map.mjs"));
+  assert.ok(cliText.includes("scripts/validate-adapters.mjs"));
+  assert.ok(!cliText.includes(".env"));
+
+  const fixtureRoot = path.join(root, "tests", "fixtures");
+  const commands = [
+    [["validate-pack"], /pilot pack valid/],
+    [
+      ["validate-adapters", path.join(fixtureRoot, "external-adapters", "valid-basic")],
+      /external adapter validation complete/,
+    ],
+    [
+      [
+        "validate-project",
+        path.join(fixtureRoot, "project-adapter-installation", "valid-exact-pin"),
+      ],
+      /project adapter validation complete/,
+    ],
+    [
+      ["repo-map", path.join(fixtureRoot, "project-adapter-installation", "valid-exact-pin")],
+      /# Adapter-Aware Repo Map/,
+    ],
+  ];
+
+  for (const [args, expected] of commands) {
+    const result = spawnSync(cliPath, args, {
+      cwd: root,
+      encoding: "utf8",
+      stdio: "pipe",
+    });
+    assert.equal(result.status, 0, `${args.join(" ")}\n${result.stderr}`);
+    assert.match(result.stdout, expected, args.join(" "));
+  }
+
+  const unknown = spawnSync(cliPath, ["deploy"], {
+    cwd: root,
+    encoding: "utf8",
+    stdio: "pipe",
+  });
+  assert.equal(unknown.status, 2);
+  assert.match(unknown.stderr, /unknown command: deploy/);
 });
 
 test("every skill has the required files and sections", () => {

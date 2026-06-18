@@ -30,7 +30,10 @@ export const RESTRICTED_CATEGORIES = [
 ];
 
 const KNOWN_COMMANDS = new Set([
+  "./bin/coding-agent-skills",
+  "bin/coding-agent-skills",
   "cat",
+  "coding-agent-skills",
   "curl",
   "docker",
   "find",
@@ -505,6 +508,16 @@ function classifySegment(segment, options = {}) {
     )
   ) {
     return "node execution is not allowlisted";
+  }
+  if (
+    ["coding-agent-skills", "bin/coding-agent-skills", "./bin/coding-agent-skills"].includes(
+      executable,
+    ) &&
+    !/^(?:\.\/)?(?:bin\/)?coding-agent-skills\s+(?:validate-pack|validate-project\s+\S+|repo-map\s+\S+|validate-adapters\s+\S+|help|--help|-h)\s*$/.test(
+      segment,
+    )
+  ) {
+    return "local CLI command is not allowlisted";
   }
   if (executable === "systemctl" && !/^systemctl\s+(?:--user\s+)?status\b/.test(segment)) {
     return "systemctl operation is not status-only";
