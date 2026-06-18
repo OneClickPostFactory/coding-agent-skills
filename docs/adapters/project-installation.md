@@ -103,5 +103,9 @@ Before any real project adapter is created, use the
 [real project adoption gate](real-project-adoption.md) to confirm candidate criteria,
 required evidence, approval gates, stop conditions, and rollback boundaries.
 
-All committed project roots in v0.2.3 are disposable synthetic fixtures. No real project
-adapter or real project repository is modified.
+All committed project roots in this shared repository remain disposable synthetic fixtures.
+The first external project-owned adapter was adopted in
+`/home/oneclickwebsitedesignfactory/tax-lien-platform` at candidate commit
+`c548b1a6cbb3455a70b89d0e301e22435bfccac9`. The shared repository still owns the schemas,
+completion rules, command policy, and validators; the project repository owns its adapter
+manifest and declaration.

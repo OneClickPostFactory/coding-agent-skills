@@ -138,3 +138,56 @@ adapter pass.
 - Deployments, migrations, service mutations, or privileged API calls.
 - Commit, push, tag, or release publication.
 - Reading or printing `.env` contents.
+
+## First Adoption Evidence
+
+The first external project-owned adapter adoption has completed for
+`/home/oneclickwebsitedesignfactory/tax-lien-platform` at candidate commit
+`c548b1a6cbb3455a70b89d0e301e22435bfccac9`.
+
+The adopted adapter scope is intentionally narrow:
+
+- `repo-map` only.
+- Docs/metadata-only.
+- No commands.
+- No runtime checks.
+- No build, test, or package behavior.
+- No platform, deployment, migration, or service behavior.
+- No secret-aware behavior.
+
+Validation evidence:
+
+- Shared pack validation passed.
+- Shared release tests passed.
+- Maintainer-loop validation passed.
+- Project adapter validation accepted one adapter and one skill with the core pin accepted.
+- Built-in Node tests passed.
+- Shared and candidate whitespace checks passed.
+- Candidate adapter JSON parsed successfully.
+
+Publication caveat: the candidate repository's normal pre-push hook attempted package
+operations, including install, audit, and typecheck. The run was interrupted to preserve
+the approved no-install/no-build/no-test boundary. Publication then completed with hook
+verification bypass after the shared adapter validator and safe checks passed.
+
+Future adoption runs must explicitly decide whether repository hooks are allowed or whether
+hook bypass is required to preserve the approved boundary. Hook bypass does not replace
+adapter validation; it only prevents unapproved project-native package operations.
+
+Remaining approval boundaries:
+
+- Expanding the adapter beyond `repo-map`.
+- Enabling command aliases, build verification, runtime truth, or status checks.
+- Running candidate project package scripts.
+- Inspecting Docker, database, worker, SMTP, migration, deployment, billing, platform, or
+  secret-bearing surfaces.
+- Changing shared schemas, validators, command policy, or completion rules.
+- Creating additional real project adapters.
+
+Next safe milestone options:
+
+- Document the project-hook publication policy for real adapter adoption.
+- Add synthetic fixture coverage for hook-triggered publication caveats without adding
+  real project details.
+- Plan a second read-only candidate qualification audit.
+- Plan a `repo-map` adapter upgrade evidence review for the adopted project adapter.

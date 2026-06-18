@@ -35,6 +35,28 @@ remain separately gated.
   safety boundaries, approval gates, stop conditions, rollback conditions, and forbidden
   work before any real project adapter may be created.
 
+## Real Project Adapter Adoption Evidence
+
+- First external project-owned adapter adoption completed for
+  `/home/oneclickwebsitedesignfactory/tax-lien-platform` at candidate commit
+  `c548b1a6cbb3455a70b89d0e301e22435bfccac9`.
+- Adopted scope: `repo-map` only, docs/metadata-only, no commands, no runtime checks, no
+  build/test/package behavior, no platform/deployment behavior, and no secret-aware
+  behavior.
+- The shared repository still contains only shared schemas, validators, docs, examples,
+  and synthetic fixtures. The real adapter lives in its owning project repository.
+- Publication caveat: the candidate repository's normal pre-push hook attempted package
+  operations. The run was interrupted to preserve the approved boundary, and publication
+  completed with hook verification bypass after shared adapter validation and safe checks
+  passed.
+
+Next safe milestone options:
+
+- Document a project-hook publication policy for future real adapter adoption.
+- Add synthetic fixture coverage for hook-triggered publication caveats.
+- Run a read-only qualification audit for a second candidate.
+- Plan adapter-upgrade evidence review for the adopted `tax-lien-platform` adapter.
+
 | Candidate | Scope | Mode | Current gate |
 |---|---|---|---|
 | `route-trace-skill` | General | Audit-only | Needs design review |

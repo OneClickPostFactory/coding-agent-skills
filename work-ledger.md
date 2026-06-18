@@ -7,7 +7,9 @@
 - Pilot skills: `repo-map`, `build-verify`, `git-preflight`, `runtime-truth`, `llm-drift-control`
 - Adapter discovery, project adapter installation, stale-pin detection, upgrade evidence, compatibility-chain validation, evidence-bundle verification, retention policy, provenance design, archive-report rendering, archive-index fixtures, retention-expiry advisory reporting, and detached-signature verification planning are implemented.
 - Real-project adapter adoption readiness is documented as a planning-only approval gate.
-- Real project adapters are not implemented.
+- First external project-owned adapter adoption completed for `/home/oneclickwebsitedesignfactory/tax-lien-platform` at candidate commit `c548b1a6cbb3455a70b89d0e301e22435bfccac9`.
+- The adopted adapter is `repo-map` only, docs/metadata-only, and contains no commands, runtime checks, build/test/package behavior, platform/deployment behavior, or secret-aware behavior.
+- The shared repository does not contain real adapter manifests; real project adapters remain owned by their project repositories.
 - New skills are not approved.
 
 ## Last Completed Version
@@ -16,7 +18,7 @@
 
 ## Current Recommended Milestone
 
-Real-project adapter adoption readiness plan and approval gate is the current planning-only milestone. It does not approve creating real adapters, touching real project repositories, package work, CLI installation, new skills, platform skills, signing infrastructure, or another evidence-harness milestone.
+First real-project adapter adoption evidence is now being recorded in this shared repository. No further real adapters, adapter expansion, package work, CLI installation, new skills, platform skills, signing infrastructure, or evidence-harness milestone is approved.
 
 ## Allowed Next Actions
 
@@ -29,6 +31,7 @@ Real-project adapter adoption readiness plan and approval gate is the current pl
 - Maintain planning documentation for the approved real-project adapter adoption gate.
 - Write maintainer-loop evidence to `runs/skill-runs.md`.
 - Update this ledger with local maintainer decisions.
+- Record completed real-project adapter adoption evidence in shared docs and run logs.
 
 ## Blocked Actions
 
@@ -66,6 +69,9 @@ Real-project adapter adoption readiness plan and approval gate is the current pl
 - Gathering evidence from a real project repository.
 - Creating, changing, or removing skills.
 - Adding real project adapters.
+- Expanding the adopted `tax-lien-platform` adapter beyond `repo-map`.
+- Enabling candidate repo package scripts, build verification, runtime checks, or command aliases.
+- Allowing or bypassing project Git hooks during future adapter publication.
 - Touching real project repositories.
 - Changing release publication behavior.
 - Commit, tag, or push operations.

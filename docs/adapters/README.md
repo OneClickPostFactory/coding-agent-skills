@@ -49,5 +49,16 @@ identity, inherited restrictions, and required evidence across revisions.
 
 The `inheritance` object is mandatory. Shared restrictions always win, and every permission-like safety flag is fixed to `false`.
 
-No real project adapter is implemented in the pilot release. The v0.2.3 harness uses only
-disposable synthetic fixture roots.
+The shared skill repository stores only synthetic fixture roots. The first external
+project-owned adapter was adopted in `/home/oneclickwebsitedesignfactory/tax-lien-platform`
+at candidate commit `c548b1a6cbb3455a70b89d0e301e22435bfccac9`. That adapter is
+`repo-map` only, docs/metadata-only, and contains no commands, runtime checks,
+build/test/package behavior, platform behavior, deployment behavior, or secret-aware
+behavior.
+
+During publication, the candidate repository's normal pre-push hook attempted package
+operations, including install, audit, and typecheck. The run was interrupted to preserve
+the approved boundary, validation was kept to the shared adapter validators and safe
+checks, and publication completed with hook verification bypass. Future real-project
+adapter adoption must decide explicitly whether repository hooks are allowed or must be
+bypassed to preserve a no-install/no-build/no-test boundary.

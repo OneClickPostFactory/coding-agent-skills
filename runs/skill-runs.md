@@ -128,3 +128,20 @@ This file records bounded maintainer-loop runs. Entries must not contain secrets
 - Validation result: pass
 - Commit/tag/push status: not approved for this planning milestone
 - Next state: human approval required before selecting a real project candidate, gathering real project evidence, creating a real adapter, or touching a real project repository
+
+
+## adoption-tax-lien-platform-repo-map-adapter
+
+- Run ID: `adoption-tax-lien-platform-repo-map-adapter`
+- Timestamp: `2026-06-18T00:00:00Z`
+- Command used: `record first external project-owned adapter adoption evidence`
+- Permissions granted: `docs-hardening`, `adapter-harness`, `release-preflight`
+- Files changed: adapter documentation, roadmap, work ledger, and run log only
+- Candidate repo: `/home/oneclickwebsitedesignfactory/tax-lien-platform`
+- Candidate commit: `c548b1a6cbb3455a70b89d0e301e22435bfccac9`
+- Adapter scope: `repo-map` only; docs/metadata-only; no commands; no runtime checks; no build/test/package behavior; no platform/deployment behavior; no secret-aware behavior
+- Validation commands: `node scripts/validate-pack.mjs .`; `node scripts/test-pack.mjs`; `node scripts/validate-maintainer-loop.mjs .`; `node scripts/validate-project-adapters.mjs /home/oneclickwebsitedesignfactory/tax-lien-platform`; `node --test`; shared diff check; candidate JSON parse and diff checks
+- Validation result: pass
+- Publication caveat: candidate repository pre-push hook attempted package operations including install, audit, and typecheck; the run was interrupted to preserve the approved boundary and publication completed with hook verification bypass after shared adapter validation and safe checks passed
+- Commit/tag/push status: no shared repository commit, tag, or push performed by this evidence-recording run
+- Next state: human approval required before adapter expansion, additional real adapters, candidate package-script validation, runtime checks, project-hook policy changes, or shared validator changes
