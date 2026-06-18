@@ -20,6 +20,24 @@ requirements that must be met before any real project adapter is created.
 Discovery validates schema, skill compatibility, command policy, and inherited restrictions
 before accepting any extension. It never executes adapter commands.
 
+## Adapter-Aware Repo Map Consumption
+
+The shared pack can consume a validated project-owned adapter as agent context for
+`repo-map` orientation:
+
+```bash
+node scripts/render-adapter-repo-map.mjs <project-root>
+```
+
+The renderer validates the project declaration first, confirms that `repo-map` is enabled,
+then reports only adapter-declared metadata: documentation precedence, safe read paths,
+ignored paths, required evidence, package-manager hints, repository bounds, and sanitized
+Git branch state. It does not read target project file contents, run project tests or
+builds, install packages, perform runtime checks, deploy, migrate, or read `.env` files.
+
+This is agent context for safer repository understanding. It is not target-application
+product behavior.
+
 ## What Adapters May Do
 
 - Add bounded relative read paths and ignored paths.

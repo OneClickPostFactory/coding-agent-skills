@@ -500,7 +500,7 @@ function classifySegment(segment, options = {}) {
   }
   if (
     executable === "node" &&
-    !/^node\s+(?:--check\b|--test\b|scripts\/(?:validate-pack|validate-maintainer-loop|validate-adapters|validate-project-adapters|check-adapter-upgrade|check-adapter-upgrade-chain|verify-evidence-bundle|render-evidence-archive-report|test-pack)\.mjs\b)/.test(
+    !/^node\s+(?:--check\b|--test\b|scripts\/(?:validate-pack|validate-maintainer-loop|validate-adapters|validate-project-adapters|check-adapter-upgrade|check-adapter-upgrade-chain|verify-evidence-bundle|render-evidence-archive-report|render-adapter-repo-map|test-pack)\.mjs\b)/.test(
       segment,
     )
   ) {

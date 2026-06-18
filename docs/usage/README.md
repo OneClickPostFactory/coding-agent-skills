@@ -21,4 +21,15 @@ Select the least-privileged skill that matches the request:
 
 Every skill emits an evidence pack. Read `status`, skipped checks, failures, confidence, and changed state before relying on a completion claim.
 
+When a project owns a compatible adapter, render read-only adapter-aware `repo-map` context
+with:
+
+```bash
+node scripts/render-adapter-repo-map.mjs <project-root>
+```
+
+This validates the project adapter first, then reports adapter-declared documentation
+precedence, safe read paths, ignored paths, and required evidence. It is not a build,
+test, runtime, deployment, migration, package-install, or secret-reading flow.
+
 See [examples](../../examples/README.md) for safe concrete inputs and outputs.

@@ -85,6 +85,30 @@ The dependency-free validator:
 Exit `0` means the project declaration and all installed adapters are compatible. Exit `1`
 means validation failed. Exit `2` means the project-root argument is missing.
 
+## Repo-Map Consumption
+
+After validation passes, a project-owned adapter can be consumed as read-only `repo-map`
+context:
+
+```bash
+node scripts/render-adapter-repo-map.mjs <project-root>
+```
+
+The renderer uses the same project declaration and adapter validation path before it reads
+adapter metadata. It requires `repo-map` compatibility and then renders:
+
+- Documentation precedence.
+- Safe read paths.
+- Ignored paths.
+- Required evidence.
+- Root markers, declared scope, and detection depth.
+- Package-manager hints.
+- Sanitized Git branch state and warnings.
+
+The renderer is metadata-only. It does not read target project file contents, run target
+project tests, run builds, install packages, perform runtime checks, deploy, migrate, read
+`.env` files, or modify project state.
+
 ## Safety Boundary
 
 Project adapters are extension-only. They cannot remove denied operations, change an

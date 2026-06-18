@@ -38,6 +38,11 @@ import {
   validateProjectAdapters,
 } from "./lib/project-adapter-installation.mjs";
 import {
+  adapterRepoMapCliResult,
+  buildAdapterRepoMapReport,
+  renderAdapterRepoMapReport,
+} from "./lib/adapter-repo-map.mjs";
+import {
   adapterUpgradeCliResult,
   checkAdapterUpgrade,
   formatAdapterUpgradeSummary,
@@ -990,6 +995,64 @@ test("project adapter CLI uses stable exit codes and safe summaries", () => {
   assert.doesNotMatch(invalid.lines.join("\n"), /fixture-project|adapterId/i);
 
   const usage = projectAdapterCliResult(undefined, { coreRoot: root });
+  assert.equal(usage.exitCode, 2);
+  assert.equal(usage.stream, "stderr");
+  assert.match(usage.lines.join("\n"), /usage:/i);
+});
+
+test("adapter-aware repo-map consumes validated project adapter metadata", () => {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-installation",
+  );
+  const report = buildAdapterRepoMapReport(path.join(fixtureRoot, "valid-exact-pin"), {
+    coreRoot: root,
+  });
+  assert.equal(report.ok, true, report.codes?.join(","));
+  assert.deepEqual(report.enabledSkills, ["repo-map"]);
+  assert.deepEqual(report.adapterIds, ["fixture-project-basic"]);
+  assert.deepEqual(
+    report.safeReadPaths.map((record) => record.path),
+    ["README.md", "src"],
+  );
+  assert.deepEqual(report.ignoredPaths, ["dist"]);
+  assert.deepEqual(report.requiredEvidence, [
+    "repository root",
+    "application entry point",
+  ]);
+
+  const rendered = renderAdapterRepoMapReport(report);
+  assert.match(rendered, /# Adapter-Aware Repo Map/);
+  assert.match(rendered, /## Safe Read Paths/);
+  assert.match(rendered, /README\.md/);
+  assert.match(rendered, /## Ignored Paths/);
+  assert.match(rendered, /No target project build, test, runtime, deployment/);
+});
+
+test("adapter-aware repo-map fails closed without repo-map compatibility", () => {
+  const fixtureRoot = path.join(
+    root,
+    "tests",
+    "fixtures",
+    "project-adapter-installation",
+  );
+  const report = buildAdapterRepoMapReport(
+    path.join(fixtureRoot, "valid-compatible-range"),
+    { coreRoot: root },
+  );
+  assert.equal(report.ok, false);
+  assert.deepEqual(report.codes, ["repo-map-not-enabled"]);
+
+  const cli = adapterRepoMapCliResult(path.join(fixtureRoot, "valid-exact-pin"), {
+    coreRoot: root,
+  });
+  assert.equal(cli.exitCode, 0);
+  assert.equal(cli.stream, "stdout");
+  assert.match(cli.lines.join("\n"), /Enabled skills: repo-map/);
+
+  const usage = adapterRepoMapCliResult(undefined, { coreRoot: root });
   assert.equal(usage.exitCode, 2);
   assert.equal(usage.stream, "stderr");
   assert.match(usage.lines.join("\n"), /usage:/i);
