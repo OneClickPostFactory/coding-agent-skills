@@ -1,21 +1,43 @@
-# Npm Package Readiness
+# Npm Package Release
 
-This package scaffold exists to prove package shape before any npm publication is
-approved. It does not publish the package, install dependencies, add a global install
-flow, or change the shared skill safety model.
+The package is prepared for public npm distribution as a dependency-free CLI wrapper
+around the existing validated scripts. Publication does not change the shared skill
+safety model.
 
 ## Current Package Shape
 
 - Package name: `coding-agent-skills`.
-- Package version: `0.2.7`.
-- CLI bin: `coding-agent-skills` mapped to `./bin/coding-agent-skills`.
+- Package version: `0.2.8`.
+- CLI bin: `coding-agent-skills` mapped to `bin/coding-agent-skills`.
 - Module type: `module`.
 - Dependencies: none.
-- Publication guard: `private: true`.
-- License metadata: `UNLICENSED` until a license is explicitly approved.
+- Publication mode: public package on the public npm registry.
+- License metadata: `MIT`.
+- Node requirement: `>=20`.
 
-The package version follows the npm-readiness scaffold. Adapter compatibility remains
-controlled by the existing shared core and project-adapter validators.
+Install globally with:
+
+```bash
+npm install -g coding-agent-skills
+```
+
+The supported installed commands are:
+
+```bash
+coding-agent-skills validate-pack
+coding-agent-skills validate-project /path/to/project
+coding-agent-skills repo-map /path/to/project
+coding-agent-skills validate-adapters /path/to/adapter-root
+```
+
+The package can also be executed without a repo-local install:
+
+```bash
+npx coding-agent-skills validate-pack
+```
+
+Adapter compatibility remains controlled by the existing shared core and
+project-adapter validators.
 
 `coding-agent-skills validate-pack` is package-aware. In a source checkout, it keeps
 source-only checks such as `.gitignore` validation. In an installed package tree, where
@@ -26,19 +48,19 @@ environment files instead of silently skipping safety checks.
 ## Included Files
 
 The package uses a strict `files` allowlist. It includes the local command wrapper,
-scripts, skills, schemas, contracts, docs, examples, tests, release workflow metadata,
-and governance files needed for `coding-agent-skills validate-pack` to work after
-packaging.
+scripts, skills, schemas, contracts, docs, examples, tests, and governance files needed
+for `coding-agent-skills validate-pack` to work after packaging.
 
 The allowlist intentionally excludes local environment files, Git internals, generated
 validation output, dependency folders, and project-specific adapters.
 
-## Dry-Run Check
+## Dry-Run And Publish Checks
 
-Before any publication approval, run the dry-run package inspection:
+Before publication, run the dry-run package inspection:
 
 ```bash
 npm pack --dry-run
+npm publish --dry-run --access public --registry=https://registry.npmjs.org/
 ```
 
 The dry-run output must be reviewed for accidental secrets, local-only files, environment
@@ -46,17 +68,18 @@ files, dependency folders, build artifacts, generated validation output, or unre
 project files. It must also confirm that the bin wrapper and validation inputs are
 included.
 
-## Publish Safety Gates
+## Safety Boundaries
 
-Publication remains blocked until a separate approval explicitly resolves:
+The public CLI remains read-only for target projects unless a specific underlying skill
+already permits a bounded local validation action. The installed `repo-map` and adapter
+flows do not:
 
-- Package scope or final package name.
-- License choice and whether to add a license file.
-- Removing or changing the `private` publication guard.
-- Registry access, npm identity, and two-factor/authentication expectations.
-- Tarball contents from a clean dry run.
-- Post-install smoke expectations in a disposable environment.
-- Whether a Git tag should be created for the npm-ready scaffold or only for actual
-  publication.
+- deploy
+- run migrations
+- mutate runtime services or processes
+- read `.env` or secret files
+- run target project builds or tests
+- grant adapters additional power
 
-Publication must not proceed from this scaffold milestone.
+Project adapters narrow context for safer repository understanding; they do not weaken
+shared restrictions or authorize additional command families.

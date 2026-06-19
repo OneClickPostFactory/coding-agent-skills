@@ -34,8 +34,10 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 
 - Read [usage guidance](docs/usage/README.md) before selecting a skill.
 - Browse [safe examples](examples/README.md) for manifests, policies, evidence packs, and workflows.
-- Use the local command wrapper from a clone:
-  `bin/coding-agent-skills validate-pack`.
+- Install the public CLI with `npm install -g coding-agent-skills`.
+- Run `coding-agent-skills validate-pack` to validate the installed pack.
+- Run `npx coding-agent-skills validate-pack` when a one-off npm execution is preferred.
+- From a clone, the same wrapper is available as `bin/coding-agent-skills validate-pack`.
 - Validate project adapters against [the formal adapter schema](schemas/project-adapter.schema.json).
 - Review [external adapter discovery](docs/adapters/discovery.md).
 - Run `node scripts/validate-adapters.mjs <adapter-root>` for a disposable external root.
@@ -55,8 +57,8 @@ Every skill emits the evidence-pack contract. A command being attempted is never
   evidence-bundle replay and regression checks.
 - Run `node scripts/render-evidence-archive-report.mjs <bundle-file>` for a sanitized,
   read-only archive report summary.
-- Review the [npm package readiness scaffold](docs/release/npm-package.md) before running
-  package dry-run checks.
+- Review the [npm package release guide](docs/release/npm-package.md) before running
+  package dry-run or publication checks.
 - Run `node scripts/validate-pack.mjs .` for structural validation.
 - Run `node scripts/test-pack.mjs` for executable release tests.
 - Run `node --test` for built-in Node fixture tests.

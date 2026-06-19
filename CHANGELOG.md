@@ -2,6 +2,24 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.8] - 2026-06-19
+
+### Added
+
+- Public npm package metadata for `coding-agent-skills`.
+- MIT license file with approved OneClickPostFactory copyright.
+- Public npm install documentation for the supported CLI commands.
+
+### Changed
+
+- Package validation now requires public npm metadata, MIT license, repository metadata,
+  public registry configuration, strict package allowlist, dependency-free shape, and
+  installed-package safety checks.
+- Release tests now cover the public package contract and installed `validate-pack`
+  behavior.
+- Release documentation now includes npm publish dry-run, tarball inspection, temporary
+  install smoke tests, registry verification, and GitHub Release expectations.
+
 ## [0.2.3] - 2026-06-17
 
 ### Added

@@ -19,14 +19,22 @@ The pilot release remains limited to five approved skills. Future work requires 
   sanitized archive-report rendering.
 - `v0.2.3`: synthetic evidence-bundle archive indexes, retention-expiry advisory
   reporting, and detached-signature verification planning.
+- `v0.2.4`: adapter-aware `repo-map` renderer that consumes validated project-owned
+  adapters.
+- `v0.2.5`: local `coding-agent-skills` command surface for validated scripts.
+- `v0.2.6`: npm package readiness scaffold with dependency-free package metadata.
+- `v0.2.7`: package-installed `validate-pack` support for tarball/global installs.
+- `v0.2.8`: first public npm release with MIT license, public metadata, and registry
+  install smoke coverage.
 
 The next milestone is recorded in [work-ledger.md](work-ledger.md). The
 [maintainer loop](RUNBOOK.md) may select and evidence that milestone, but it must stop
 before implementation until the relevant human approval is granted.
 
-No evidence-harness milestone is queued after `v0.2.3`. Real project adapters, new skills,
-package publication, global CLI installation, platform work, and signing infrastructure
-remain separately gated.
+No evidence-harness milestone is queued after `v0.2.3`. Additional real project adapters,
+new skills, platform work, deployment/preflight work, and signing infrastructure remain
+separately gated. The public npm package exposes the existing read-only CLI surface; it
+does not approve new skills or target-project mutation.
 
 ## Planning Gates
 

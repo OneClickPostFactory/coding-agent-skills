@@ -10,15 +10,19 @@
 - First external project-owned adapter adoption completed for `/home/oneclickwebsitedesignfactory/tax-lien-platform` at candidate commit `c548b1a6cbb3455a70b89d0e301e22435bfccac9`.
 - The adopted adapter is `repo-map` only, docs/metadata-only, and contains no commands, runtime checks, build/test/package behavior, platform/deployment behavior, or secret-aware behavior.
 - The shared repository does not contain real adapter manifests; real project adapters remain owned by their project repositories.
+- Public npm package release `v0.2.8` exposes the existing dependency-free
+  `coding-agent-skills` CLI under MIT license.
 - New skills are not approved.
 
 ## Last Completed Version
 
-`v0.2.3`
+`v0.2.8`
 
 ## Current Recommended Milestone
 
-First real-project adapter adoption evidence is now being recorded in this shared repository. No further real adapters, adapter expansion, package work, CLI installation, new skills, platform skills, signing infrastructure, or evidence-harness milestone is approved.
+The public npm release is complete for the existing CLI surface. No further real
+adapters, adapter expansion, new skills, platform skills, deployment/preflight work,
+signing infrastructure, or evidence-harness milestone is approved.
 
 ## Allowed Next Actions
 
@@ -32,6 +36,7 @@ First real-project adapter adoption evidence is now being recorded in this share
 - Write maintainer-loop evidence to `runs/skill-runs.md`.
 - Update this ledger with local maintainer decisions.
 - Record completed real-project adapter adoption evidence in shared docs and run logs.
+- Maintain public package metadata and release evidence for approved patch releases.
 
 ## Blocked Actions
 
@@ -74,6 +79,7 @@ First real-project adapter adoption evidence is now being recorded in this share
 - Allowing or bypassing project Git hooks during future adapter publication.
 - Touching real project repositories.
 - Changing release publication behavior.
+- Publishing a new npm version beyond the approved release.
 - Commit, tag, or push operations.
 - Any action not listed in the allowed next actions above.
 
@@ -86,6 +92,17 @@ No next runner command is currently queued.
 ## Maintainer Decisions
 
 No autonomous maintainer-loop run has been recorded yet.
+
+
+### 2026-06-19T00:00:00Z
+
+- Latest tag observed: `v0.2.7`
+- Implemented milestone: Public npm release for `coding-agent-skills`.
+- Required permission: `release-preflight`
+- Validation result: pass pending final publication evidence
+- Next recommended milestone: No next runner command is queued; future package
+  publication, new skills, real adapter expansion, platform work, and deployment/preflight
+  skills require separate human approval.
 
 
 ### 2026-06-15T21:02:34.116Z

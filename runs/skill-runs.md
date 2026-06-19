@@ -145,3 +145,18 @@ This file records bounded maintainer-loop runs. Entries must not contain secrets
 - Publication caveat: candidate repository pre-push hook attempted package operations including install, audit, and typecheck; the run was interrupted to preserve the approved boundary and publication completed with hook verification bypass after shared adapter validation and safe checks passed
 - Commit/tag/push status: no shared repository commit, tag, or push performed by this evidence-recording run
 - Next state: human approval required before adapter expansion, additional real adapters, candidate package-script validation, runtime checks, project-hook policy changes, or shared validator changes
+
+
+## release-v0.2.8-public-npm
+
+- Run ID: `release-v0.2.8-public-npm`
+- Timestamp: `2026-06-19T00:00:00Z`
+- Command used: `manual approval for public npm release`
+- Permissions granted: `release-preflight`, `commit`, `push`, `tag`, `npm-publish`
+- Files changed: public package metadata, MIT license, validator expectations, release tests, usage docs, release docs, changelog, roadmap, ledger, and run log
+- Package scope: `coding-agent-skills` public npm package; dependency-free; Node 20+; existing CLI commands only
+- Safety scope: read-only package validation and adapter-aware repo-map flows; no deploys, migrations, runtime mutation, target-project builds/tests, dependency additions, or secret-file reads
+- Validation commands: `git diff --check`; `bin/coding-agent-skills validate-pack`; `bin/coding-agent-skills validate-adapters tests/fixtures/external-adapters/valid-basic`; `bin/coding-agent-skills validate-project /home/oneclickwebsitedesignfactory/tax-lien-platform`; `bin/coding-agent-skills repo-map /home/oneclickwebsitedesignfactory/tax-lien-platform`; `node scripts/validate-pack.mjs .`; `node scripts/test-pack.mjs`; `node scripts/validate-maintainer-loop.mjs .`; `node --test`; JSON parsing; package secret scan; npm publish dry-run; tarball install smoke; public registry smoke
+- Validation result: pass pending final publication evidence
+- Commit/tag/push status: pending approved release workflow
+- Next state: no next runner command is queued after `v0.2.8`; future package releases, new skills, real adapter expansion, platform work, deployment/preflight skills, and release-policy changes require separate human approval

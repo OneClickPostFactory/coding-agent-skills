@@ -1,12 +1,28 @@
 {
   "name": "coding-agent-skills",
-  "version": "0.2.7",
-  "description": "Shared, versioned workflows for evidence-driven coding agents.",
+  "version": "0.2.8",
+  "description": "Evidence-first, read-only coding-agent skills and project adapter tooling.",
   "type": "module",
-  "private": true,
-  "license": "UNLICENSED",
+  "private": false,
+  "license": "MIT",
+  "keywords": [
+    "coding-agent",
+    "agent-skills",
+    "repo-map",
+    "project-adapters",
+    "code-validation",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OneClickPostFactory/coding-agent-skills.git"
+  },
+  "homepage": "https://github.com/OneClickPostFactory/coding-agent-skills#readme",
+  "bugs": {
+    "url": "https://github.com/OneClickPostFactory/coding-agent-skills/issues"
+  },
   "bin": {
-    "coding-agent-skills": "./bin/coding-agent-skills"
+    "coding-agent-skills": "bin/coding-agent-skills"
   },
   "files": [
     "bin/",
@@ -17,10 +33,10 @@
     "docs/",
     "examples/",
     "tests/",
-    ".github/workflows/validate.yml",
     "AGENTS.md",
     "CHANGELOG.md",
     "CONTRIBUTING.md",
+    "LICENSE",
     "README.md",
     "ROADMAP.md",
     "RUNBOOK.md",
@@ -34,5 +50,9 @@
     "validate": "node scripts/validate-pack.mjs .",
     "test": "node scripts/test-pack.mjs && node --test",
     "pack:dry-run": "npm pack --dry-run"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

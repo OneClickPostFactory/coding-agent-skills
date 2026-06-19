@@ -298,15 +298,42 @@ test("local CLI maps approved commands to existing safe scripts", () => {
   assert.match(unknown.stderr, /unknown command: deploy/);
 });
 
-test("npm package scaffold is dependency-free and publish-guarded", () => {
+test("npm package metadata is public-ready and dependency-free", () => {
   const packageJson = readJson("package.json");
   assert.equal(packageJson.name, "coding-agent-skills");
-  assert.equal(packageJson.version, "0.2.7");
+  assert.equal(packageJson.version, "0.2.8");
+  assert.equal(
+    packageJson.description,
+    "Evidence-first, read-only coding-agent skills and project adapter tooling.",
+  );
   assert.equal(packageJson.type, "module");
-  assert.equal(packageJson.private, true);
-  assert.equal(packageJson.license, "UNLICENSED");
+  assert.equal(packageJson.private, false);
+  assert.equal(packageJson.license, "MIT");
+  assert.deepEqual(packageJson.keywords, [
+    "coding-agent",
+    "agent-skills",
+    "repo-map",
+    "project-adapters",
+    "code-validation",
+    "cli",
+  ]);
+  assert.deepEqual(packageJson.repository, {
+    type: "git",
+    url: "git+https://github.com/OneClickPostFactory/coding-agent-skills.git",
+  });
+  assert.equal(
+    packageJson.homepage,
+    "https://github.com/OneClickPostFactory/coding-agent-skills#readme",
+  );
+  assert.deepEqual(packageJson.bugs, {
+    url: "https://github.com/OneClickPostFactory/coding-agent-skills/issues",
+  });
+  assert.deepEqual(packageJson.publishConfig, {
+    access: "public",
+    registry: "https://registry.npmjs.org/",
+  });
   assert.deepEqual(packageJson.bin, {
-    "coding-agent-skills": "./bin/coding-agent-skills",
+    "coding-agent-skills": "bin/coding-agent-skills",
   });
   assert.equal(packageJson.dependencies, undefined);
   assert.equal(packageJson.devDependencies, undefined);
@@ -319,10 +346,10 @@ test("npm package scaffold is dependency-free and publish-guarded", () => {
     "docs/",
     "examples/",
     "tests/",
-    ".github/workflows/validate.yml",
     "AGENTS.md",
     "CHANGELOG.md",
     "CONTRIBUTING.md",
+    "LICENSE",
     "README.md",
     "ROADMAP.md",
     "RUNBOOK.md",
@@ -332,7 +359,8 @@ test("npm package scaffold is dependency-free and publish-guarded", () => {
   assert.equal(packageJson.scripts.validate, "node scripts/validate-pack.mjs .");
   assert.equal(packageJson.scripts["pack:dry-run"], "npm pack --dry-run");
   assert.equal(restrictedShellReason("npm pack --dry-run"), null);
-  assert.match(read("docs/release/npm-package.md"), /Publication remains blocked/);
+  assert.match(read("LICENSE"), /Copyright \(c\) 2026 OneClickPostFactory/);
+  assert.match(read("docs/release/npm-package.md"), /npm install -g coding-agent-skills/);
 });
 
 test("validate-pack accepts installed package trees without source-only gitignore", () => {
@@ -348,6 +376,7 @@ test("validate-pack accepts installed package trees without source-only gitignor
         const parts = relative.split(path.sep);
         return ![
           ".git",
+          ".github",
           ".gitignore",
           ".env",
           "node_modules",

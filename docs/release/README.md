@@ -14,16 +14,25 @@
 8. Parse every JSON file.
 9. Run a secret-pattern scan without printing values.
 10. Run `git diff --check`.
-11. Review changelog, ledger, run evidence, and versioning impact.
-12. Commit with approved identity.
-13. Push `main` using credential-free remotes.
-14. Confirm a clean synchronized worktree.
-15. Create and push the annotated version tag.
+11. Run `npm publish --dry-run --access public --registry=https://registry.npmjs.org/`.
+12. Create a tarball with `npm pack` into a temporary directory.
+13. Inspect tarball contents for local-only files, credentials, `.env` files, dependency
+    folders, generated output, and unrelated repositories.
+14. Install the tarball into a temporary npm prefix and smoke-test the installed CLI.
+15. Review changelog, ledger, run evidence, and versioning impact.
+16. Commit with approved identity.
+17. Push `main` using credential-free remotes.
+18. Confirm a clean synchronized worktree.
+19. Create and push the annotated version tag.
+20. Publish with `npm publish --access public --registry=https://registry.npmjs.org/`.
+21. Install the published package into a temporary prefix and smoke-test the installed CLI.
+22. Create the GitHub Release for the pushed tag.
 
-Release automation, package publication, deployments, migrations, and GitHub Release pages are outside the pilot release.
+Deployments, migrations, runtime mutation, platform actions, and target-project builds or
+tests remain outside this release process unless separately approved.
 
-The [npm package readiness scaffold](npm-package.md) documents the local package shape,
-dry-run inspection, and publish safety gates. It is not publication approval.
+The [npm package release guide](npm-package.md) documents the public package shape,
+dry-run inspection, publication checks, and safety boundaries.
 
 ## Maintainer-Loop Boundary
 

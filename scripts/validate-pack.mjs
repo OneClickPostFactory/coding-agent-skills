@@ -48,11 +48,11 @@ const requiredRootFiles = [
   "CHANGELOG.md",
   "ROADMAP.md",
   "CONTRIBUTING.md",
+  "LICENSE",
   "package.json",
   "bin/coding-agent-skills",
   "work-ledger.md",
   "runs/skill-runs.md",
-  ".github/workflows/validate.yml",
   "docs/architecture/README.md",
   "docs/authoring/README.md",
   "docs/safety/README.md",
@@ -171,7 +171,7 @@ const requiredRootFiles = [
   "examples/adapters/documentation-precedence.json",
   "examples/adapters/runtime-status-hints.json",
 ];
-const sourceCheckoutFiles = [".gitignore"];
+const sourceCheckoutFiles = [".gitignore", ".github/workflows/validate.yml"];
 const upgradeFixtures = [
   "valid-upgrade",
   "stale-exact-pin",
@@ -660,10 +660,10 @@ if (packageJson) {
     "docs/",
     "examples/",
     "tests/",
-    ".github/workflows/validate.yml",
     "AGENTS.md",
     "CHANGELOG.md",
     "CONTRIBUTING.md",
+    "LICENSE",
     "README.md",
     "ROADMAP.md",
     "RUNBOOK.md",
@@ -673,17 +673,58 @@ if (packageJson) {
   if (packageJson.name !== "coding-agent-skills") {
     failures.push("package.json has unexpected package name");
   }
-  if (packageJson.version !== "0.2.7") {
-    failures.push("package.json version must be 0.2.7 for package-installed validation");
+  if (packageJson.version !== "0.2.8") {
+    failures.push("package.json version must be 0.2.8 for public package validation");
   }
   if (packageJson.type !== "module") failures.push("package.json must preserve ESM mode");
-  if (packageJson.private !== true) {
-    failures.push("package.json must keep private true until publication approval");
+  if (packageJson.private !== false) {
+    failures.push("package.json must be public for the approved npm release");
   }
-  if (packageJson.license !== "UNLICENSED") {
-    failures.push("package.json license must remain UNLICENSED until approved");
+  if (packageJson.license !== "MIT") {
+    failures.push("package.json license must be MIT for the public npm release");
   }
-  if (packageJson.bin?.["coding-agent-skills"] !== "./bin/coding-agent-skills") {
+  if (!read("LICENSE").includes("Copyright (c) 2026 OneClickPostFactory")) {
+    failures.push("LICENSE must contain the approved MIT copyright line");
+  }
+  if (
+    JSON.stringify(packageJson.keywords) !==
+    JSON.stringify([
+      "coding-agent",
+      "agent-skills",
+      "repo-map",
+      "project-adapters",
+      "code-validation",
+      "cli",
+    ])
+  ) {
+    failures.push("package.json keywords have drifted");
+  }
+  if (
+    packageJson.repository?.type !== "git" ||
+    packageJson.repository?.url !==
+      "git+https://github.com/OneClickPostFactory/coding-agent-skills.git"
+  ) {
+    failures.push("package.json repository metadata is missing or incorrect");
+  }
+  if (
+    packageJson.homepage !==
+    "https://github.com/OneClickPostFactory/coding-agent-skills#readme"
+  ) {
+    failures.push("package.json homepage metadata is missing or incorrect");
+  }
+  if (
+    packageJson.bugs?.url !==
+    "https://github.com/OneClickPostFactory/coding-agent-skills/issues"
+  ) {
+    failures.push("package.json bugs metadata is missing or incorrect");
+  }
+  if (
+    packageJson.publishConfig?.access !== "public" ||
+    packageJson.publishConfig?.registry !== "https://registry.npmjs.org/"
+  ) {
+    failures.push("package.json publishConfig must target the public npm registry");
+  }
+  if (packageJson.bin?.["coding-agent-skills"] !== "bin/coding-agent-skills") {
     failures.push("package.json bin mapping is missing coding-agent-skills");
   }
   if (packageJson.dependencies || packageJson.devDependencies) {
@@ -738,7 +779,7 @@ for (const [file, patterns] of [
   ],
   [
     "docs/release/npm-package.md",
-    [/private: true/i, /npm pack --dry-run/i, /Publication remains blocked/i],
+    [/npm install -g coding-agent-skills/i, /MIT/i, /public npm registry/i],
   ],
   [
     "docs/versioning/adapter-compatibility.md",
@@ -800,6 +841,9 @@ if (sourceCheckoutMode) {
     if (!gitignore.has(pattern)) failures.push(`.gitignore missing ${pattern}`);
   }
 } else if (packageInstalledMode) {
+  if (fs.existsSync(path.join(root, ".github"))) {
+    failures.push("package-installed tree must not contain .github");
+  }
   for (const file of allFiles) {
     const relative = path.relative(root, file);
     const basename = path.basename(file);
@@ -875,25 +919,27 @@ for (const file of executableExampleFiles) {
   }
 }
 
-const ci = read(".github/workflows/validate.yml");
-for (const expected of [
-  "permissions:\n  contents: read",
-  "node scripts/validate-pack.mjs .",
-  "node scripts/test-pack.mjs",
-  "node scripts/validate-maintainer-loop.mjs .",
-  "node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic",
-  "node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin",
-  "node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after",
-  "node scripts/check-adapter-upgrade-chain.mjs tests/fixtures/project-adapter-upgrade-chains/valid-chain",
-  "node scripts/verify-evidence-bundle.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json",
-  "node scripts/render-evidence-archive-report.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json",
-  "node --test",
-]) {
-  if (!ci.includes(expected)) failures.push(`CI missing safe validation step: ${expected}`);
-}
-for (const match of ci.matchAll(/^\s*run:\s*(.+)$/gm)) {
-  const reason = restrictedShellReason(match[1]);
-  if (reason) failures.push(`CI contains ${reason}: ${match[1].trim()}`);
+if (sourceCheckoutMode) {
+  const ci = read(".github/workflows/validate.yml");
+  for (const expected of [
+    "permissions:\n  contents: read",
+    "node scripts/validate-pack.mjs .",
+    "node scripts/test-pack.mjs",
+    "node scripts/validate-maintainer-loop.mjs .",
+    "node scripts/validate-adapters.mjs tests/fixtures/external-adapters/valid-basic",
+    "node scripts/validate-project-adapters.mjs tests/fixtures/project-adapter-installation/valid-exact-pin",
+    "node scripts/check-adapter-upgrade.mjs tests/fixtures/project-adapter-upgrades/valid-upgrade/before tests/fixtures/project-adapter-upgrades/valid-upgrade/after",
+    "node scripts/check-adapter-upgrade-chain.mjs tests/fixtures/project-adapter-upgrade-chains/valid-chain",
+    "node scripts/verify-evidence-bundle.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json",
+    "node scripts/render-evidence-archive-report.mjs tests/fixtures/evidence-bundles/valid-bundle/evidence-bundle.json",
+    "node --test",
+  ]) {
+    if (!ci.includes(expected)) failures.push(`CI missing safe validation step: ${expected}`);
+  }
+  for (const match of ci.matchAll(/^\s*run:\s*(.+)$/gm)) {
+    const reason = restrictedShellReason(match[1]);
+    if (reason) failures.push(`CI contains ${reason}: ${match[1].trim()}`);
+  }
 }
 
 if (failures.length) {
