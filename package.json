@@ -1,6 +1,6 @@
 {
   "name": "coding-agent-skills",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Shared, versioned workflows for evidence-driven coding agents.",
   "type": "module",
   "private": true,

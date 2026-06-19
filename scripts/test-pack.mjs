@@ -301,7 +301,7 @@ test("local CLI maps approved commands to existing safe scripts", () => {
 test("npm package scaffold is dependency-free and publish-guarded", () => {
   const packageJson = readJson("package.json");
   assert.equal(packageJson.name, "coding-agent-skills");
-  assert.equal(packageJson.version, "0.2.6");
+  assert.equal(packageJson.version, "0.2.7");
   assert.equal(packageJson.type, "module");
   assert.equal(packageJson.private, true);
   assert.equal(packageJson.license, "UNLICENSED");
@@ -333,6 +333,43 @@ test("npm package scaffold is dependency-free and publish-guarded", () => {
   assert.equal(packageJson.scripts["pack:dry-run"], "npm pack --dry-run");
   assert.equal(restrictedShellReason("npm pack --dry-run"), null);
   assert.match(read("docs/release/npm-package.md"), /Publication remains blocked/);
+});
+
+test("validate-pack accepts installed package trees without source-only gitignore", () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "installed-package-"));
+  const installedRoot = path.join(temporaryRoot, "coding-agent-skills");
+
+  try {
+    fs.cpSync(root, installedRoot, {
+      recursive: true,
+      filter(source) {
+        const relative = path.relative(root, source);
+        if (relative === "") return true;
+        const parts = relative.split(path.sep);
+        return ![
+          ".git",
+          ".gitignore",
+          ".env",
+          "node_modules",
+          "validation-output",
+        ].includes(parts[0]);
+      },
+    });
+
+    const result = spawnSync(
+      process.execPath,
+      [path.join(root, "scripts", "validate-pack.mjs"), installedRoot],
+      {
+        cwd: root,
+        encoding: "utf8",
+        stdio: "pipe",
+      },
+    );
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+    assert.match(result.stdout, /pilot pack valid/);
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
 });
 
 test("every skill has the required files and sections", () => {

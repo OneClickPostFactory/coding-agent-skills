@@ -42,7 +42,6 @@ const requiredSkillHeadings = [
   "Completion",
 ];
 const requiredRootFiles = [
-  ".gitignore",
   "AGENTS.md",
   "README.md",
   "RUNBOOK.md",
@@ -172,6 +171,7 @@ const requiredRootFiles = [
   "examples/adapters/documentation-precedence.json",
   "examples/adapters/runtime-status-hints.json",
 ];
+const sourceCheckoutFiles = [".gitignore"];
 const upgradeFixtures = [
   "valid-upgrade",
   "stale-exact-pin",
@@ -217,6 +217,20 @@ function walk(directory, output = []) {
     else output.push(target);
   }
   return output;
+}
+
+const sourceCheckoutMode = fs.existsSync(path.join(root, ".gitignore"));
+const packageInstalledMode =
+  !sourceCheckoutMode &&
+  fs.existsSync(path.join(root, "package.json")) &&
+  !fs.existsSync(path.join(root, ".git"));
+
+if (sourceCheckoutMode) {
+  for (const file of sourceCheckoutFiles) {
+    if (!fs.existsSync(path.join(root, file))) failures.push(`missing ${file}`);
+  }
+} else if (!packageInstalledMode) {
+  failures.push("missing .gitignore outside package-installed tree");
 }
 
 for (const file of requiredRootFiles) {
@@ -659,8 +673,8 @@ if (packageJson) {
   if (packageJson.name !== "coding-agent-skills") {
     failures.push("package.json has unexpected package name");
   }
-  if (packageJson.version !== "0.2.6") {
-    failures.push("package.json version must be 0.2.6 for the npm readiness scaffold");
+  if (packageJson.version !== "0.2.7") {
+    failures.push("package.json version must be 0.2.7 for package-installed validation");
   }
   if (packageJson.type !== "module") failures.push("package.json must preserve ESM mode");
   if (packageJson.private !== true) {
@@ -677,6 +691,16 @@ if (packageJson) {
   }
   if (JSON.stringify(packageJson.files) !== JSON.stringify(expectedFiles)) {
     failures.push("package.json files allowlist has drifted");
+  }
+  for (const entry of expectedFiles) {
+    const target = path.join(root, entry);
+    if (entry.endsWith("/")) {
+      if (!fs.existsSync(target) || !fs.lstatSync(target).isDirectory()) {
+        failures.push(`package files allowlist directory missing: ${entry}`);
+      }
+    } else if (!fs.existsSync(target) || !fs.lstatSync(target).isFile()) {
+      failures.push(`package files allowlist file missing: ${entry}`);
+    }
   }
   if (packageJson.scripts?.["pack:dry-run"] !== "npm pack --dry-run") {
     failures.push("package.json must expose a dry-run pack script only");
@@ -761,18 +785,28 @@ for (const file of textFiles.filter((target) => target.endsWith(".md"))) {
   }
 }
 
-const gitignore = new Set(read(".gitignore").split(/\r?\n/));
-for (const pattern of [
-  ".env",
-  ".env.*",
-  "!.env.example",
-  "*.log",
-  "tmp/",
-  ".vscode/",
-  "validation-output/",
-  "test-results/",
-]) {
-  if (!gitignore.has(pattern)) failures.push(`.gitignore missing ${pattern}`);
+if (sourceCheckoutMode) {
+  const gitignore = new Set(read(".gitignore").split(/\r?\n/));
+  for (const pattern of [
+    ".env",
+    ".env.*",
+    "!.env.example",
+    "*.log",
+    "tmp/",
+    ".vscode/",
+    "validation-output/",
+    "test-results/",
+  ]) {
+    if (!gitignore.has(pattern)) failures.push(`.gitignore missing ${pattern}`);
+  }
+} else if (packageInstalledMode) {
+  for (const file of allFiles) {
+    const relative = path.relative(root, file);
+    const basename = path.basename(file);
+    if (basename === ".env" || (basename.startsWith(".env.") && basename !== ".env.example")) {
+      failures.push(`${relative}: package-installed tree contains environment file`);
+    }
+  }
 }
 
 const secretPatterns = [

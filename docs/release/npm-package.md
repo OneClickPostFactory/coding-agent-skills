@@ -7,7 +7,7 @@ flow, or change the shared skill safety model.
 ## Current Package Shape
 
 - Package name: `coding-agent-skills`.
-- Package version: `0.2.6`.
+- Package version: `0.2.7`.
 - CLI bin: `coding-agent-skills` mapped to `./bin/coding-agent-skills`.
 - Module type: `module`.
 - Dependencies: none.
@@ -16,6 +16,12 @@ flow, or change the shared skill safety model.
 
 The package version follows the npm-readiness scaffold. Adapter compatibility remains
 controlled by the existing shared core and project-adapter validators.
+
+`coding-agent-skills validate-pack` is package-aware. In a source checkout, it keeps
+source-only checks such as `.gitignore` validation. In an installed package tree, where
+`.gitignore` is not packaged, it validates the package metadata, strict `files`
+allowlist, dependency-free shape, bin mapping, required packaged files, and absence of
+environment files instead of silently skipping safety checks.
 
 ## Included Files
 
