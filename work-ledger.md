@@ -10,8 +10,10 @@
 - First external project-owned adapter adoption completed for `/home/oneclickwebsitedesignfactory/tax-lien-platform` at candidate commit `c548b1a6cbb3455a70b89d0e301e22435bfccac9`.
 - The adopted adapter is `repo-map` only, docs/metadata-only, and contains no commands, runtime checks, build/test/package behavior, platform/deployment behavior, or secret-aware behavior.
 - The shared repository does not contain real adapter manifests; real project adapters remain owned by their project repositories.
-- Public npm package release `v0.2.15` exposes the dependency-free
+- Public npm package release `v0.2.16` exposes the dependency-free
   `coding-agent-skills` CLI under MIT license.
+- `v0.2.16` adds optional OpenClaw-compatible `--json` output and documented
+  exit-code semantics for every public CLI command.
 - `route-trace` is implemented as an audit-only static route tracing skill.
 - `env-audit` is implemented as an audit-only value-free environment variable name mapping
   skill.
@@ -28,14 +30,14 @@
 
 ## Last Completed Version
 
-`v0.2.15`
+`v0.2.16`
 
 ## Current Recommended Milestone
 
-The `deployment-preflight` public npm release is in progress under builder-mode approval.
-Continue the remaining read-only skill wave one release at a time unless a real safety,
-validation, publication, or authentication boundary appears. The next approved wave item is
-`cloudflare-preflight-skill`.
+The OpenClaw-compatible JSON output contract is the current release milestone. After
+`v0.2.16` is published and verified, continue the remaining read-only skill wave one
+release at a time unless a real safety, validation, publication, or authentication
+boundary appears. The next approved wave item remains `cloudflare-preflight-skill`.
 
 ## Allowed Next Actions
 
@@ -122,9 +124,20 @@ No autonomous maintainer-loop run has been recorded yet.
 - Implemented milestone: `deployment-preflight` audit-only static deployment readiness
   evidence skill and CLI command.
 - Required permission: `builder-mode-skill-implementation`
-- Validation result: pass pending final publication evidence
+- Validation result: passed; `v0.2.15` commit, tag, npm publication, registry smoke,
+  npm exec, and GitHub Release completed
+- Next recommended milestone: implement the OpenClaw-compatible JSON output and exit-code
+  contract before continuing to `cloudflare-preflight-skill`.
+
+### 2026-07-03T15:00:00Z
+
+- Latest tag observed: `v0.2.15`
+- Implemented milestone: OpenClaw-compatible optional `--json` output and documented
+  exit-code semantics for every public CLI command.
+- Required permission: `orchestrator-output-contract`
+- Validation result: pass pending final release validation matrix
 - Next recommended milestone: continue builder-mode wave with `cloudflare-preflight-skill`
-  after `v0.2.15` publication completes.
+  after `v0.2.16` publication completes.
 
 ### 2026-07-03T12:00:00Z
 

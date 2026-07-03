@@ -2,6 +2,26 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.16] - 2026-07-03
+
+### Added
+
+- Optional `--json` output for every public `coding-agent-skills` CLI command.
+- OpenClaw-compatible structured result fields for command identity, skill id, package
+  version, status, findings, warnings, skipped checks, refused behavior, safety summary,
+  `recommendedNextAction`, and exit-code meaning.
+- Release tests that validate the JSON contract across the public CLI surface and confirm
+  redaction of local home paths and secret-like values.
+
+### Changed
+
+- The public wrapper now preserves default human-readable output while offering sanitized
+  machine-readable results for orchestrator callers.
+- Usage, release, testing, roadmap, ledger, and run-log docs now describe the exit-code
+  contract and OpenClaw integration boundary.
+- Stale v0.2.15 ledger and run-log entries now reflect that the deployment-preflight
+  release was published, smoke-tested, and released.
+
 ## [0.2.15] - 2026-07-03
 
 ### Added

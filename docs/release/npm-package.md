@@ -7,7 +7,7 @@ safety model.
 ## Current Package Shape
 
 - Package name: `coding-agent-skills`.
-- Package version: `0.2.15`.
+- Package version: `0.2.16`.
 - CLI bin: `coding-agent-skills` mapped to `bin/coding-agent-skills`.
 - Module type: `module`.
 - Dependencies: none.
@@ -36,6 +36,18 @@ coding-agent-skills github-handoff /path/to/project
 coding-agent-skills deployment-preflight /path/to/project
 coding-agent-skills validate-adapters /path/to/adapter-root
 ```
+
+Each public command also supports optional machine-readable output:
+
+```bash
+coding-agent-skills repo-map /path/to/project --json
+```
+
+The JSON contract is intended for OpenClaw-style orchestrators that already own memory,
+routing, approvals, scheduling, and workflow state. It includes `success`, `status`,
+`command`, `skillId`, `packageVersion`, sanitized findings and warnings, safety flags,
+`recommendedNextAction`, and `exitCodeMeaning`. The default human-readable output is
+unchanged.
 
 The package can also be executed without a repo-local install:
 
@@ -112,3 +124,11 @@ already permits a bounded local validation action. The installed `repo-map`,
 
 Project adapters narrow context for safer repository understanding; they do not weaken
 shared restrictions or authorize additional command families.
+
+## Exit Codes
+
+- `0`: handled execution path, including complete, partial, blocked, or controlled audit result
+- `2`: usage error
+- `3`: safety refusal
+- `4`: missing required input or file
+- `5`: unexpected internal or runtime failure

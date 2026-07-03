@@ -52,6 +52,9 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 - Review static migration and schema evidence with `coding-agent-skills migration-review <project-root>`.
 - Prepare local Git handoff evidence with `coding-agent-skills github-handoff <project-root>`.
 - Map static deployment readiness evidence with `coding-agent-skills deployment-preflight <project-root>`.
+- Add `--json` to any public CLI command when an OpenClaw-style orchestrator
+  needs a sanitized machine-readable result with `success`, `status`,
+  `recommendedNextAction`, safety flags, and exit-code meaning.
 - Validate project adapters against [the formal adapter schema](schemas/project-adapter.schema.json).
 - Review [external adapter discovery](docs/adapters/discovery.md).
 - Run `node scripts/validate-adapters.mjs <adapter-root>` for a disposable external root.
@@ -91,6 +94,29 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 
 Governance lives in [CONTRIBUTING.md](CONTRIBUTING.md), [ROADMAP.md](ROADMAP.md), and the [release policy](docs/release/README.md).
 The [harness guide](docs/testing/README.md) explains trigger, command, mutation, privacy, adapter, and completion checks.
+
+## Orchestrator Output
+
+The default CLI output remains human-readable. OpenClaw-style callers can request a
+structured result with `--json`:
+
+```bash
+coding-agent-skills repo-map /path/to/project --json
+```
+
+JSON output is read-only and sanitized. It includes command identity, package version,
+skill id, status, findings, warnings, skipped checks, refused behavior, safety flags,
+and `recommendedNextAction`. Exit codes follow the public contract:
+
+- `0`: handled execution path, including complete, partial, blocked, or controlled audit results
+- `2`: usage error
+- `3`: safety refusal
+- `4`: missing required input or file
+- `5`: unexpected internal or runtime failure
+
+OpenClaw should remain the owner of memory, routing, permissions, scheduling, user
+interaction, and workflow state. `coding-agent-skills` is a safe callable evidence
+producer, not an orchestrator.
 
 ## Autonomous Maintainer Loop
 

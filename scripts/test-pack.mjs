@@ -221,6 +221,39 @@ function snapshotAbsoluteDirectory(directory) {
   return digest.digest("hex");
 }
 
+function assertOpenClawJsonContract(value, command, packageVersion = "0.2.16") {
+  assert.equal(value.tool, "coding-agent-skills");
+  assert.equal(value.command, command);
+  assert.equal(value.packageVersion, packageVersion);
+  assert.equal(value.success, true);
+  assert.match(value.status, /^(complete|partial|blocked|failed|empty)$/);
+  assert.equal(value.changedState, false);
+  assert.equal(value.safety?.readOnly, true);
+  assert.equal(value.safety?.secretsRead, false);
+  assert.equal(value.safety?.targetCommandsRun, false);
+  assert.equal(value.safety?.mutationsPerformed, false);
+  assert.equal(value.exitCode, 0);
+  assert.equal(value.exitCodeMeaning, "handled");
+  assert.ok(value.recommendedNextAction);
+  assert.equal(typeof value.recommendedNextAction.label, "string");
+  assert.equal(typeof value.recommendedNextAction.reason, "string");
+  assert.equal(typeof value.recommendedNextAction.requiresApproval, "boolean");
+  for (const key of [
+    "summary",
+    "findings",
+    "warnings",
+    "risks",
+    "skipped",
+    "notVerified",
+    "refusedBehavior",
+  ]) {
+    assert.ok(Array.isArray(value[key]), `${command}.${key} must be an array`);
+  }
+  const encoded = JSON.stringify(value);
+  assert.doesNotMatch(encoded, /github_pat_|ghp_|Authorization:\s*Bearer|BEGIN .*PRIVATE KEY/i);
+  assert.doesNotMatch(encoded, /\/home\/oneclickwebsitedesignfactory\//);
+}
+
 const manifestSchema = readJson("schemas/skill-manifest.schema.json");
 const policySchema = readJson("schemas/command-policy.schema.json");
 const adapterSchema = readJson("schemas/project-adapter.schema.json");
@@ -394,10 +427,68 @@ test("local CLI maps approved commands to existing safe scripts", () => {
   assert.match(unknown.stderr, /unknown command: deploy/);
 });
 
+test("local CLI emits OpenClaw-compatible JSON for public commands", () => {
+  const cliPath = path.join(root, "bin", "coding-agent-skills");
+  const fixtureRoot = path.join(root, "tests", "fixtures");
+  const githubHandoffFixture = createGitFixture(
+    path.join("tests", "fixtures", "github-handoff", "static-project"),
+  );
+  fs.appendFileSync(path.join(githubHandoffFixture, "README.md"), "\nLocal handoff change.\n");
+
+  const commands = [
+    ["validate-pack"],
+    ["validate-adapters", path.join(fixtureRoot, "external-adapters", "valid-basic")],
+    [
+      "validate-project",
+      path.join(fixtureRoot, "project-adapter-installation", "valid-exact-pin"),
+    ],
+    ["repo-map", path.join(fixtureRoot, "project-adapter-installation", "valid-exact-pin")],
+    ["route-trace", path.join(fixtureRoot, "route-trace", "static-project")],
+    ["env-audit", path.join(fixtureRoot, "env-audit", "static-project")],
+    ["secret-audit", path.join(fixtureRoot, "secret-audit", "static-project")],
+    ["api-contract-audit", path.join(fixtureRoot, "api-contract-audit", "static-project")],
+    ["migration-review", path.join(fixtureRoot, "migration-review", "static-project")],
+    ["github-handoff", githubHandoffFixture],
+    ["deployment-preflight", path.join(fixtureRoot, "deployment-preflight", "static-project")],
+  ];
+
+  for (const args of commands) {
+    const result = spawnSync(cliPath, [...args, "--json"], {
+      cwd: root,
+      encoding: "utf8",
+      stdio: "pipe",
+    });
+    assert.equal(result.status, 0, `${args.join(" ")}\n${result.stderr}`);
+    assert.equal(result.stderr, "");
+    const parsed = JSON.parse(result.stdout);
+    assertOpenClawJsonContract(parsed, args[0]);
+  }
+
+  const partial = spawnSync(
+    cliPath,
+    [
+      "deployment-preflight",
+      path.join(fixtureRoot, "project-adapter-installation", "valid-exact-pin"),
+      "--json",
+    ],
+    {
+      cwd: root,
+      encoding: "utf8",
+      stdio: "pipe",
+    },
+  );
+  assert.equal(partial.status, 0);
+  const parsedPartial = JSON.parse(partial.stdout);
+  assertOpenClawJsonContract(parsedPartial, "deployment-preflight");
+  assert.equal(parsedPartial.status, "partial");
+  assert.ok(parsedPartial.skipped.length > 0);
+  assert.ok(parsedPartial.refusedBehavior.includes("no deployments"));
+});
+
 test("npm package metadata is public-ready and dependency-free", () => {
   const packageJson = readJson("package.json");
   assert.equal(packageJson.name, "coding-agent-skills");
-  assert.equal(packageJson.version, "0.2.15");
+  assert.equal(packageJson.version, "0.2.16");
   assert.equal(
     packageJson.description,
     "Evidence-first, read-only coding-agent skills and project adapter tooling.",

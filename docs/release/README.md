@@ -19,20 +19,23 @@
 13. Inspect tarball contents for local-only files, credentials, `.env` files, dependency
     folders, generated output, and unrelated repositories.
 14. Install the tarball into a temporary npm prefix and smoke-test the installed CLI.
-15. Smoke-test any new CLI command such as `coding-agent-skills route-trace`,
+15. Smoke-test human-readable and `--json` output for public commands touched by the
+    release. JSON output must include safety flags, `recommendedNextAction`, and
+    `exitCodeMeaning` without secrets or `.env` contents.
+16. Smoke-test any new CLI command such as `coding-agent-skills route-trace`,
     `coding-agent-skills env-audit`, `coding-agent-skills secret-audit`,
     `coding-agent-skills api-contract-audit`, `coding-agent-skills migration-review`,
     `coding-agent-skills github-handoff`, or `coding-agent-skills deployment-preflight`
     against synthetic fixtures only unless a real project read-only smoke is explicitly
     approved.
-16. Review changelog, ledger, run evidence, and versioning impact.
-17. Commit with approved identity.
-18. Push `main` using credential-free remotes.
-19. Confirm a clean synchronized worktree.
-20. Create and push the annotated version tag.
-21. Publish with `npm publish --access public --registry=https://registry.npmjs.org/`.
-22. Install the published package into a temporary prefix and smoke-test the installed CLI.
-23. Create the GitHub Release for the pushed tag.
+17. Review changelog, ledger, run evidence, and versioning impact.
+18. Commit with approved identity.
+19. Push `main` using credential-free remotes.
+20. Confirm a clean synchronized worktree.
+21. Create and push the annotated version tag.
+22. Publish with `npm publish --access public --registry=https://registry.npmjs.org/`.
+23. Install the published package into a temporary prefix and smoke-test the installed CLI.
+24. Create the GitHub Release for the pushed tag.
 
 Deployments, migrations, runtime mutation, platform actions, and target-project builds or
 tests remain outside this release process unless separately approved.

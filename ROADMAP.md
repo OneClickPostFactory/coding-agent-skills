@@ -42,6 +42,8 @@ execution constraints remain unchanged.
   evidence before separately approved GitHub work.
 - `v0.2.15`: audit-only `deployment-preflight` skill and CLI renderer for static
   deployment readiness evidence before separately approved deployment work.
+- `v0.2.16`: OpenClaw-compatible optional `--json` output and documented exit-code
+  semantics for every public CLI command.
 
 The next milestone is recorded in [work-ledger.md](work-ledger.md). The
 [maintainer loop](RUNBOOK.md) may select and evidence that milestone, but it must stop
@@ -89,6 +91,7 @@ Next safe milestone options:
 | `migration-review-skill` | General with platform adapters | Audit-only | Implemented in `v0.2.13` |
 | `github-handoff-skill` | General | Audit-only | Implemented in `v0.2.14` |
 | `deployment-preflight-skill` | General | Audit-only | Implemented in `v0.2.15` |
+| `orchestrator-json-output-contract` | General tooling | Read-only CLI contract | Implemented in `v0.2.16` |
 | `cloudflare-preflight-skill` | Platform-specific | Audit-only | Builder-mode approved; later in wave |
 | `cloudflare-deploy-skill` | Platform-specific | Action-capable | Blocked on approval model |
 | `supabase-rls-audit-skill` | Platform-specific | Audit-only | Builder-mode approved; later in wave |

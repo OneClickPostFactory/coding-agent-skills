@@ -126,6 +126,14 @@ compatibility, schema drift, restriction weakening, evidence removal, failure su
 completion override, mode escalation, `.env` avoidance, traversal, symlinks, and mutation
 snapshots. Chain summaries use ordinal revision labels rather than directory names.
 
+## OpenClaw-Compatible CLI JSON
+
+Public CLI tests exercise `--json` for every exposed command. The contract must remain
+valid JSON, preserve default human-readable output, include safety flags and
+`recommendedNextAction`, use handled exit semantics for successful/partial audit results,
+redact local home paths, and avoid token, private-key, authorization-header, or `.env`
+contents.
+
 ## Evidence Bundles
 
 Disposable evidence bundles cover valid replay, hash mismatch, missing entries,

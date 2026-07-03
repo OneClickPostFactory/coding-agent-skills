@@ -1,9 +1,125 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { externalAdapterCliResult } from "../scripts/lib/adapter-discovery.mjs";
+import { adapterRepoMapCliResult } from "../scripts/lib/adapter-repo-map.mjs";
+import { apiContractAuditCliResult } from "../scripts/lib/api-contract-audit.mjs";
+import { deploymentPreflightCliResult } from "../scripts/lib/deployment-preflight.mjs";
+import { envAuditCliResult } from "../scripts/lib/env-audit.mjs";
+import { githubHandoffCliResult } from "../scripts/lib/github-handoff.mjs";
+import { migrationReviewCliResult } from "../scripts/lib/migration-review.mjs";
+import { redactSensitiveText } from "../scripts/lib/pack-rules.mjs";
+import { projectAdapterCliResult } from "../scripts/lib/project-adapter-installation.mjs";
+import { routeTraceCliResult } from "../scripts/lib/route-trace.mjs";
+import { secretAuditCliResult } from "../scripts/lib/secret-audit.mjs";
+
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, "package.json"), "utf8"));
+
+const commandMetadata = {
+  "validate-pack": {
+    skillId: "pack-validation",
+    mode: "validation",
+    next: {
+      label: "Select a read-only audit command",
+      reason: "The package is structurally valid; choose the narrowest command for the target task.",
+      requiresApproval: false,
+    },
+  },
+  "validate-project": {
+    skillId: "project-adapter-validation",
+    mode: "validation",
+    next: {
+      label: "Run an adapter-aware read-only report",
+      reason: "The project adapter declaration is valid; use a scoped report command next.",
+      requiresApproval: false,
+    },
+  },
+  "repo-map": {
+    skillId: "repo-map",
+    mode: "audit-only",
+    next: {
+      label: "Review adapter-declared repo boundaries",
+      reason: "Use the reported docs, safe paths, ignored paths, and evidence requirements before choosing another action.",
+      requiresApproval: false,
+    },
+  },
+  "route-trace": {
+    skillId: "route-trace",
+    mode: "audit-only",
+    next: {
+      label: "Review static route findings",
+      reason: "Inspect verified and inferred route surfaces before approving code or runtime work.",
+      requiresApproval: false,
+    },
+  },
+  "env-audit": {
+    skillId: "env-audit",
+    mode: "audit-only",
+    next: {
+      label: "Review variable-name inventory",
+      reason: "Use value-free environment names to plan documentation or configuration review without reading secrets.",
+      requiresApproval: false,
+    },
+  },
+  "secret-audit": {
+    skillId: "secret-audit",
+    mode: "audit-only",
+    next: {
+      label: "Review redacted secret-risk findings",
+      reason: "Any remediation, credential rotation, or repository mutation needs separate approval.",
+      requiresApproval: true,
+    },
+  },
+  "api-contract-audit": {
+    skillId: "api-contract-audit",
+    mode: "audit-only",
+    next: {
+      label: "Review static API contract surfaces",
+      reason: "Use contract, endpoint, client, and schema evidence before editing API code.",
+      requiresApproval: false,
+    },
+  },
+  "migration-review": {
+    skillId: "migration-review",
+    mode: "audit-only",
+    next: {
+      label: "Review migration evidence",
+      reason: "Database access, migration edits, generation, or execution require separate approval.",
+      requiresApproval: true,
+    },
+  },
+  "github-handoff": {
+    skillId: "github-handoff",
+    mode: "audit-only",
+    next: {
+      label: "Request explicit GitHub handoff approval",
+      reason: "Commit, push, tag, pull request, or API mutation work is outside this read-only report.",
+      requiresApproval: true,
+    },
+  },
+  "deployment-preflight": {
+    skillId: "deployment-preflight",
+    mode: "audit-only",
+    next: {
+      label: "Request explicit deployment approval",
+      reason: "Deployment, provider API, provider CLI, build, runtime, or migration work is outside this read-only report.",
+      requiresApproval: true,
+    },
+  },
+  "validate-adapters": {
+    skillId: "external-adapter-validation",
+    mode: "validation",
+    next: {
+      label: "Use accepted adapters only as narrowing metadata",
+      reason: "Adapters may narrow safe context but must not grant new powers or weaken shared restrictions.",
+      requiresApproval: false,
+    },
+  },
+};
 
 const commands = {
   "validate-pack": {
@@ -73,6 +189,29 @@ const commands = {
   },
 };
 
+const jsonHandlers = {
+  "validate-project": ([projectRoot]) => projectAdapterCliResult(projectRoot, { coreRoot: repoRoot }),
+  "repo-map": ([projectRoot]) => adapterRepoMapCliResult(projectRoot, { coreRoot: repoRoot }),
+  "route-trace": ([projectRoot]) => routeTraceCliResult(projectRoot, { coreRoot: repoRoot }),
+  "env-audit": ([projectRoot]) => envAuditCliResult(projectRoot, { coreRoot: repoRoot }),
+  "secret-audit": ([projectRoot]) => secretAuditCliResult(projectRoot, { coreRoot: repoRoot }),
+  "api-contract-audit": ([projectRoot]) => apiContractAuditCliResult(projectRoot, { coreRoot: repoRoot }),
+  "migration-review": ([projectRoot]) => migrationReviewCliResult(projectRoot, { coreRoot: repoRoot }),
+  "github-handoff": ([projectRoot]) => githubHandoffCliResult(projectRoot, { coreRoot: repoRoot }),
+  "deployment-preflight": ([projectRoot]) => deploymentPreflightCliResult(projectRoot, { coreRoot: repoRoot }),
+  "validate-adapters": ([adapterRoot]) => externalAdapterCliResult(adapterRoot, { coreRoot: repoRoot }),
+};
+
+function stripJsonFlag(args) {
+  let json = false;
+  const rest = [];
+  for (const arg of args) {
+    if (arg === "--json") json = true;
+    else rest.push(arg);
+  }
+  return { json, args: rest };
+}
+
 function usage(exitCode = 0) {
   const lines = [
     "usage: coding-agent-skills <command> [args]",
@@ -97,7 +236,192 @@ function usage(exitCode = 0) {
   process.exitCode = exitCode;
 }
 
-const [commandName, ...args] = process.argv.slice(2);
+function sanitizedLines(text) {
+  return redactSensitiveText(text)
+    .split(/\r?\n/)
+    .map((line) => line.trimEnd())
+    .filter((line) => line.length > 0);
+}
+
+function sectionLines(lines, heading) {
+  const result = [];
+  let active = false;
+  for (const line of lines) {
+    if (line === `## ${heading}`) {
+      active = true;
+      continue;
+    }
+    if (active && line.startsWith("## ")) break;
+    if (active && line.trim()) result.push(line.replace(/^- /, ""));
+  }
+  return result.filter((line) => line !== "none" && line !== "none found");
+}
+
+function detectedStatus(lines, exitCode) {
+  for (const line of lines) {
+    const match = /^Status:\s*([a-z-]+)/i.exec(line);
+    if (match) return match[1].toLowerCase();
+  }
+  if (exitCode === 0) return "complete";
+  if (exitCode === 2) return "failed";
+  return "failed";
+}
+
+function exitCodeMeaning(exitCode) {
+  if (exitCode === 0) return "handled";
+  if (exitCode === 2) return "usage-error";
+  if (exitCode === 3) return "safety-refusal";
+  if (exitCode === 4) return "missing-required-input";
+  return "unexpected-internal-or-runtime-failure";
+}
+
+function adapterSummary(lines) {
+  const adapter = {};
+  const adapterLines = [
+    ...sectionLines(lines, "Adapter Scope"),
+    ...sectionLines(lines, "Adapter Bounds"),
+  ];
+  for (const line of adapterLines) {
+    const match = /^([^:]+):\s*(.*)$/.exec(line);
+    if (!match) continue;
+    const key = match[1]
+      .trim()
+      .replace(/[^a-zA-Z0-9]+([a-zA-Z0-9])/g, (_, char) => char.toUpperCase())
+      .replace(/^[A-Z]/, (char) => char.toLowerCase());
+    adapter[key] = match[2].trim();
+  }
+  return adapter;
+}
+
+function summaryLines(lines) {
+  return lines
+    .filter((line) => line.trim().length > 0)
+    .filter((line) => !line.startsWith("#"))
+    .filter((line) => !line.startsWith("## "))
+    .filter((line) => !line.startsWith("- "))
+    .slice(0, 12);
+}
+
+function findingLines(lines) {
+  const ignoredSections = new Set([
+    "Git State",
+    "Adapter Scope",
+    "Adapter Bounds",
+    "Scope Paths",
+    "Ignored Paths",
+    "Summary",
+    "Skipped",
+    "Not Verified",
+    "Warnings",
+    "Refused Behavior",
+  ]);
+  const findings = [];
+  let current = null;
+  for (const line of lines) {
+    if (line.startsWith("## ")) {
+      current = line.replace(/^## /, "");
+      continue;
+    }
+    if (!current || ignoredSections.has(current)) continue;
+    if (line.startsWith("- ") && !line.includes("none found")) findings.push(line.slice(2));
+  }
+  return findings.slice(0, 100);
+}
+
+function normalizeOutcome(outcome) {
+  if (Array.isArray(outcome.lines)) {
+    return {
+      exitCode: outcome.exitCode ?? 5,
+      lines: outcome.lines
+        .map((line) => redactSensitiveText(line))
+        .filter((line) => line.trim().length > 0),
+      report: outcome.report ?? outcome.result ?? null,
+    };
+  }
+
+  return {
+    exitCode: outcome.status ?? 5,
+    lines: [
+      ...sanitizedLines(outcome.stdout ?? ""),
+      ...sanitizedLines(outcome.stderr ?? ""),
+    ],
+    report: null,
+  };
+}
+
+function buildJsonResult(commandName, args, outcome) {
+  const normalized = normalizeOutcome(outcome);
+  const lines = normalized.lines;
+  const metadata = commandMetadata[commandName] ?? {
+    skillId: commandName,
+    mode: "unknown",
+    next: null,
+  };
+  const status = normalized.report?.status ?? detectedStatus(lines, normalized.exitCode);
+  const summary = summaryLines(lines);
+  const warnings = [
+    ...(Array.isArray(normalized.report?.warnings)
+      ? normalized.report.warnings.map((line) => redactSensitiveText(line))
+      : []),
+    ...sectionLines(lines, "Warnings"),
+    ...lines.filter((line) => /\bwarning\b/i.test(line) && !line.startsWith("## ")),
+  ];
+
+  return {
+    success: normalized.exitCode === 0,
+    status,
+    tool: "coding-agent-skills",
+    command: commandName,
+    skillId: metadata.skillId,
+    packageVersion: packageJson.version,
+    mode: metadata.mode,
+    changedState: false,
+    summary: summary.length > 0
+      ? summary
+      : [
+          normalized.exitCode === 0
+            ? `${commandName} completed successfully`
+            : `${commandName} did not complete successfully`,
+        ],
+    findings: Array.isArray(normalized.report?.findings)
+      ? normalized.report.findings.map((finding) => redactSensitiveText(JSON.stringify(finding)))
+      : findingLines(lines),
+    warnings: [...new Set(warnings)],
+    risks: Array.isArray(normalized.report?.riskIndicators)
+      ? normalized.report.riskIndicators.map((risk) => redactSensitiveText(JSON.stringify(risk)))
+      : sectionLines(lines, "Risk Indicators"),
+    skipped: Array.isArray(normalized.report?.skipped)
+      ? normalized.report.skipped.map((item) => redactSensitiveText(JSON.stringify(item)))
+      : sectionLines(lines, "Skipped"),
+    notVerified: Array.isArray(normalized.report?.notVerified)
+      ? normalized.report.notVerified.map((item) => redactSensitiveText(String(item)))
+      : sectionLines(lines, "Not Verified"),
+    refusedBehavior: Array.isArray(normalized.report?.refusedBehavior)
+      ? normalized.report.refusedBehavior.map((item) => redactSensitiveText(String(item)))
+      : sectionLines(lines, "Refused Behavior"),
+    adapter: adapterSummary(lines),
+    recommendedNextAction: metadata.next,
+    safety: {
+      readOnly: true,
+      secretsRead: false,
+      targetCommandsRun: false,
+      mutationsPerformed: false,
+    },
+    exitCode: normalized.exitCode,
+    exitCodeMeaning: exitCodeMeaning(normalized.exitCode),
+    invocation: {
+      args: args.map((arg) => redactSensitiveText(arg)),
+      outputFormat: "json",
+    },
+  };
+}
+
+function printJson(value) {
+  process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
+}
+
+const { json, args: rawArgs } = stripJsonFlag(process.argv.slice(2));
+const [commandName, ...args] = rawArgs;
 if (!commandName || commandName === "help" || commandName === "--help" || commandName === "-h") {
   usage(commandName ? 0 : 2);
 } else if (!Object.hasOwn(commands, commandName)) {
@@ -108,6 +432,10 @@ if (!commandName || commandName === "help" || commandName === "--help" || comman
   if ((command.requiredArgs ?? 0) !== args.length) {
     process.stderr.write(`usage: ${command.usage}\n`);
     process.exitCode = 2;
+  } else if (json && jsonHandlers[commandName]) {
+    const outcome = jsonHandlers[commandName](args);
+    printJson(buildJsonResult(commandName, args, outcome));
+    process.exitCode = outcome.exitCode ?? 5;
   } else {
     const result = spawnSync(
       process.execPath,
@@ -115,10 +443,13 @@ if (!commandName || commandName === "help" || commandName === "--help" || comman
       {
         cwd: repoRoot,
         encoding: "utf8",
-        stdio: "inherit",
+        stdio: json ? "pipe" : "inherit",
         shell: false,
       },
     );
+    if (json) {
+      printJson(buildJsonResult(commandName, args, result));
+    }
     process.exitCode = result.status ?? 1;
   }
 }

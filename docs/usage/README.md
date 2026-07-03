@@ -117,6 +117,50 @@ The installed CLI does not run target project builds or tests, perform runtime c
 deploy, migrate, mutate services or processes, or read `.env` files. Project adapters
 narrow context; they do not grant additional power or weaken shared restrictions.
 
+## Machine-Readable Output
+
+Every public CLI command accepts optional `--json` for OpenClaw-style tool callers:
+
+```bash
+coding-agent-skills repo-map /path/to/project --json
+coding-agent-skills validate-pack --json
+```
+
+The default human-readable output is unchanged. JSON output is sanitized and includes:
+
+- `success`
+- `status`
+- `tool`
+- `command`
+- `skillId`
+- `packageVersion`
+- `mode`
+- `changedState`
+- `summary`
+- `findings`
+- `warnings`
+- `risks`
+- `skipped`
+- `notVerified`
+- `refusedBehavior`
+- `adapter`
+- `recommendedNextAction`
+- `safety`
+- `exitCode`
+- `exitCodeMeaning`
+
+Exit-code semantics:
+
+- `0`: handled execution path, including complete, partial, blocked, or controlled audit result
+- `2`: usage error
+- `3`: safety refusal
+- `4`: missing required input or file
+- `5`: unexpected internal or runtime failure
+
+OpenClaw or another orchestrator should own memory, routing, permissions, scheduling,
+chat/user interaction, and workflow state. This package remains a read-only external tool
+and evidence producer.
+
 ## Local Command Surface
 
 From the shared skill repository root, the same wrapper can be used directly:

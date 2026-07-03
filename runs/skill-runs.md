@@ -277,6 +277,23 @@ This file records bounded maintainer-loop runs. Entries must not contain secrets
   API calls, no provider CLI execution, no package installs, no builds, no tests, no
   runtime checks, no service mutation, no deployments, no migrations, and no target-project
   mutation.
+- Validation commands: full source validation, package dry-run, tarball smoke, registry
+  install smoke, npm exec, and GitHub Release verification.
+- Result: passed; `v0.2.15` was committed, pushed, tagged, published to npm, smoke-tested
+  from the registry, and released on GitHub.
+- Commit/tag/push status: complete.
+
+## implementation-v0.2.16-openclaw-json-output
+
+- Run ID: `implementation-v0.2.16-openclaw-json-output`
+- Repository: `/home/oneclickwebsitedesignfactory/coding-agent-skills`
+- Command used: `bounded approval for OpenClaw-compatible JSON output and exit-code contract`
+- Files changed: CLI wrapper, release tests, usage/release/testing docs, changelog,
+  roadmap, work ledger, run log, and package metadata.
+- Safety boundary: read-only machine-readable output only; no `.env` reads, no OpenClaw
+  modification, no OpenClaw plugin code, no cron or memory integration, no real project
+  repository mutation, no target-project builds/tests/runtime checks, no deployments, no
+  migrations, and no dependency changes.
 - Validation commands: pending final release validation matrix.
 - Result: pass pending final publication evidence.
 - Commit/tag/push status: pending approved release workflow.
