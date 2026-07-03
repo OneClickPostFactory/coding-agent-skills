@@ -17,6 +17,7 @@ Audit-only:
 - `secret-audit`
 - `api-contract-audit`
 - `migration-review`
+- `github-handoff`
 - `git-preflight`
 - `runtime-truth`
 - `llm-drift-control`
@@ -26,5 +27,5 @@ Controlled local validation:
 - `build-verify`
 
 The evidence pack is a shared output contract, not an executable skill. Deployment
-preflight, GitHub handoff, provider operations, and additional project adapters remain
-separate future work.
+preflight, provider operations, and additional project adapters remain separate future
+work.

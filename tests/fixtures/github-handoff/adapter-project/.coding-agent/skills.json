@@ -1,0 +1,23 @@
+{
+  "declarationVersion": "1.0.0",
+  "projectId": "fixture-github-handoff",
+  "adapterRoot": ".coding-agent/adapters",
+  "adapterSchemaVersion": "1.0.0",
+  "core": {
+    "id": "coding-agent-skills",
+    "expectedVersion": "0.2.3",
+    "versionPin": ">=0.2.3 <0.3.0"
+  },
+  "compatibleSkillIds": ["github-handoff"],
+  "adapters": [
+    {
+      "id": "github-handoff-fixture",
+      "version": "1.0.0",
+      "skillIds": ["github-handoff"]
+    }
+  ],
+  "validationCommand": "node <shared-core>/scripts/validate-project-adapters.mjs <project-root>",
+  "evidenceOutput": ".coding-agent/evidence",
+  "approvalPolicyReference": ".coding-agent/approval-policy.md",
+  "noSecrets": true
+}

@@ -1,0 +1,74 @@
+{
+  "version": "0.2.3",
+  "mode": "audit-only",
+  "parserPolicy": {
+    "inspectEverySegment": true,
+    "inspectScriptBodies": true,
+    "rejectUnknownExecutables": true,
+    "rejectShellWrappers": true,
+    "rejectHeredocs": true,
+    "rejectRedirection": true,
+    "providerSpecificNpx": true,
+    "authenticatedCurlRequiresApproval": true,
+    "boundedReadsRequired": true,
+    "allowedComposition": "read-only"
+  },
+  "allowedFamilies": [
+    {
+      "name": "local-git-handoff-inspection",
+      "executables": ["git"],
+      "argumentPolicy": {
+        "strategy": "exact",
+        "allowedPatterns": [
+          "status --short --branch",
+          "rev-parse --show-toplevel",
+          "rev-parse --abbrev-ref HEAD",
+          "rev-parse HEAD",
+          "log -1 --format=%s",
+          "tag --points-at HEAD",
+          "remote"
+        ],
+        "deniedPatterns": [
+          "remote URL printing, commits, pushes, tags, branch changes, pull requests, releases, and GitHub API calls"
+        ]
+      },
+      "constraints": [
+        "Inspect local Git metadata only.",
+        "Do not print remote URLs.",
+        "Do not mutate Git state."
+      ]
+    },
+    {
+      "name": "github-handoff-renderer",
+      "executables": ["node", "coding-agent-skills"],
+      "argumentPolicy": {
+        "strategy": "exact",
+        "allowedPatterns": [
+          "node scripts/render-github-handoff.mjs <project-root>; coding-agent-skills github-handoff <project-root>"
+        ],
+        "deniedPatterns": [
+          "PR creation, release creation, GitHub API mutation, token reads, secret-file reads, commits, pushes, and tags"
+        ]
+      },
+      "constraints": [
+        "The renderer must remain audit-only.",
+        "Do not read tokens, print remote URLs, create pull requests, commit, push, or tag."
+      ]
+    }
+  ],
+  "restrictedCategories": [
+    "file-write",
+    "package-install",
+    "deployment",
+    "git-mutation",
+    "unrestricted-scan",
+    "secret-read",
+    "process-mutation",
+    "service-mutation",
+    "migration-apply",
+    "privileged-api"
+  ],
+  "approvalExceptions": [
+    "No approval exception may turn github-handoff into a GitHub mutation workflow."
+  ]
+}

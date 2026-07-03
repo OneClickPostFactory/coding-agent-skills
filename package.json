@@ -1,6 +1,6 @@
 {
   "name": "coding-agent-skills",
-  "version": "0.2.13",
+  "version": "0.2.14",
   "description": "Evidence-first, read-only coding-agent skills and project adapter tooling.",
   "type": "module",
   "private": false,
@@ -14,6 +14,7 @@
     "secret-audit",
     "api-contract-audit",
     "migration-review",
+    "github-handoff",
     "project-adapters",
     "code-validation",
     "cli"

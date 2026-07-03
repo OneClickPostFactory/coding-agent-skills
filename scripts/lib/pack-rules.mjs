@@ -5,6 +5,7 @@ export const PILOT_SKILLS = [
   "secret-audit",
   "api-contract-audit",
   "migration-review",
+  "github-handoff",
   "build-verify",
   "git-preflight",
   "runtime-truth",
@@ -21,6 +22,7 @@ export const AUDIT_ONLY_SKILLS = [
   "secret-audit",
   "api-contract-audit",
   "migration-review",
+  "github-handoff",
   "git-preflight",
   "runtime-truth",
   "llm-drift-control",
@@ -408,6 +410,13 @@ export function classifyTrigger(prompt) {
     return "migration-review";
   }
   if (
+    /\b(?:github handoff|handoff report|handoff evidence|pull request handoff|pr handoff|changed files summary|git handoff|release handoff)\b/.test(
+      text,
+    )
+  ) {
+    return "github-handoff";
+  }
+  if (
     /\b(?:unfamiliar repository|canonical repository root|canonical repo|map the current packages|map this repository|identify its entry points|nested directory)\b/.test(
       text,
     )
@@ -548,7 +557,7 @@ function classifySegment(segment, options = {}) {
   }
   if (
     executable === "node" &&
-    !/^node\s+(?:--check\b|--test\b|scripts\/(?:validate-pack|validate-maintainer-loop|validate-adapters|validate-project-adapters|check-adapter-upgrade|check-adapter-upgrade-chain|verify-evidence-bundle|render-evidence-archive-report|render-adapter-repo-map|render-route-trace|render-env-audit|render-secret-audit|render-api-contract-audit|render-migration-review|test-pack)\.mjs\b)/.test(
+    !/^node\s+(?:--check\b|--test\b|scripts\/(?:validate-pack|validate-maintainer-loop|validate-adapters|validate-project-adapters|check-adapter-upgrade|check-adapter-upgrade-chain|verify-evidence-bundle|render-evidence-archive-report|render-adapter-repo-map|render-route-trace|render-env-audit|render-secret-audit|render-api-contract-audit|render-migration-review|render-github-handoff|test-pack)\.mjs\b)/.test(
       segment,
     )
   ) {
@@ -558,7 +567,7 @@ function classifySegment(segment, options = {}) {
     ["coding-agent-skills", "bin/coding-agent-skills", "./bin/coding-agent-skills"].includes(
       executable,
     ) &&
-    !/^(?:\.\/)?(?:bin\/)?coding-agent-skills\s+(?:validate-pack|validate-project\s+\S+|repo-map\s+\S+|route-trace\s+\S+|env-audit\s+\S+|secret-audit\s+\S+|api-contract-audit\s+\S+|migration-review\s+\S+|validate-adapters\s+\S+|help|--help|-h)\s*$/.test(
+    !/^(?:\.\/)?(?:bin\/)?coding-agent-skills\s+(?:validate-pack|validate-project\s+\S+|repo-map\s+\S+|route-trace\s+\S+|env-audit\s+\S+|secret-audit\s+\S+|api-contract-audit\s+\S+|migration-review\s+\S+|github-handoff\s+\S+|validate-adapters\s+\S+|help|--help|-h)\s*$/.test(
       segment,
     )
   ) {

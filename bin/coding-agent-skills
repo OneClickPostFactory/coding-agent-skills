@@ -53,6 +53,12 @@ const commands = {
     usage: "coding-agent-skills migration-review <project-root>",
     requiredArgs: 1,
   },
+  "github-handoff": {
+    script: "scripts/render-github-handoff.mjs",
+    args: ([projectRoot]) => [projectRoot],
+    usage: "coding-agent-skills github-handoff <project-root>",
+    requiredArgs: 1,
+  },
   "validate-adapters": {
     script: "scripts/validate-adapters.mjs",
     args: ([adapterRoot]) => [adapterRoot],
@@ -74,6 +80,7 @@ function usage(exitCode = 0) {
     "  secret-audit <project-root>",
     "  api-contract-audit <project-root>",
     "  migration-review <project-root>",
+    "  github-handoff <project-root>",
     "  validate-adapters <adapter-root>",
     "",
     "local wrapper for the published coding-agent-skills package",

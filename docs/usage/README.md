@@ -10,6 +10,7 @@ Select the least-privileged skill that matches the request:
 | Find high-confidence secret exposure risks without values | `secret-audit` |
 | Map static API contract surfaces | `api-contract-audit` |
 | Review static migration and schema evidence | `migration-review` |
+| Prepare local GitHub handoff evidence | `github-handoff` |
 | Run existing local validation checks | `build-verify` |
 | Assess Git handoff readiness | `git-preflight` |
 | Determine what is actually running | `runtime-truth` |
@@ -27,11 +28,13 @@ Select the least-privileged skill that matches the request:
    calls, and schema/type files must be mapped without runtime behavior.
 6. Use `migration-review` when database migration, schema, config, package-script-key,
    and static risk-indicator evidence must be mapped without database access.
-7. Perform implementation outside this pilot pack.
-8. Use `build-verify` for approved project-native checks.
-9. Use `git-preflight` before handoff or publication.
-10. Use `runtime-truth` only when live local state matters.
-11. Use `llm-drift-control` when claims and evidence may disagree.
+7. Use `github-handoff` when local Git metadata and changed-file summaries are needed
+   before separately approved GitHub work.
+8. Perform implementation outside this pilot pack.
+9. Use `build-verify` for approved project-native checks.
+10. Use `git-preflight` before handoff or publication.
+11. Use `runtime-truth` only when live local state matters.
+12. Use `llm-drift-control` when claims and evidence may disagree.
 
 Every skill emits an evidence pack. Read `status`, skipped checks, failures, confidence, and changed state before relying on a completion claim.
 
@@ -67,6 +70,7 @@ coding-agent-skills env-audit /path/to/project
 coding-agent-skills secret-audit /path/to/project
 coding-agent-skills api-contract-audit /path/to/project
 coding-agent-skills migration-review /path/to/project
+coding-agent-skills github-handoff /path/to/project
 coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 
@@ -96,6 +100,10 @@ client-call patterns, schema/type files, skipped paths, and not-verified runtime
 paths when enabled, and statically reports migration files, schema/config files, package
 script keys, risk indicators, skipped paths, and not-verified database behavior without
 database access or migration execution.
+`github-handoff` validates a project adapter when present, then reports local Git branch
+state, HEAD, tags at HEAD, remote names, and changed-file summaries without printing
+remote URLs, committing, pushing, tagging, creating pull requests, calling GitHub APIs,
+or reading tokens.
 
 The installed CLI does not run target project builds or tests, perform runtime checks,
 deploy, migrate, mutate services or processes, or read `.env` files. Project adapters
@@ -114,6 +122,7 @@ bin/coding-agent-skills env-audit /path/to/project
 bin/coding-agent-skills secret-audit /path/to/project
 bin/coding-agent-skills api-contract-audit /path/to/project
 bin/coding-agent-skills migration-review /path/to/project
+bin/coding-agent-skills github-handoff /path/to/project
 bin/coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 
@@ -129,6 +138,7 @@ coding-agent-skills env-audit /path/to/project
 coding-agent-skills secret-audit /path/to/project
 coding-agent-skills api-contract-audit /path/to/project
 coding-agent-skills migration-review /path/to/project
+coding-agent-skills github-handoff /path/to/project
 coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 

@@ -67,6 +67,14 @@ adapter-declared scope, and adapter-present-but-not-enabled behavior. Tests must
 connect to databases, apply migrations, generate ORM clients, run package scripts, build,
 test, deploy, or read `.env` files.
 
+## GitHub Handoff
+
+Synthetic github-handoff projects are copied into disposable Git repositories under
+`/tmp` during tests. The harness verifies branch state, HEAD, tags at HEAD, changed-file
+summary, adapter-declared evidence metadata, and adapter-present-but-not-enabled behavior.
+Tests must never commit to the shared repository, push, tag shared history, create pull
+requests, call GitHub APIs, print remote URLs, read tokens, or read `.env` files.
+
 ## Privacy And Redaction
 
 Sensitive shapes are stored as ordered synthetic parts and reconstructed only in memory. Tests verify type detection, redaction, and absence from reusable skill content without printing fixture values.

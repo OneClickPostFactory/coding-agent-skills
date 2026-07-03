@@ -4,13 +4,13 @@
 
 - Repository: `coding-agent-skills`
 - Branch: `main`
-- Pilot skills: `repo-map`, `route-trace`, `env-audit`, `secret-audit`, `api-contract-audit`, `migration-review`, `build-verify`, `git-preflight`, `runtime-truth`, `llm-drift-control`
+- Pilot skills: `repo-map`, `route-trace`, `env-audit`, `secret-audit`, `api-contract-audit`, `migration-review`, `github-handoff`, `build-verify`, `git-preflight`, `runtime-truth`, `llm-drift-control`
 - Adapter discovery, project adapter installation, stale-pin detection, upgrade evidence, compatibility-chain validation, evidence-bundle verification, retention policy, provenance design, archive-report rendering, archive-index fixtures, retention-expiry advisory reporting, and detached-signature verification planning are implemented.
 - Real-project adapter adoption readiness is documented as a planning-only approval gate.
 - First external project-owned adapter adoption completed for `/home/oneclickwebsitedesignfactory/tax-lien-platform` at candidate commit `c548b1a6cbb3455a70b89d0e301e22435bfccac9`.
 - The adopted adapter is `repo-map` only, docs/metadata-only, and contains no commands, runtime checks, build/test/package behavior, platform/deployment behavior, or secret-aware behavior.
 - The shared repository does not contain real adapter manifests; real project adapters remain owned by their project repositories.
-- Public npm package release `v0.2.13` exposes the dependency-free
+- Public npm package release `v0.2.14` exposes the dependency-free
   `coding-agent-skills` CLI under MIT license.
 - `route-trace` is implemented as an audit-only static route tracing skill.
 - `env-audit` is implemented as an audit-only value-free environment variable name mapping
@@ -20,19 +20,20 @@
   skill.
 - `migration-review` is implemented as an audit-only static migration and schema evidence
   review skill.
+- `github-handoff` is implemented as an audit-only local Git handoff evidence skill.
 - Builder-mode approval: complete the remaining read-only skill wave for
   `coding-agent-skills` itself. Real-world project execution constraints remain unchanged.
 
 ## Last Completed Version
 
-`v0.2.13`
+`v0.2.14`
 
 ## Current Recommended Milestone
 
-The `migration-review` public npm release is in progress under builder-mode approval.
+The `github-handoff` public npm release is in progress under builder-mode approval.
 Continue the remaining read-only skill wave one release at a time unless a real safety,
 validation, publication, or authentication boundary appears. The next approved wave item is
-`github-handoff-skill`.
+`deployment-preflight-skill`.
 
 ## Allowed Next Actions
 
@@ -104,12 +105,21 @@ No next runner command is currently queued.
 
 No autonomous maintainer-loop run has been recorded yet.
 
+### 2026-07-03T13:00:00Z
+
+- Latest tag observed: `v0.2.13`
+- Implemented milestone: `github-handoff` audit-only local Git handoff evidence skill and CLI command.
+- Required permission: `builder-mode-skill-implementation`
+- Validation result: pass pending final publication evidence
+- Next recommended milestone: continue builder-mode wave with `deployment-preflight-skill`
+  after `v0.2.14` publication completes.
+
 ### 2026-07-03T12:00:00Z
 
 - Latest tag observed: `v0.2.12`
 - Implemented milestone: `migration-review` audit-only static migration and schema evidence review skill and CLI command.
 - Required permission: `builder-mode-skill-implementation`
-- Validation result: pass pending final publication evidence
+- Validation result: passed; `v0.2.13` commit, tag, npm publication, registry smoke, npm exec, and GitHub Release completed
 - Next recommended milestone: continue builder-mode wave with `github-handoff-skill`
   after `v0.2.13` publication completes.
 

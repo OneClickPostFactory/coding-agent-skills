@@ -12,6 +12,8 @@
   build verification.
 - Static migration/schema review must trigger `migration-review`, not runtime truth,
   deployment, or migration execution.
+- Local GitHub handoff evidence must trigger `github-handoff`, not publication,
+  pull request creation, or Git mutation.
 - Local validation must trigger `build-verify` only when project-native checks are requested.
 - Git readiness must trigger `git-preflight`, not publication.
 - Process/listener/health questions must trigger `runtime-truth`, not restart behavior.

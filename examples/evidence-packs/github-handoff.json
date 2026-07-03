@@ -1,0 +1,67 @@
+{
+  "contractVersion": "1.0.0",
+  "skill": {"name": "github-handoff", "version": "0.2.3"},
+  "invocation": {
+    "id": "example-github-handoff",
+    "startedAt": "2026-07-03T12:00:00Z",
+    "endedAt": "2026-07-03T12:01:00Z"
+  },
+  "repository": {
+    "root": "/workspace/example-project",
+    "branch": "main",
+    "head": "0123456789abcdef",
+    "workingTreeState": "dirty"
+  },
+  "userIntent": "Prepare a read-only GitHub handoff report.",
+  "declaredScope": ["/workspace/example-project"],
+  "projectAdapter": "none",
+  "environmentSummary": {"platform": "linux", "shell": "bash"},
+  "status": "complete",
+  "confidence": {
+    "level": "high",
+    "reason": "Local Git metadata and changed-file summary were collected without mutation."
+  },
+  "commands": [
+    {
+      "command": "coding-agent-skills github-handoff /workspace/example-project",
+      "family": "github-handoff-renderer",
+      "workingDirectory": "/workspace/example-project",
+      "startedAt": "2026-07-03T12:00:20Z",
+      "endedAt": "2026-07-03T12:00:21Z",
+      "exitStatus": 0,
+      "resultStatus": "success",
+      "safetyClass": "allowed",
+      "approvalReference": null,
+      "purpose": "Render local Git handoff evidence.",
+      "outputSummary": "Reported branch state, HEAD, tags at HEAD, remote names, and changed-file summary without printing remote URLs."
+    }
+  ],
+  "skippedChecks": [
+    {
+      "name": "GitHub API state",
+      "reason": "The skill is local and read-only.",
+      "consequence": "PR, CI, and review state are not verified.",
+      "completionPermitted": true
+    }
+  ],
+  "findings": [
+    {
+      "summary": "Working-tree handoff evidence was mapped.",
+      "evidence": ["branch state", "HEAD", "changed-file summary"]
+    }
+  ],
+  "risks": [
+    {
+      "summary": "Remote PR and CI state were not checked.",
+      "evidence": ["GitHub API access was not used"]
+    }
+  ],
+  "failures": [],
+  "unresolvedQuestions": [],
+  "changedState": {
+    "changed": false,
+    "summary": "No project, Git, GitHub, dependency, runtime, service, or remote state changed."
+  },
+  "handoffSummary": "Local Git handoff evidence is available; GitHub remote state remains unverified.",
+  "recommendedNextAction": "Review the handoff report before approving any GitHub mutation."
+}

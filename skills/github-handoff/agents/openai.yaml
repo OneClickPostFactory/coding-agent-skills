@@ -1,0 +1,3 @@
+display_name: GitHub Handoff
+short_description: Prepare local Git handoff evidence without GitHub mutation.
+default_prompt: Prepare a GitHub handoff report as an audit-only pass without modifying files, committing, pushing, tagging, creating pull requests, reading tokens, or calling GitHub APIs.

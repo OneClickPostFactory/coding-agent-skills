@@ -122,6 +122,22 @@ skipped paths, and not-verified database behavior. It never connects to database
 executes migrations, generates ORM clients, builds, tests, deploys, or mutates project
 files.
 
+## Adapter-Aware GitHub Handoff Consumption
+
+The shared pack can consume a validated project-owned adapter as bounded context for
+`github-handoff`:
+
+```bash
+node scripts/render-github-handoff.mjs <project-root>
+```
+
+The renderer validates the project declaration when present. If an adapter is present but
+does not enable `github-handoff`, it reports an adapter-limited skip instead of listing
+changed-file details. When enabled, it uses local Git metadata only: branch state, HEAD,
+tags at HEAD, remote names, and changed-file summaries. It never prints remote URLs,
+reads tokens, creates pull requests, commits, pushes, tags, calls GitHub APIs, or mutates
+project files.
+
 ## What Adapters May Do
 
 - Add bounded relative read paths and ignored paths.
@@ -135,6 +151,8 @@ files.
   handlers, client calls, and schema/type files.
 - Add migration-review safe read paths for static migration, schema, config, and package
   files while relying on the shared reviewer to exclude secret-bearing paths.
+- Add github-handoff required evidence labels and ignored path labels while relying on the
+  shared renderer to avoid remote URLs, tokens, and GitHub mutation.
 - Add command aliases that already satisfy the shared command policy.
 - Add status-only runtime commands and manager hints.
 - Require additional evidence or named approval for exceptional reads.

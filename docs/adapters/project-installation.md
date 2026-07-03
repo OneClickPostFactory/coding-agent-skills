@@ -170,6 +170,18 @@ files, schema/config files, package script keys, static risk indicators, and not
 database behavior without connecting to databases, applying migrations, generating ORM
 clients, or running package scripts.
 
+A project-owned adapter can also enable read-only `github-handoff` context:
+
+```bash
+node scripts/render-github-handoff.mjs <project-root>
+```
+
+The GitHub handoff renderer validates the project declaration when present. If the adapter
+is present but does not enable `github-handoff`, it reports an adapter-limited skip.
+When enabled, it reports local Git metadata and changed-file summaries without printing
+remote URLs, reading tokens, creating pull requests, committing, pushing, tagging, calling
+GitHub APIs, or changing project files.
+
 ## Safety Boundary
 
 Project adapters are extension-only. They cannot remove denied operations, change an

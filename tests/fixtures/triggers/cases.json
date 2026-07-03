@@ -80,6 +80,18 @@
       "notSkills": ["deployment-preflight", "runtime-truth"]
     },
     {
+      "id": "github-handoff-report",
+      "prompt": "Prepare a GitHub handoff report from local branch state and changed files without pushing.",
+      "expectedSkill": "github-handoff",
+      "notSkills": ["git-preflight", "build-verify"]
+    },
+    {
+      "id": "github-handoff-pr-evidence",
+      "prompt": "Summarize handoff evidence for a future PR without creating the pull request.",
+      "expectedSkill": "github-handoff",
+      "notSkills": ["runtime-truth", "deployment-preflight"]
+    },
+    {
       "id": "build-after-implementation",
       "prompt": "The implementation is finished. Run the existing typecheck, tests, and build.",
       "expectedSkill": "build-verify",
@@ -131,7 +143,7 @@
       "id": "negative-deploy",
       "prompt": "Deploy this application to production.",
       "expectedSkill": null,
-      "notSkills": ["repo-map", "route-trace", "env-audit", "secret-audit", "api-contract-audit", "migration-review", "build-verify", "git-preflight", "runtime-truth", "llm-drift-control"]
+      "notSkills": ["repo-map", "route-trace", "env-audit", "secret-audit", "api-contract-audit", "migration-review", "github-handoff", "build-verify", "git-preflight", "runtime-truth", "llm-drift-control"]
     },
     {
       "id": "negative-install",
@@ -143,7 +155,7 @@
       "id": "negative-publish",
       "prompt": "Commit these files and publish the branch.",
       "expectedSkill": null,
-      "notSkills": ["git-preflight"]
+      "notSkills": ["git-preflight", "github-handoff"]
     },
     {
       "id": "negative-restart",

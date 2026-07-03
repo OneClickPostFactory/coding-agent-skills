@@ -243,5 +243,21 @@ This file records bounded maintainer-loop runs. Entries must not contain secrets
   connections, no migration execution, no ORM generation, no package scripts, no builds,
   no tests in target projects, no deploys, and no target-project mutation.
 - Validation commands: pending final release validation matrix.
+- Result: passed; `v0.2.13` was committed, pushed, tagged, published to npm, smoke-tested
+  from the registry, and released on GitHub.
+- Commit/tag/push status: complete.
+
+## implementation-v0.2.14-github-handoff
+
+- Run ID: `implementation-v0.2.14-github-handoff`
+- Repository: `/home/oneclickwebsitedesignfactory/coding-agent-skills`
+- Command used: `builder-mode approval for github-handoff-skill implementation and release`
+- Files changed: `github-handoff` skill, GitHub handoff renderer and library, CLI wrapper,
+  adapter schemas, pack rules, release tests, synthetic handoff fixtures, usage/release/
+  safety/adapter docs, changelog, roadmap, work ledger, run log, and package metadata.
+- Safety boundary: read-only local Git metadata only, no `.env` reads, no token reads, no
+  remote URL printing, no commits, no pushes, no tags, no pull request creation, no GitHub
+  API calls, and no target-project mutation.
+- Validation commands: pending final release validation matrix.
 - Result: pass pending final publication evidence.
 - Commit/tag/push status: pending approved release workflow.

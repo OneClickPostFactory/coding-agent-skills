@@ -2,6 +2,26 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.14] - 2026-07-03
+
+### Added
+
+- `github-handoff` audit-only skill for local Git handoff evidence before separately
+  approved GitHub work.
+- `coding-agent-skills github-handoff <project-root>` CLI command.
+- Dependency-free GitHub handoff renderer for branch state, HEAD, tags at HEAD, remote
+  names, changed-file summaries, secret-bearing path redaction, adapter-limited scope,
+  and safety refusals.
+- Synthetic github-handoff fixtures and release tests that create disposable Git
+  repositories under `/tmp` for generic, adapter-scoped, and repo-map-only adapter cases.
+
+### Changed
+
+- Adapter schemas and validators now recognize `github-handoff` as an audit-only skill
+  while preserving the existing `0.2.3` adapter contract compatibility baseline.
+- Usage, release, safety, architecture, adapter, roadmap, ledger, and run-log docs now
+  describe the new local Git handoff report command.
+
 ## [0.2.13] - 2026-07-03
 
 ### Added

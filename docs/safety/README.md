@@ -2,7 +2,7 @@
 
 ## Audit-Only Rule
 
-`repo-map`, `route-trace`, `env-audit`, `secret-audit`, `api-contract-audit`, `migration-review`, `git-preflight`, `runtime-truth`, and `llm-drift-control` must not alter project files, Git state, dependencies, processes, services, databases, remote systems, or deployment state.
+`repo-map`, `route-trace`, `env-audit`, `secret-audit`, `api-contract-audit`, `migration-review`, `github-handoff`, `git-preflight`, `runtime-truth`, and `llm-drift-control` must not alter project files, Git state, dependencies, processes, services, databases, remote systems, or deployment state.
 
 `route-trace` is static only. It may read bounded non-secret route files and route
 configuration, but it must not execute app code, run servers, hit URLs, claim runtime
@@ -25,6 +25,11 @@ databases, or broaden adapter scope.
 `migration-review` is static only. It may read bounded non-secret migration, schema,
 config, and package files, but it must not connect to databases, apply migrations,
 generate ORM clients, run package scripts, build, test, deploy, inspect runtime state, or
+broaden adapter scope.
+
+`github-handoff` is local Git metadata only. It may inspect branch state, HEAD, tags at
+HEAD, remote names, and changed-file status, but it must not print remote URLs, read
+tokens, create pull requests, commit, push, tag, call GitHub APIs, mutate Git state, or
 broaden adapter scope.
 
 `build-verify` may run existing project-native validation commands. Build or test tools may create their normal local artifacts, but the skill must declare observed changes and must reject installation, fix modes, snapshot updates, deployment, migration, or unknown scripts.

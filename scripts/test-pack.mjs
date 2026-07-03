@@ -68,6 +68,11 @@ import {
   renderMigrationReviewReport,
 } from "./lib/migration-review.mjs";
 import {
+  buildGithubHandoffReport,
+  githubHandoffCliResult,
+  renderGithubHandoffReport,
+} from "./lib/github-handoff.mjs";
+import {
   adapterUpgradeCliResult,
   checkAdapterUpgrade,
   formatAdapterUpgradeSummary,
@@ -131,6 +136,27 @@ function read(relativePath) {
 
 function readJson(relativePath) {
   return JSON.parse(read(relativePath));
+}
+
+function runGitFixtureCommand(cwd, args) {
+  const result = spawnSync("git", args, {
+    cwd,
+    encoding: "utf8",
+    stdio: "pipe",
+  });
+  assert.equal(result.status, 0, `git ${args.join(" ")}\n${result.stderr}`);
+  return result.stdout.trim();
+}
+
+function createGitFixture(sourceRelativePath) {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "github-handoff-fixture-"));
+  fs.cpSync(path.join(root, sourceRelativePath), temporary, { recursive: true });
+  runGitFixtureCommand(temporary, ["init", "-b", "main"]);
+  runGitFixtureCommand(temporary, ["config", "user.name", "Fixture User"]);
+  runGitFixtureCommand(temporary, ["config", "user.email", "fixture@example.invalid"]);
+  runGitFixtureCommand(temporary, ["add", "."]);
+  runGitFixtureCommand(temporary, ["commit", "-m", "initial fixture commit"]);
+  return temporary;
 }
 
 function walk(directory, output = []) {
@@ -286,10 +312,16 @@ test("local CLI maps approved commands to existing safe scripts", () => {
   assert.ok(cliText.includes("scripts/render-secret-audit.mjs"));
   assert.ok(cliText.includes("scripts/render-api-contract-audit.mjs"));
   assert.ok(cliText.includes("scripts/render-migration-review.mjs"));
+  assert.ok(cliText.includes("scripts/render-github-handoff.mjs"));
   assert.ok(cliText.includes("scripts/validate-adapters.mjs"));
   assert.ok(!cliText.includes(".env"));
 
   const fixtureRoot = path.join(root, "tests", "fixtures");
+  const githubHandoffFixture = createGitFixture(
+    path.join("tests", "fixtures", "github-handoff", "static-project"),
+  );
+  fs.appendFileSync(path.join(githubHandoffFixture, "README.md"), "\nLocal handoff change.\n");
+
   const commands = [
     [["validate-pack"], /pilot pack valid/],
     [
@@ -327,6 +359,10 @@ test("local CLI maps approved commands to existing safe scripts", () => {
       ["migration-review", path.join(fixtureRoot, "migration-review", "static-project")],
       /# Migration Review Report/,
     ],
+    [
+      ["github-handoff", githubHandoffFixture],
+      /# GitHub Handoff Report/,
+    ],
   ];
 
   for (const [args, expected] of commands) {
@@ -351,7 +387,7 @@ test("local CLI maps approved commands to existing safe scripts", () => {
 test("npm package metadata is public-ready and dependency-free", () => {
   const packageJson = readJson("package.json");
   assert.equal(packageJson.name, "coding-agent-skills");
-  assert.equal(packageJson.version, "0.2.13");
+  assert.equal(packageJson.version, "0.2.14");
   assert.equal(
     packageJson.description,
     "Evidence-first, read-only coding-agent skills and project adapter tooling.",
@@ -368,6 +404,7 @@ test("npm package metadata is public-ready and dependency-free", () => {
     "secret-audit",
     "api-contract-audit",
     "migration-review",
+    "github-handoff",
     "project-adapters",
     "code-validation",
     "cli",
@@ -706,6 +743,57 @@ test("migration-review does not broaden a repo-map-only project adapter", () => 
   assert.equal(result.filesScanned.length, 0);
   assert.equal(result.migrationFiles.length, 0);
   assert.match(renderMigrationReviewReport(result), /migration-review is not enabled/);
+});
+
+test("github-handoff summarizes local git state without mutating remotes", () => {
+  const fixture = createGitFixture(path.join("tests", "fixtures", "github-handoff", "static-project"));
+  runGitFixtureCommand(fixture, ["tag", "v0.0.0"]);
+  fs.appendFileSync(path.join(fixture, "README.md"), "\nChanged for handoff.\n");
+  fs.writeFileSync(path.join(fixture, "src", "new-file.js"), "export const handoff = true;\n");
+
+  const result = buildGithubHandoffReport(fixture, { coreRoot: root });
+
+  assert.equal(result.status, "complete");
+  assert.equal(result.git.branch, "main");
+  assert.ok(result.git.head);
+  assert.ok(result.git.tagsAtHead.includes("v0.0.0"));
+  assert.equal(result.changeSummary.total, 2);
+  assert.equal(result.changeSummary.modified, 1);
+  assert.equal(result.changeSummary.untracked, 1);
+  assert.ok(result.changedFiles.some((record) => record.path === "README.md"));
+  assert.ok(result.changedFiles.some((record) => record.path === "src/new-file.js"));
+  assert.match(renderGithubHandoffReport(result), /No commit, push, tag/);
+});
+
+test("github-handoff respects adapter-declared handoff metadata", () => {
+  const fixture = createGitFixture(path.join("tests", "fixtures", "github-handoff", "adapter-project"));
+  fs.appendFileSync(path.join(fixture, "src", "index.js"), "\nexport const changed = true;\n");
+
+  const result = buildGithubHandoffReport(fixture, { coreRoot: root });
+
+  assert.equal(result.status, "complete");
+  assert.equal(result.adapter.enabled, true);
+  assert.ok(result.requiredEvidence.includes("handoff summary"));
+  assert.ok(result.ignoredPaths.includes("tmp"));
+  assert.equal(result.changeSummary.modified, 1);
+  assert.ok(result.warnings.includes("github-handoff used adapter-declared handoff evidence metadata"));
+  const cli = githubHandoffCliResult(fixture, { coreRoot: root });
+  assert.equal(cli.exitCode, 0);
+  assert.match(cli.lines.join("\n"), /Github-handoff enabled: yes/);
+});
+
+test("github-handoff does not broaden a repo-map-only project adapter", () => {
+  const fixture = createGitFixture(
+    path.join("tests", "fixtures", "project-adapter-installation", "valid-exact-pin"),
+  );
+  fs.appendFileSync(path.join(fixture, "README.md"), "\nShould not be listed.\n");
+
+  const result = buildGithubHandoffReport(fixture, { coreRoot: root });
+
+  assert.equal(result.status, "partial");
+  assert.equal(result.changedFiles.length, 0);
+  assert.equal(result.changeSummary.total, 0);
+  assert.match(renderGithubHandoffReport(result), /github-handoff is not enabled/);
 });
 
 test("validate-pack accepts installed package trees without source-only gitignore", () => {

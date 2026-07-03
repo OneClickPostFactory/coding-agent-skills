@@ -1,6 +1,6 @@
 # Roadmap
 
-The public package now contains ten approved shared skills. Builder-mode approval is
+The public package now contains eleven approved shared skills. Builder-mode approval is
 active for the remaining read-only skill wave in this repository; real-world project
 execution constraints remain unchanged.
 
@@ -38,6 +38,8 @@ execution constraints remain unchanged.
   contract surface mapping.
 - `v0.2.13`: audit-only `migration-review` skill and CLI renderer for static migration
   and schema evidence review.
+- `v0.2.14`: audit-only `github-handoff` skill and CLI renderer for local Git handoff
+  evidence before separately approved GitHub work.
 
 The next milestone is recorded in [work-ledger.md](work-ledger.md). The
 [maintainer loop](RUNBOOK.md) may select and evidence that milestone, but it must stop
@@ -83,8 +85,8 @@ Next safe milestone options:
 | `secret-audit-skill` | General | Audit-only | Implemented in `v0.2.11` |
 | `api-contract-audit-skill` | General | Audit-only | Implemented in `v0.2.12` |
 | `migration-review-skill` | General with platform adapters | Audit-only | Implemented in `v0.2.13` |
-| `github-handoff-skill` | General | Audit-only | Builder-mode approved; next in wave |
-| `deployment-preflight-skill` | General | Audit-only | Builder-mode approved; later in wave |
+| `github-handoff-skill` | General | Audit-only | Implemented in `v0.2.14` |
+| `deployment-preflight-skill` | General | Audit-only | Builder-mode approved; next in wave |
 | `cloudflare-preflight-skill` | Platform-specific | Audit-only | Builder-mode approved; later in wave |
 | `cloudflare-deploy-skill` | Platform-specific | Action-capable | Blocked on approval model |
 | `supabase-rls-audit-skill` | Platform-specific | Audit-only | Builder-mode approved; later in wave |
