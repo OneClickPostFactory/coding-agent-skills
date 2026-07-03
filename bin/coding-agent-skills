@@ -23,6 +23,12 @@ const commands = {
     usage: "coding-agent-skills repo-map <project-root>",
     requiredArgs: 1,
   },
+  "route-trace": {
+    script: "scripts/render-route-trace.mjs",
+    args: ([projectRoot]) => [projectRoot],
+    usage: "coding-agent-skills route-trace <project-root>",
+    requiredArgs: 1,
+  },
   "validate-adapters": {
     script: "scripts/validate-adapters.mjs",
     args: ([adapterRoot]) => [adapterRoot],
@@ -39,9 +45,10 @@ function usage(exitCode = 0) {
     "  validate-pack",
     "  validate-project <project-root>",
     "  repo-map <project-root>",
+    "  route-trace <project-root>",
     "  validate-adapters <adapter-root>",
     "",
-    "local-only wrapper; no npm package or global install is implied",
+    "local wrapper for the published coding-agent-skills package",
   ];
   const stream = exitCode === 0 ? process.stdout : process.stderr;
   stream.write(`${lines.join("\n")}\n`);

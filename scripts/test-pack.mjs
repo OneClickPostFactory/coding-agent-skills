@@ -43,6 +43,11 @@ import {
   renderAdapterRepoMapReport,
 } from "./lib/adapter-repo-map.mjs";
 import {
+  buildRouteTraceReport,
+  renderRouteTraceReport,
+  routeTraceCliResult,
+} from "./lib/route-trace.mjs";
+import {
   adapterUpgradeCliResult,
   checkAdapterUpgrade,
   formatAdapterUpgradeSummary,
@@ -256,6 +261,7 @@ test("local CLI maps approved commands to existing safe scripts", () => {
   assert.ok(cliText.includes("scripts/validate-pack.mjs"));
   assert.ok(cliText.includes("scripts/validate-project-adapters.mjs"));
   assert.ok(cliText.includes("scripts/render-adapter-repo-map.mjs"));
+  assert.ok(cliText.includes("scripts/render-route-trace.mjs"));
   assert.ok(cliText.includes("scripts/validate-adapters.mjs"));
   assert.ok(!cliText.includes(".env"));
 
@@ -276,6 +282,10 @@ test("local CLI maps approved commands to existing safe scripts", () => {
     [
       ["repo-map", path.join(fixtureRoot, "project-adapter-installation", "valid-exact-pin")],
       /# Adapter-Aware Repo Map/,
+    ],
+    [
+      ["route-trace", path.join(fixtureRoot, "route-trace", "static-project")],
+      /# Route Trace Report/,
     ],
   ];
 
@@ -301,7 +311,7 @@ test("local CLI maps approved commands to existing safe scripts", () => {
 test("npm package metadata is public-ready and dependency-free", () => {
   const packageJson = readJson("package.json");
   assert.equal(packageJson.name, "coding-agent-skills");
-  assert.equal(packageJson.version, "0.2.8");
+  assert.equal(packageJson.version, "0.2.9");
   assert.equal(
     packageJson.description,
     "Evidence-first, read-only coding-agent skills and project adapter tooling.",
@@ -313,6 +323,7 @@ test("npm package metadata is public-ready and dependency-free", () => {
     "coding-agent",
     "agent-skills",
     "repo-map",
+    "route-trace",
     "project-adapters",
     "code-validation",
     "cli",
@@ -361,6 +372,83 @@ test("npm package metadata is public-ready and dependency-free", () => {
   assert.equal(restrictedShellReason("npm pack --dry-run"), null);
   assert.match(read("LICENSE"), /Copyright \(c\) 2026 OneClickPostFactory/);
   assert.match(read("docs/release/npm-package.md"), /npm install -g coding-agent-skills/);
+});
+
+test("route-trace renderer identifies static route files and inferred patterns", () => {
+  const result = buildRouteTraceReport(
+    path.join(root, "tests", "fixtures", "route-trace", "static-project"),
+    { coreRoot: root },
+  );
+  assert.equal(result.ok, true);
+  assert.equal(result.status, "complete");
+  assert.equal(result.adapter.present, false);
+  assert.ok(
+    result.verifiedRouteFiles.some(
+      (record) => record.route === "/api/users" && record.file === "app/api/users/route.ts",
+    ),
+  );
+  assert.ok(
+    result.verifiedRouteFiles.some(
+      (record) => record.route === "/blog/[slug]" && record.file === "app/blog/[slug]/page.tsx",
+    ),
+  );
+  assert.ok(
+    result.verifiedRouteFiles.some(
+      (record) => record.route === "/api/hello" && record.file === "pages/api/hello.ts",
+    ),
+  );
+  assert.ok(
+    result.inferredRoutePatterns.some(
+      (record) => record.route === "/dashboard" && record.kind === "react-router-route-declaration",
+    ),
+  );
+  assert.ok(
+    result.inferredRoutePatterns.some(
+      (record) => record.route === "/health" && record.method === "GET",
+    ),
+  );
+  assert.ok(result.notVerified.includes("runtime-generated routes"));
+  assert.ok(renderRouteTraceReport(result).includes("No target project build"));
+});
+
+test("route-trace renderer respects adapter-declared scope", () => {
+  const result = buildRouteTraceReport(
+    path.join(root, "tests", "fixtures", "route-trace", "adapter-project"),
+    { coreRoot: root },
+  );
+  assert.equal(result.ok, true);
+  assert.equal(result.status, "complete");
+  assert.equal(result.adapter.present, true);
+  assert.equal(result.adapter.enabled, true);
+  assert.deepEqual(result.adapter.scopePaths, ["app", "pages", "src"]);
+  assert.ok(
+    result.verifiedRouteFiles.some(
+      (record) => record.route === "/api/items" && record.file === "app/api/items/route.ts",
+    ),
+  );
+  assert.ok(
+    result.inferredRoutePatterns.some((record) => record.route === "/adapter-health"),
+  );
+
+  const cli = routeTraceCliResult(
+    path.join(root, "tests", "fixtures", "route-trace", "adapter-project"),
+    { coreRoot: root },
+  );
+  assert.equal(cli.exitCode, 0);
+  assert.match(cli.lines.join("\n"), /route-trace used adapter-declared safe read paths only/);
+});
+
+test("route-trace does not broaden a repo-map-only project adapter", () => {
+  const result = buildRouteTraceReport(
+    path.join(root, "tests", "fixtures", "project-adapter-installation", "valid-exact-pin"),
+    { coreRoot: root },
+  );
+  assert.equal(result.ok, true);
+  assert.equal(result.status, "partial");
+  assert.equal(result.adapter.present, true);
+  assert.equal(result.adapter.enabled, false);
+  assert.deepEqual(result.scannedFiles, []);
+  assert.match(renderRouteTraceReport(result), /route-trace is not enabled/);
 });
 
 test("validate-pack accepts installed package trees without source-only gitignore", () => {

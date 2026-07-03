@@ -2,7 +2,11 @@
 
 ## Audit-Only Rule
 
-`repo-map`, `git-preflight`, `runtime-truth`, and `llm-drift-control` must not alter project files, Git state, dependencies, processes, services, databases, remote systems, or deployment state.
+`repo-map`, `route-trace`, `git-preflight`, `runtime-truth`, and `llm-drift-control` must not alter project files, Git state, dependencies, processes, services, databases, remote systems, or deployment state.
+
+`route-trace` is static only. It may read bounded non-secret route files and route
+configuration, but it must not execute app code, run servers, hit URLs, claim runtime
+truth, or broaden adapter scope when a project adapter is present.
 
 `build-verify` may run existing project-native validation commands. Build or test tools may create their normal local artifacts, but the skill must declare observed changes and must reject installation, fix modes, snapshot updates, deployment, migration, or unknown scripts.
 

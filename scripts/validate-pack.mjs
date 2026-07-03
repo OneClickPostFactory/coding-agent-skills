@@ -95,11 +95,13 @@ const requiredRootFiles = [
   "scripts/verify-evidence-bundle.mjs",
   "scripts/render-evidence-archive-report.mjs",
   "scripts/render-adapter-repo-map.mjs",
+  "scripts/render-route-trace.mjs",
   "scripts/check-adapter-upgrade.mjs",
   "scripts/check-adapter-upgrade-chain.mjs",
   "scripts/validate-adapters.mjs",
   "scripts/validate-project-adapters.mjs",
   "scripts/lib/adapter-repo-map.mjs",
+  "scripts/lib/route-trace.mjs",
   "scripts/lib/adapter-upgrade.mjs",
   "scripts/lib/adapter-upgrade-chain.mjs",
   "scripts/lib/adapter-discovery.mjs",
@@ -673,8 +675,8 @@ if (packageJson) {
   if (packageJson.name !== "coding-agent-skills") {
     failures.push("package.json has unexpected package name");
   }
-  if (packageJson.version !== "0.2.8") {
-    failures.push("package.json version must be 0.2.8 for public package validation");
+  if (packageJson.version !== "0.2.9") {
+    failures.push("package.json version must be 0.2.9 for public package validation");
   }
   if (packageJson.type !== "module") failures.push("package.json must preserve ESM mode");
   if (packageJson.private !== false) {
@@ -692,6 +694,7 @@ if (packageJson) {
       "coding-agent",
       "agent-skills",
       "repo-map",
+      "route-trace",
       "project-adapters",
       "code-validation",
       "cli",

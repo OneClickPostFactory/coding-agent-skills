@@ -6,6 +6,7 @@ The pilot pack contains:
 
 - Shared evidence-pack contract.
 - `repo-map`: audit-only repository orientation.
+- `route-trace`: audit-only static route surface tracing.
 - `build-verify`: controlled local validation using existing project commands.
 - `git-preflight`: audit-only Git readiness inspection.
 - `runtime-truth`: audit-only runtime evidence collection.
@@ -38,6 +39,7 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 - Run `coding-agent-skills validate-pack` to validate the installed pack.
 - Run `npx coding-agent-skills validate-pack` when a one-off npm execution is preferred.
 - From a clone, the same wrapper is available as `bin/coding-agent-skills validate-pack`.
+- Trace static route surfaces with `coding-agent-skills route-trace <project-root>`.
 - Validate project adapters against [the formal adapter schema](schemas/project-adapter.schema.json).
 - Review [external adapter discovery](docs/adapters/discovery.md).
 - Run `node scripts/validate-adapters.mjs <adapter-root>` for a disposable external root.
@@ -45,6 +47,8 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 - Run `node scripts/validate-project-adapters.mjs <project-root>` for a declared project root.
 - Render adapter-aware `repo-map` orientation with
   `node scripts/render-adapter-repo-map.mjs <project-root>`.
+- Render a static route-trace report with
+  `node scripts/render-route-trace.mjs <project-root>`.
 - Review [adapter upgrade checks](docs/adapters/upgrades.md).
 - Run `node scripts/check-adapter-upgrade.mjs <before-project-root> <after-project-root>`
   for disposable project revisions.

@@ -85,7 +85,7 @@ The dependency-free validator:
 Exit `0` means the project declaration and all installed adapters are compatible. Exit `1`
 means validation failed. Exit `2` means the project-root argument is missing.
 
-## Repo-Map Consumption
+## Adapter-Aware Consumption
 
 After validation passes, a project-owned adapter can be consumed as read-only `repo-map`
 context:
@@ -107,6 +107,19 @@ adapter metadata. It requires `repo-map` compatibility and then renders:
 
 The renderer is metadata-only. It does not read target project file contents, run target
 project tests, run builds, install packages, perform runtime checks, deploy, migrate, read
+`.env` files, or modify project state.
+
+A project-owned adapter can also enable read-only `route-trace` context:
+
+```bash
+node scripts/render-route-trace.mjs <project-root>
+```
+
+The route-trace renderer validates the project declaration when present. If the adapter is
+present but does not enable `route-trace`, it reports an adapter-limited skip. When enabled,
+it reads only adapter-declared safe paths and reports verified route files, inferred route
+patterns, skipped paths, and not-verified runtime-dependent route classes. It does not run
+servers, hit URLs, execute app code, build, test, deploy, migrate, inspect databases, read
 `.env` files, or modify project state.
 
 ## Safety Boundary

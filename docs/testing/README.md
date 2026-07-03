@@ -29,6 +29,14 @@ This is intentionally conservative and is not a complete POSIX parser. Unknown e
 
 Audit-only Markdown is scanned for restricted commands presented as procedures. Commands in explicitly denied or negative contexts remain documentation. Synthetic snapshot targets are hashed before and after checks.
 
+## Route Trace
+
+Synthetic route-trace projects cover generic bounded static scanning, adapter-declared
+scope, verified Next.js route files, inferred React Router and Express-style declarations,
+skipped paths, not-verified runtime route classes, and repo-map-only adapter skips.
+Route-trace tests must never run a target project, hit URLs, build, test, deploy, migrate,
+or read `.env` files.
+
 ## Privacy And Redaction
 
 Sensitive shapes are stored as ordered synthetic parts and reconstructed only in memory. Tests verify type detection, redaction, and absence from reusable skill content without printing fixture values.

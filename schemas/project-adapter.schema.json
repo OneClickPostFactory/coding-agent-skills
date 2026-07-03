@@ -89,6 +89,7 @@
             "type": "string",
             "enum": [
               "repo-map",
+              "route-trace",
               "build-verify",
               "git-preflight",
               "runtime-truth",
@@ -165,6 +166,7 @@
                 "type": "string",
                 "enum": [
                   "repo-map",
+                  "route-trace",
                   "build-verify",
                   "git-preflight",
                   "runtime-truth",

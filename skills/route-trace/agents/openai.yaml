@@ -1,0 +1,4 @@
+interface:
+  display_name: "Route Trace"
+  short_description: "Trace static route surfaces without changing the project"
+  default_prompt: "Trace the statically visible route surfaces in this repository without modifying project, runtime, dependency, or external state."

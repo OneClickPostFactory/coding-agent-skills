@@ -1,0 +1,59 @@
+{
+  "adapterId": "route-trace-fixture",
+  "adapterVersion": "1.0.0",
+  "project": {
+    "id": "route-trace-fixture",
+    "detection": {
+      "rootMarkers": [{"kind": "file", "path": "package.json"}],
+      "maximumDepth": 2,
+      "scope": "declared-project-root",
+      "requireApprovalOutsideScope": true
+    }
+  },
+  "supportedSkills": [
+    {
+      "id": "route-trace",
+      "compatibleVersions": ["0.2.x"],
+      "declaredMode": "audit-only"
+    }
+  ],
+  "extensions": {
+    "safeReadPaths": ["app", "pages", "src"],
+    "ignoredPaths": ["dist", "build", "node_modules"],
+    "documentationPrecedence": ["README.md"],
+    "commandAliases": [],
+    "safeStatusCommands": [],
+    "requiredEvidence": [
+      "adapter scope",
+      "verified route files",
+      "inferred route patterns",
+      "skipped route paths",
+      "not-verified runtime classes"
+    ],
+    "expectedRuntimeManagers": [],
+    "expectedPackageManagers": ["npm"]
+  },
+  "approvalRequirements": [],
+  "inheritance": {
+    "sharedRestrictions": "required",
+    "deniedOperationCategories": [
+      "file-write",
+      "package-install",
+      "deployment",
+      "git-mutation",
+      "unrestricted-scan",
+      "secret-read",
+      "process-mutation",
+      "service-mutation",
+      "migration-apply",
+      "privileged-api"
+    ],
+    "allowRestrictionRemoval": false,
+    "allowModeOverride": false,
+    "allowFailureSuppression": false,
+    "allowCompletionOverride": false,
+    "allowSecretExposure": false,
+    "allowRequiredEvidenceRemoval": false,
+    "allowScopeExpansionWithoutApproval": false
+  }
+}

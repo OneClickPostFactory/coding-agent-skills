@@ -2,6 +2,25 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.9] - 2026-07-03
+
+### Added
+
+- `route-trace` audit-only skill for static route surface tracing.
+- `coding-agent-skills route-trace <project-root>` CLI command.
+- Dependency-free route trace renderer for verified route files, inferred route patterns,
+  skipped paths, not-verified runtime route classes, adapter-limited scope, and safety
+  refusals.
+- Synthetic route-trace fixtures and release tests for generic static scans, adapter-scoped
+  scans, and repo-map-only adapter skips.
+
+### Changed
+
+- Adapter schemas and validators now recognize `route-trace` as an audit-only skill while
+  preserving the existing `0.2.3` adapter contract compatibility baseline.
+- Package metadata, usage docs, release docs, roadmap, ledger, and run log now describe the
+  new read-only route-trace command.
+
 ## [0.2.8] - 2026-06-19
 
 ### Added

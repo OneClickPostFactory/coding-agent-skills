@@ -1,0 +1,23 @@
+{
+  "declarationVersion": "1.0.0",
+  "projectId": "route-trace-fixture",
+  "adapterRoot": ".coding-agent/adapters",
+  "adapterSchemaVersion": "1.0.0",
+  "core": {
+    "id": "coding-agent-skills",
+    "expectedVersion": "0.2.3",
+    "versionPin": ">=0.2.3 <0.3.0"
+  },
+  "compatibleSkillIds": ["route-trace"],
+  "adapters": [
+    {
+      "id": "route-trace-fixture",
+      "version": "1.0.0",
+      "skillIds": ["route-trace"]
+    }
+  ],
+  "validationCommand": "node <shared-core>/scripts/validate-project-adapters.mjs <project-root>",
+  "evidenceOutput": "validation-output/route-trace.json",
+  "approvalPolicyReference": "docs/coding-agent-approval-policy.md",
+  "noSecrets": true
+}

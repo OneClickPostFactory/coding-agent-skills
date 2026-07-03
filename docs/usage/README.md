@@ -5,6 +5,7 @@ Select the least-privileged skill that matches the request:
 | Need | Skill |
 |---|---|
 | Understand repository identity and structure | `repo-map` |
+| Trace statically visible route surfaces | `route-trace` |
 | Run existing local validation checks | `build-verify` |
 | Assess Git handoff readiness | `git-preflight` |
 | Determine what is actually running | `runtime-truth` |
@@ -13,11 +14,12 @@ Select the least-privileged skill that matches the request:
 ## Typical Flow
 
 1. Use `repo-map` when repository identity or boundaries are not established.
-2. Perform implementation outside this pilot pack.
-3. Use `build-verify` for approved project-native checks.
-4. Use `git-preflight` before handoff or publication.
-5. Use `runtime-truth` only when live local state matters.
-6. Use `llm-drift-control` when claims and evidence may disagree.
+2. Use `route-trace` when route files or declarations must be mapped from static files.
+3. Perform implementation outside this pilot pack.
+4. Use `build-verify` for approved project-native checks.
+5. Use `git-preflight` before handoff or publication.
+6. Use `runtime-truth` only when live local state matters.
+7. Use `llm-drift-control` when claims and evidence may disagree.
 
 Every skill emits an evidence pack. Read `status`, skipped checks, failures, confidence, and changed state before relying on a completion claim.
 
@@ -48,6 +50,7 @@ Run supported commands:
 coding-agent-skills validate-pack
 coding-agent-skills validate-project /path/to/project
 coding-agent-skills repo-map /path/to/project
+coding-agent-skills route-trace /path/to/project
 coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 
@@ -60,6 +63,9 @@ npx coding-agent-skills validate-pack
 These commands wrap the same validated scripts shipped in the repository. `repo-map`
 validates the project adapter first, then renders adapter-declared documentation
 precedence, safe read paths, ignored paths, and required evidence.
+`route-trace` validates a project adapter when present, uses adapter-declared safe paths
+when enabled, and statically reports verified route files, inferred route declarations,
+skipped items, and not-verified runtime-dependent route classes.
 
 The installed CLI does not run target project builds or tests, perform runtime checks,
 deploy, migrate, mutate services or processes, or read `.env` files. Project adapters
@@ -73,6 +79,7 @@ From the shared skill repository root, the same wrapper can be used directly:
 bin/coding-agent-skills validate-pack
 bin/coding-agent-skills validate-project /path/to/project
 bin/coding-agent-skills repo-map /path/to/project
+bin/coding-agent-skills route-trace /path/to/project
 bin/coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 
@@ -83,6 +90,7 @@ also be invoked as:
 coding-agent-skills validate-pack
 coding-agent-skills validate-project /path/to/project
 coding-agent-skills repo-map /path/to/project
+coding-agent-skills route-trace /path/to/project
 coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 

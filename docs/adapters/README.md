@@ -38,11 +38,28 @@ builds, install packages, perform runtime checks, deploy, migrate, or read `.env
 This is agent context for safer repository understanding. It is not target-application
 product behavior.
 
+## Adapter-Aware Route Trace Consumption
+
+The shared pack can consume a validated project-owned adapter as bounded context for
+`route-trace`:
+
+```bash
+node scripts/render-route-trace.mjs <project-root>
+```
+
+The renderer validates the project declaration when present. If an adapter is present but
+does not enable `route-trace`, it reports an adapter-limited skip instead of broadening
+scope. When enabled, it reads only adapter-declared safe paths, applies ignored paths, and
+statically reports verified route files, inferred route patterns, skipped items, and
+not-verified runtime-dependent routing classes. It does not execute target code, run
+servers, hit URLs, build, test, deploy, migrate, inspect databases, or read `.env` files.
+
 ## What Adapters May Do
 
 - Add bounded relative read paths and ignored paths.
 - Declare project-root markers and a bounded detection depth.
 - Add documentation precedence and package-manager hints.
+- Add route-trace safe read paths for static route files and route config.
 - Add command aliases that already satisfy the shared command policy.
 - Add status-only runtime commands and manager hints.
 - Require additional evidence or named approval for exceptional reads.

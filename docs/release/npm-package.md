@@ -7,7 +7,7 @@ safety model.
 ## Current Package Shape
 
 - Package name: `coding-agent-skills`.
-- Package version: `0.2.8`.
+- Package version: `0.2.9`.
 - CLI bin: `coding-agent-skills` mapped to `bin/coding-agent-skills`.
 - Module type: `module`.
 - Dependencies: none.
@@ -27,6 +27,7 @@ The supported installed commands are:
 coding-agent-skills validate-pack
 coding-agent-skills validate-project /path/to/project
 coding-agent-skills repo-map /path/to/project
+coding-agent-skills route-trace /path/to/project
 coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 
@@ -37,7 +38,8 @@ npx coding-agent-skills validate-pack
 ```
 
 Adapter compatibility remains controlled by the existing shared core and
-project-adapter validators.
+project-adapter validators. `route-trace` is static and audit-only; it reports route
+files and route declarations without executing the target project.
 
 `coding-agent-skills validate-pack` is package-aware. In a source checkout, it keeps
 source-only checks such as `.gitignore` validation. In an installed package tree, where
@@ -71,13 +73,14 @@ included.
 ## Safety Boundaries
 
 The public CLI remains read-only for target projects unless a specific underlying skill
-already permits a bounded local validation action. The installed `repo-map` and adapter
-flows do not:
+already permits a bounded local validation action. The installed `repo-map`,
+`route-trace`, and adapter flows do not:
 
 - deploy
 - run migrations
 - mutate runtime services or processes
 - read `.env` or secret files
+- execute target project application code
 - run target project builds or tests
 - grant adapters additional power
 

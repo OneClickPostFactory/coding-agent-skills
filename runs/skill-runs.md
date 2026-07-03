@@ -160,3 +160,30 @@ This file records bounded maintainer-loop runs. Entries must not contain secrets
 - Validation result: pass pending final publication evidence
 - Commit/tag/push status: pending approved release workflow
 - Next state: no next runner command is queued after `v0.2.8`; future package releases, new skills, real adapter expansion, platform work, deployment/preflight skills, and release-policy changes require separate human approval
+
+
+## design-v0.2.9-route-trace
+
+- Run ID: `design-v0.2.9-route-trace`
+- Timestamp: `2026-07-03T00:00:00Z`
+- Command used: `manual approval for route-trace-skill implementation and release`
+- Permissions granted: `skill-implementation`, `test-hardening`, `docs-hardening`, `release-preflight`, `commit`, `push`, `tag`, `npm-publish`, `github-release`
+- Design summary: add `route-trace` as an audit-only static inspection skill and CLI command. It validates a project adapter when present, limits inspection to adapter-safe paths when available, skips ignored and secret-bearing paths, identifies visible route files and route declarations without executing project code, and labels findings as verified route files, inferred route patterns, skipped items, or not verified.
+- Supported static surfaces: Next.js `app/` and `pages/` routes, API route files, React Router-style declarations, Express/Fastify/Hono-style route registrations, route config files, and adapter-declared safe paths.
+- Safety scope: no `.env` reads, no target-project builds/tests/dev servers, no runtime URL probing, no app-code execution, no package installation, no deployments, no migrations, no database inspection, no process/service mutation, and no runtime truth claims.
+- Release target: `v0.2.9` / `coding-agent-skills@0.2.9`.
+
+
+## implementation-v0.2.9-route-trace
+
+- Run ID: `implementation-v0.2.9-route-trace`
+- Timestamp: `2026-07-03T00:00:00Z`
+- Command used: `resume interrupted route-trace-skill implementation and complete release loop`
+- Permissions granted: `skill-implementation`, `test-hardening`, `docs-hardening`, `release-preflight`, `commit`, `push`, `tag`, `npm-publish`, `github-release`
+- Files changed: `route-trace` skill, route-trace renderer and library, CLI wrapper, adapter schemas, pack rules, release tests, synthetic route fixtures, usage/release/safety/adapter docs, changelog, roadmap, work ledger, run log, and package metadata.
+- Route-trace scope: audit-only static route tracing for verified route files, inferred route patterns, skipped paths, not-verified runtime route classes, and adapter-limited scope.
+- Safety scope: no target-project builds, tests, dev servers, package installs, app-code execution, URL probing, deployments, migrations, database inspection, secret-file reads, project writes, or runtime truth claims.
+- Validation commands: `git diff --check`; `bin/coding-agent-skills validate-pack`; `bin/coding-agent-skills validate-adapters tests/fixtures/external-adapters/valid-basic`; `bin/coding-agent-skills validate-project /home/oneclickwebsitedesignfactory/tax-lien-platform`; `bin/coding-agent-skills repo-map /home/oneclickwebsitedesignfactory/tax-lien-platform`; `bin/coding-agent-skills route-trace tests/fixtures/route-trace/static-project`; `bin/coding-agent-skills route-trace /home/oneclickwebsitedesignfactory/tax-lien-platform`; `node scripts/validate-pack.mjs .`; `node scripts/test-pack.mjs`; `node scripts/validate-maintainer-loop.mjs .`; `node --test`; JSON parsing; package secret scan; npm publish dry-run; tarball install smoke.
+- Validation result: pass pending final commit, tag, publication, registry smoke, npm exec, and GitHub Release evidence.
+- Real project smoke: `/home/oneclickwebsitedesignfactory/tax-lien-platform` remained repo-map-only for adapters, so route-trace reported `partial` and did not read target project route files.
+- Commit/tag/push status: pending approved release workflow.

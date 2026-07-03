@@ -4,24 +4,25 @@
 
 - Repository: `coding-agent-skills`
 - Branch: `main`
-- Pilot skills: `repo-map`, `build-verify`, `git-preflight`, `runtime-truth`, `llm-drift-control`
+- Pilot skills: `repo-map`, `route-trace`, `build-verify`, `git-preflight`, `runtime-truth`, `llm-drift-control`
 - Adapter discovery, project adapter installation, stale-pin detection, upgrade evidence, compatibility-chain validation, evidence-bundle verification, retention policy, provenance design, archive-report rendering, archive-index fixtures, retention-expiry advisory reporting, and detached-signature verification planning are implemented.
 - Real-project adapter adoption readiness is documented as a planning-only approval gate.
 - First external project-owned adapter adoption completed for `/home/oneclickwebsitedesignfactory/tax-lien-platform` at candidate commit `c548b1a6cbb3455a70b89d0e301e22435bfccac9`.
 - The adopted adapter is `repo-map` only, docs/metadata-only, and contains no commands, runtime checks, build/test/package behavior, platform/deployment behavior, or secret-aware behavior.
 - The shared repository does not contain real adapter manifests; real project adapters remain owned by their project repositories.
-- Public npm package release `v0.2.8` exposes the existing dependency-free
+- Public npm package release `v0.2.9` exposes the dependency-free
   `coding-agent-skills` CLI under MIT license.
-- New skills are not approved.
+- `route-trace` is implemented as an audit-only static route tracing skill. Additional new
+  skills are not approved.
 
 ## Last Completed Version
 
-`v0.2.8`
+`v0.2.9`
 
 ## Current Recommended Milestone
 
-The public npm release is complete for the existing CLI surface. No further real
-adapters, adapter expansion, new skills, platform skills, deployment/preflight work,
+The `route-trace` public npm release is complete for the approved CLI surface. No further
+real adapters, adapter expansion, new skills, platform skills, deployment/preflight work,
 signing infrastructure, or evidence-harness milestone is approved.
 
 ## Allowed Next Actions
@@ -40,7 +41,7 @@ signing infrastructure, or evidence-harness milestone is approved.
 
 ## Blocked Actions
 
-- Adding new skills.
+- Adding more new skills.
 - Creating real project adapters.
 - Modifying real project repositories.
 - Publishing release artifacts without explicit approval.
@@ -103,6 +104,17 @@ No autonomous maintainer-loop run has been recorded yet.
 - Next recommended milestone: No next runner command is queued; future package
   publication, new skills, real adapter expansion, platform work, and deployment/preflight
   skills require separate human approval.
+
+
+### 2026-07-03T00:00:00Z
+
+- Latest tag observed: `v0.2.8`
+- Implemented milestone: `route-trace` audit-only static route tracing skill and CLI command.
+- Required permission: `skill-implementation`
+- Validation result: pass pending final publication evidence
+- Next recommended milestone: no next runner command is queued; future real adapter
+  expansion, new skills, platform work, deployment/preflight skills, and release-policy
+  changes require separate human approval.
 
 
 ### 2026-06-15T21:02:34.116Z

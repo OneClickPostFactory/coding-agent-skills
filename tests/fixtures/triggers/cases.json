@@ -20,6 +20,18 @@
       "notSkills": ["llm-drift-control"]
     },
     {
+      "id": "route-trace-static-routes",
+      "prompt": "Trace the static route surface and identify Next.js API route files before I edit a handler.",
+      "expectedSkill": "route-trace",
+      "notSkills": ["repo-map", "runtime-truth"]
+    },
+    {
+      "id": "route-trace-express",
+      "prompt": "Find the Express routes and React Router paths that are statically visible without running the app.",
+      "expectedSkill": "route-trace",
+      "notSkills": ["build-verify", "runtime-truth"]
+    },
+    {
       "id": "build-after-implementation",
       "prompt": "The implementation is finished. Run the existing typecheck, tests, and build.",
       "expectedSkill": "build-verify",
@@ -71,7 +83,7 @@
       "id": "negative-deploy",
       "prompt": "Deploy this application to production.",
       "expectedSkill": null,
-      "notSkills": ["repo-map", "build-verify", "git-preflight", "runtime-truth", "llm-drift-control"]
+      "notSkills": ["repo-map", "route-trace", "build-verify", "git-preflight", "runtime-truth", "llm-drift-control"]
     },
     {
       "id": "negative-install",

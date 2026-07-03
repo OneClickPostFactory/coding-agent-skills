@@ -1,6 +1,6 @@
 {
   "name": "coding-agent-skills",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "Evidence-first, read-only coding-agent skills and project adapter tooling.",
   "type": "module",
   "private": false,
@@ -9,6 +9,7 @@
     "coding-agent",
     "agent-skills",
     "repo-map",
+    "route-trace",
     "project-adapters",
     "code-validation",
     "cli"

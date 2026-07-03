@@ -1,5 +1,6 @@
 export const PILOT_SKILLS = [
   "repo-map",
+  "route-trace",
   "build-verify",
   "git-preflight",
   "runtime-truth",
@@ -11,6 +12,7 @@ export const PREVIOUS_PILOT_VERSION = "0.2.2";
 
 export const AUDIT_ONLY_SKILLS = [
   "repo-map",
+  "route-trace",
   "git-preflight",
   "runtime-truth",
   "llm-drift-control",
@@ -363,6 +365,13 @@ export function classifyTrigger(prompt) {
     return "build-verify";
   }
   if (
+    /\b(?:route trace|trace.*routes?|route surface|routes?.*static|api route files?|next\.js routes?|react router|express routes?|fastify routes?|hono routes?)\b/.test(
+      text,
+    )
+  ) {
+    return "route-trace";
+  }
+  if (
     /\b(?:unfamiliar repository|canonical repository root|canonical repo|map the current packages|map this repository|identify its entry points|nested directory)\b/.test(
       text,
     )
@@ -503,7 +512,7 @@ function classifySegment(segment, options = {}) {
   }
   if (
     executable === "node" &&
-    !/^node\s+(?:--check\b|--test\b|scripts\/(?:validate-pack|validate-maintainer-loop|validate-adapters|validate-project-adapters|check-adapter-upgrade|check-adapter-upgrade-chain|verify-evidence-bundle|render-evidence-archive-report|render-adapter-repo-map|test-pack)\.mjs\b)/.test(
+    !/^node\s+(?:--check\b|--test\b|scripts\/(?:validate-pack|validate-maintainer-loop|validate-adapters|validate-project-adapters|check-adapter-upgrade|check-adapter-upgrade-chain|verify-evidence-bundle|render-evidence-archive-report|render-adapter-repo-map|render-route-trace|test-pack)\.mjs\b)/.test(
       segment,
     )
   ) {
@@ -513,7 +522,7 @@ function classifySegment(segment, options = {}) {
     ["coding-agent-skills", "bin/coding-agent-skills", "./bin/coding-agent-skills"].includes(
       executable,
     ) &&
-    !/^(?:\.\/)?(?:bin\/)?coding-agent-skills\s+(?:validate-pack|validate-project\s+\S+|repo-map\s+\S+|validate-adapters\s+\S+|help|--help|-h)\s*$/.test(
+    !/^(?:\.\/)?(?:bin\/)?coding-agent-skills\s+(?:validate-pack|validate-project\s+\S+|repo-map\s+\S+|route-trace\s+\S+|validate-adapters\s+\S+|help|--help|-h)\s*$/.test(
       segment,
     )
   ) {
