@@ -2,6 +2,26 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.11] - 2026-07-03
+
+### Added
+
+- `secret-audit` audit-only skill for redacted static secret exposure detection.
+- `coding-agent-skills secret-audit <project-root>` CLI command.
+- Dependency-free secret audit renderer for high-confidence finding paths, finding types,
+  counts, skipped secret-bearing paths, not-verified credential surfaces, adapter-limited
+  scope, and safety refusals.
+- Synthetic secret-audit fixtures and release tests for generic static scans,
+  adapter-scoped scans, `.env` exclusion, matched-value omission, and repo-map-only adapter
+  skips.
+
+### Changed
+
+- Adapter schemas and validators now recognize `secret-audit` as an audit-only skill while
+  preserving the existing `0.2.3` adapter contract compatibility baseline.
+- Usage, release, safety, architecture, adapter, roadmap, ledger, and run-log docs now
+  describe the new redacted read-only secret-audit command.
+
 ## [0.2.10] - 2026-07-03
 
 ### Added

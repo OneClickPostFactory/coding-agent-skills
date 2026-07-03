@@ -7,6 +7,7 @@ Select the least-privileged skill that matches the request:
 | Understand repository identity and structure | `repo-map` |
 | Trace statically visible route surfaces | `route-trace` |
 | Map environment variable names without values | `env-audit` |
+| Find high-confidence secret exposure risks without values | `secret-audit` |
 | Run existing local validation checks | `build-verify` |
 | Assess Git handoff readiness | `git-preflight` |
 | Determine what is actually running | `runtime-truth` |
@@ -18,11 +19,13 @@ Select the least-privileged skill that matches the request:
 2. Use `route-trace` when route files or declarations must be mapped from static files.
 3. Use `env-audit` when environment variable names or sample config references must be
    mapped without reading values.
-4. Perform implementation outside this pilot pack.
-5. Use `build-verify` for approved project-native checks.
-6. Use `git-preflight` before handoff or publication.
-7. Use `runtime-truth` only when live local state matters.
-8. Use `llm-drift-control` when claims and evidence may disagree.
+4. Use `secret-audit` when high-confidence tracked secret exposure risk must be reported
+   by path, type, and count without printing matched values.
+5. Perform implementation outside this pilot pack.
+6. Use `build-verify` for approved project-native checks.
+7. Use `git-preflight` before handoff or publication.
+8. Use `runtime-truth` only when live local state matters.
+9. Use `llm-drift-control` when claims and evidence may disagree.
 
 Every skill emits an evidence pack. Read `status`, skipped checks, failures, confidence, and changed state before relying on a completion claim.
 
@@ -55,6 +58,7 @@ coding-agent-skills validate-project /path/to/project
 coding-agent-skills repo-map /path/to/project
 coding-agent-skills route-trace /path/to/project
 coding-agent-skills env-audit /path/to/project
+coding-agent-skills secret-audit /path/to/project
 coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 
@@ -74,6 +78,9 @@ skipped items, and not-verified runtime-dependent route classes.
 when enabled, and statically reports environment variable names, classifications, sample
 files inspected, skipped secret-bearing paths, and not-verified runtime or credential
 stores without printing values.
+`secret-audit` validates a project adapter when present, uses adapter-declared safe paths
+when enabled, and statically reports high-confidence secret-like finding paths, types, and
+counts without printing matched values or validating credentials.
 
 The installed CLI does not run target project builds or tests, perform runtime checks,
 deploy, migrate, mutate services or processes, or read `.env` files. Project adapters
@@ -89,6 +96,7 @@ bin/coding-agent-skills validate-project /path/to/project
 bin/coding-agent-skills repo-map /path/to/project
 bin/coding-agent-skills route-trace /path/to/project
 bin/coding-agent-skills env-audit /path/to/project
+bin/coding-agent-skills secret-audit /path/to/project
 bin/coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 
@@ -101,6 +109,7 @@ coding-agent-skills validate-project /path/to/project
 coding-agent-skills repo-map /path/to/project
 coding-agent-skills route-trace /path/to/project
 coding-agent-skills env-audit /path/to/project
+coding-agent-skills secret-audit /path/to/project
 coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 

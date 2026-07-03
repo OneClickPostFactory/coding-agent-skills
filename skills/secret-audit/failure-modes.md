@@ -1,0 +1,5 @@
+- **Adapter not enabled:** report `partial` and do not broaden target-project scanning.
+- **Secret-bearing path requested:** skip the file and record the safety exclusion.
+- **Synthetic test token needed:** generate it in a temporary test directory, never package it.
+- **Credential validation requested:** refuse and explain that only static path/count evidence is in scope.
+- **No findings:** report that no high-confidence matches were found in scanned files, not that the repo is secret-free.

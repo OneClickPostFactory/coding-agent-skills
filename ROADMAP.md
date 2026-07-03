@@ -1,6 +1,6 @@
 # Roadmap
 
-The public package now contains seven approved shared skills. Builder-mode approval is
+The public package now contains eight approved shared skills. Builder-mode approval is
 active for the remaining read-only skill wave in this repository; real-world project
 execution constraints remain unchanged.
 
@@ -32,6 +32,8 @@ execution constraints remain unchanged.
   tracing.
 - `v0.2.10`: audit-only `env-audit` skill and CLI renderer for value-free environment
   variable name mapping.
+- `v0.2.11`: audit-only `secret-audit` skill and CLI renderer for redacted secret
+  exposure detection.
 
 The next milestone is recorded in [work-ledger.md](work-ledger.md). The
 [maintainer loop](RUNBOOK.md) may select and evidence that milestone, but it must stop
@@ -74,18 +76,18 @@ Next safe milestone options:
 |---|---|---|---|
 | `route-trace-skill` | General | Audit-only | Implemented in `v0.2.9` |
 | `env-audit-skill` | General | Audit-only | Implemented in `v0.2.10` |
-| `secret-audit-skill` | General | Audit-only | Builder-mode approved; queued after `env-audit` |
+| `secret-audit-skill` | General | Audit-only | Implemented in `v0.2.11` |
+| `api-contract-audit-skill` | General | Audit-only | Builder-mode approved; next in wave |
+| `migration-review-skill` | General with platform adapters | Audit-only | Builder-mode approved; later in wave |
+| `github-handoff-skill` | General | Audit-only | Builder-mode approved; later in wave |
 | `deployment-preflight-skill` | General | Audit-only | Builder-mode approved; later in wave |
 | `cloudflare-preflight-skill` | Platform-specific | Audit-only | Builder-mode approved; later in wave |
 | `cloudflare-deploy-skill` | Platform-specific | Action-capable | Blocked on approval model |
 | `supabase-rls-audit-skill` | Platform-specific | Audit-only | Builder-mode approved; later in wave |
-| `migration-review-skill` | General with platform adapters | Audit-only | Builder-mode approved; later in wave |
-| `api-contract-audit-skill` | General | Audit-only | Builder-mode approved; later in wave |
 | `repo-knowledge-sync-skill` | General | Action-capable | Blocked on write approval model |
 | `security-hardening-review-skill` | General coordinator | Audit-only | Needs more evidence |
 | `worker-queue-debug-skill` | General core with project adapters | Audit-only first | Needs more evidence |
 | `devvit-ingest-debug-skill` | Project-specific | Audit-only | Needs project evidence |
-| `github-handoff-skill` | General | Audit-only | Builder-mode approved; later in wave |
 | `session-extractor-skill` | General tooling | Action-capable | Blocked on privacy policy and more evidence |
 | `command-redaction-skill` | General tooling | Action-capable | Needs more evidence |
 

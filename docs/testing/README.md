@@ -44,6 +44,14 @@ Synthetic env-audit projects cover value-free variable-name detection, `.env` ex
 behavior. Env-audit tests must never print values, validate credentials, contact APIs,
 run target projects, build, test, deploy, migrate, or read `.env` files.
 
+## Secret Audit
+
+Synthetic secret-audit projects cover high-confidence finding detection, `.env` exclusion,
+matched-value omission, adapter-declared scope, and adapter-present-but-not-enabled
+behavior. Secret-audit tests construct synthetic secret-like values only in temporary
+directories and assert that rendered reports include paths, types, and counts without
+printing matched values.
+
 ## Privacy And Redaction
 
 Sensitive shapes are stored as ordered synthetic parts and reconstructed only in memory. Tests verify type detection, redaction, and absence from reusable skill content without printing fixture values.

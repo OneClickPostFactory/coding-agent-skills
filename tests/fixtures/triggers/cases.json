@@ -44,6 +44,18 @@
       "notSkills": ["build-verify", "deployment-preflight"]
     },
     {
+      "id": "secret-audit-exposure",
+      "prompt": "Run a secret audit for hardcoded tokens and private keys without printing matched values.",
+      "expectedSkill": "secret-audit",
+      "notSkills": ["env-audit", "runtime-truth"]
+    },
+    {
+      "id": "secret-audit-tracked-secrets",
+      "prompt": "Check for tracked secret exposure in source files without reading .env or credential stores.",
+      "expectedSkill": "secret-audit",
+      "notSkills": ["repo-map", "build-verify"]
+    },
+    {
       "id": "build-after-implementation",
       "prompt": "The implementation is finished. Run the existing typecheck, tests, and build.",
       "expectedSkill": "build-verify",
@@ -95,7 +107,7 @@
       "id": "negative-deploy",
       "prompt": "Deploy this application to production.",
       "expectedSkill": null,
-      "notSkills": ["repo-map", "route-trace", "env-audit", "build-verify", "git-preflight", "runtime-truth", "llm-drift-control"]
+      "notSkills": ["repo-map", "route-trace", "env-audit", "secret-audit", "build-verify", "git-preflight", "runtime-truth", "llm-drift-control"]
     },
     {
       "id": "negative-install",

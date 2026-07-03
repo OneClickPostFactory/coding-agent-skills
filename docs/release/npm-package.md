@@ -7,7 +7,7 @@ safety model.
 ## Current Package Shape
 
 - Package name: `coding-agent-skills`.
-- Package version: `0.2.10`.
+- Package version: `0.2.11`.
 - CLI bin: `coding-agent-skills` mapped to `bin/coding-agent-skills`.
 - Module type: `module`.
 - Dependencies: none.
@@ -29,6 +29,7 @@ coding-agent-skills validate-project /path/to/project
 coding-agent-skills repo-map /path/to/project
 coding-agent-skills route-trace /path/to/project
 coding-agent-skills env-audit /path/to/project
+coding-agent-skills secret-audit /path/to/project
 coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 
@@ -43,6 +44,9 @@ project-adapter validators. `route-trace` is static and audit-only; it reports r
 files and route declarations without executing the target project. `env-audit` is static
 and audit-only; it reports environment variable names without reading `.env` files or
 printing values.
+`secret-audit` is static and audit-only; it reports high-confidence secret-like finding
+paths, types, and counts without printing matched values, reading `.env` files, or
+validating credentials.
 
 `coding-agent-skills validate-pack` is package-aware. In a source checkout, it keeps
 source-only checks such as `.gitignore` validation. In an installed package tree, where
@@ -77,7 +81,7 @@ included.
 
 The public CLI remains read-only for target projects unless a specific underlying skill
 already permits a bounded local validation action. The installed `repo-map`,
-`route-trace`, and adapter flows do not:
+`route-trace`, `env-audit`, `secret-audit`, and adapter flows do not:
 
 - deploy
 - run migrations

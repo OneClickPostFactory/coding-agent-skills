@@ -70,6 +70,23 @@ secret-bearing files, and reports variable names, classifications, sample files 
 skipped items, and not-verified runtime or credential stores. It never prints values or
 validates credentials.
 
+## Adapter-Aware Secret Audit Consumption
+
+The shared pack can consume a validated project-owned adapter as bounded context for
+`secret-audit`:
+
+```bash
+node scripts/render-secret-audit.mjs <project-root>
+```
+
+The renderer validates the project declaration when present. If an adapter is present but
+does not enable `secret-audit`, it reports an adapter-limited skip instead of broadening
+scope. When enabled, it reads only adapter-declared safe paths, excludes `.env`,
+secret-bearing files, generated output, dependency paths, and oversized files, then
+reports finding paths, types, and counts. It never prints matched values, validates
+credentials, rotates secrets, contacts APIs, deploys, migrates, builds, tests, or mutates
+project files.
+
 ## What Adapters May Do
 
 - Add bounded relative read paths and ignored paths.
@@ -77,6 +94,8 @@ validates credentials.
 - Add documentation precedence and package-manager hints.
 - Add route-trace safe read paths for static route files and route config.
 - Add env-audit safe read paths for static source, docs, sample, and config files.
+- Add secret-audit safe read paths for static source, docs, sample, and config files
+  while relying on the shared scanner to exclude secret-bearing paths.
 - Add command aliases that already satisfy the shared command policy.
 - Add status-only runtime commands and manager hints.
 - Require additional evidence or named approval for exceptional reads.

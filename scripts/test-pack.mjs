@@ -53,6 +53,11 @@ import {
   renderEnvAuditReport,
 } from "./lib/env-audit.mjs";
 import {
+  buildSecretAuditReport,
+  renderSecretAuditReport,
+  secretAuditCliResult,
+} from "./lib/secret-audit.mjs";
+import {
   adapterUpgradeCliResult,
   checkAdapterUpgrade,
   formatAdapterUpgradeSummary,
@@ -268,6 +273,7 @@ test("local CLI maps approved commands to existing safe scripts", () => {
   assert.ok(cliText.includes("scripts/render-adapter-repo-map.mjs"));
   assert.ok(cliText.includes("scripts/render-route-trace.mjs"));
   assert.ok(cliText.includes("scripts/render-env-audit.mjs"));
+  assert.ok(cliText.includes("scripts/render-secret-audit.mjs"));
   assert.ok(cliText.includes("scripts/validate-adapters.mjs"));
   assert.ok(!cliText.includes(".env"));
 
@@ -297,6 +303,10 @@ test("local CLI maps approved commands to existing safe scripts", () => {
       ["env-audit", path.join(fixtureRoot, "env-audit", "static-project")],
       /# Env Audit Report/,
     ],
+    [
+      ["secret-audit", path.join(fixtureRoot, "secret-audit", "static-project")],
+      /# Secret Audit Report/,
+    ],
   ];
 
   for (const [args, expected] of commands) {
@@ -321,7 +331,7 @@ test("local CLI maps approved commands to existing safe scripts", () => {
 test("npm package metadata is public-ready and dependency-free", () => {
   const packageJson = readJson("package.json");
   assert.equal(packageJson.name, "coding-agent-skills");
-  assert.equal(packageJson.version, "0.2.10");
+  assert.equal(packageJson.version, "0.2.11");
   assert.equal(
     packageJson.description,
     "Evidence-first, read-only coding-agent skills and project adapter tooling.",
@@ -335,6 +345,7 @@ test("npm package metadata is public-ready and dependency-free", () => {
     "repo-map",
     "route-trace",
     "env-audit",
+    "secret-audit",
     "project-adapters",
     "code-validation",
     "cli",
@@ -519,6 +530,63 @@ test("env-audit does not broaden a repo-map-only project adapter", () => {
   assert.equal(result.filesScanned.length, 0);
   assert.equal(result.variables.length, 0);
   assert.match(renderEnvAuditReport(result), /env-audit is not enabled/);
+});
+
+test("secret-audit reports high-confidence findings without printing values", () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "secret-audit-fixture-"));
+  fs.cpSync(path.join(root, "tests", "fixtures", "secret-audit", "static-project"), temporary, {
+    recursive: true,
+  });
+  const syntheticSecret = ["github", "_pat_", "A".repeat(24)].join("");
+  fs.writeFileSync(
+    path.join(temporary, "src", "leak.ts"),
+    `export const candidate = "${syntheticSecret}";\n`,
+  );
+  fs.writeFileSync(path.join(temporary, ".env"), `DO_NOT_READ=${syntheticSecret}\n`);
+
+  const result = buildSecretAuditReport(temporary, { coreRoot: root });
+  const rendered = renderSecretAuditReport(result);
+
+  assert.equal(result.status, "complete");
+  assert.ok(result.filesScanned.includes("src/leak.ts"));
+  assert.ok(!result.filesScanned.includes(".env"));
+  assert.ok(result.skipped.some((item) => item.path === ".env"));
+  assert.ok(result.findings.some((finding) => finding.path === "src/leak.ts"));
+  assert.ok(result.findings.some((finding) => finding.type === "github-token"));
+  assert.match(rendered, /src\/leak\.ts/);
+  assert.match(rendered, /values omitted/);
+  assert.doesNotMatch(rendered, new RegExp(syntheticSecret));
+});
+
+test("secret-audit respects adapter-declared scope", () => {
+  const result = buildSecretAuditReport(
+    path.join(root, "tests", "fixtures", "secret-audit", "adapter-project"),
+    { coreRoot: root },
+  );
+
+  assert.equal(result.status, "complete");
+  assert.equal(result.adapter.enabled, true);
+  assert.deepEqual(result.scopePaths, ["src"]);
+  assert.deepEqual(result.filesScanned, ["src/placeholder.ts"]);
+  assert.ok(result.warnings.includes("secret-audit used adapter-declared safe read paths only"));
+  const cli = secretAuditCliResult(
+    path.join(root, "tests", "fixtures", "secret-audit", "adapter-project"),
+    { coreRoot: root },
+  );
+  assert.equal(cli.exitCode, 0);
+  assert.match(cli.lines.join("\n"), /Secret-audit enabled: yes/);
+});
+
+test("secret-audit does not broaden a repo-map-only project adapter", () => {
+  const result = buildSecretAuditReport(
+    path.join(root, "tests", "fixtures", "project-adapter-installation", "valid-exact-pin"),
+    { coreRoot: root },
+  );
+
+  assert.equal(result.status, "partial");
+  assert.equal(result.filesScanned.length, 0);
+  assert.equal(result.findings.length, 0);
+  assert.match(renderSecretAuditReport(result), /secret-audit is not enabled/);
 });
 
 test("validate-pack accepts installed package trees without source-only gitignore", () => {

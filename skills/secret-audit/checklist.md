@@ -1,0 +1,7 @@
+- Confirm project root, branch state, and adapter state.
+- Validate adapter before consuming any adapter-declared paths.
+- Refuse `.env`, `.env.*` except `.env.example`, secret-bearing paths, and generated outputs.
+- Scan only bounded static text files.
+- Record file path, finding type, and count only.
+- Record skipped files and secret stores/history that were not verified.
+- Confirm no files, dependencies, runtime state, services, remotes, or databases changed.

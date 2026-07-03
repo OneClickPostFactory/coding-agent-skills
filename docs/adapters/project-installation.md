@@ -133,6 +133,18 @@ present but does not enable `env-audit`, it reports an adapter-limited skip. Whe
 it reads only adapter-declared safe paths, refuses `.env` and secret-bearing files, and
 reports environment variable names without values.
 
+A project-owned adapter can also enable read-only `secret-audit` context:
+
+```bash
+node scripts/render-secret-audit.mjs <project-root>
+```
+
+The secret-audit renderer validates the project declaration when present. If the adapter
+is present but does not enable `secret-audit`, it reports an adapter-limited skip. When
+enabled, it reads only adapter-declared safe paths, refuses `.env` and secret-bearing
+files, and reports high-confidence finding paths, types, and counts without matched
+values or credential validation.
+
 ## Safety Boundary
 
 Project adapters are extension-only. They cannot remove denied operations, change an

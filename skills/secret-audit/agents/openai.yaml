@@ -1,0 +1,4 @@
+interface:
+  display_name: "Secret Audit"
+  short_description: "Find secret exposure risks without printing values"
+  default_prompt: "Audit high-confidence secret exposure risks in this repository without changing project state. Do not read .env files, print matched values, or rotate credentials."

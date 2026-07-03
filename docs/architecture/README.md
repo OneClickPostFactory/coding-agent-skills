@@ -14,6 +14,7 @@ Audit-only:
 - `repo-map`
 - `route-trace`
 - `env-audit`
+- `secret-audit`
 - `git-preflight`
 - `runtime-truth`
 - `llm-drift-control`
@@ -22,6 +23,6 @@ Controlled local validation:
 
 - `build-verify`
 
-The evidence pack is a shared output contract, not an executable skill. Environment and
-secret audits, deployment preflight, GitHub handoff, provider operations, and additional
-project adapters remain separate future work.
+The evidence pack is a shared output contract, not an executable skill. Deployment
+preflight, GitHub handoff, provider operations, and additional project adapters remain
+separate future work.

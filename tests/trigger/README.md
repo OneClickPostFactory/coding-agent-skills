@@ -6,6 +6,8 @@
 - Static route-surface tracing must trigger `route-trace`, not repository mapping or runtime truth.
 - Value-free environment variable mapping must trigger `env-audit`, not runtime truth or
   secret-value inspection.
+- Redacted high-confidence secret exposure detection must trigger `secret-audit`, not
+  environment variable mapping or runtime truth.
 - Local validation must trigger `build-verify` only when project-native checks are requested.
 - Git readiness must trigger `git-preflight`, not publication.
 - Process/listener/health questions must trigger `runtime-truth`, not restart behavior.
