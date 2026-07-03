@@ -1,0 +1,56 @@
+{
+  "adapterId": "deployment-preflight-fixture",
+  "adapterVersion": "1.0.0",
+  "project": {
+    "id": "fixture-deployment-preflight",
+    "detection": {
+      "rootMarkers": [
+        {"kind": "file", "path": "package.json"},
+        {"kind": "file", "path": "README.md"}
+      ],
+      "maximumDepth": 1,
+      "scope": "declared-project-root",
+      "requireApprovalOutsideScope": true
+    }
+  },
+  "supportedSkills": [
+    {
+      "id": "deployment-preflight",
+      "compatibleVersions": ["0.2.3", "0.2.x"],
+      "declaredMode": "audit-only"
+    }
+  ],
+  "extensions": {
+    "safeReadPaths": ["deploy"],
+    "ignoredPaths": ["ignored", "node_modules", "dist", "build"],
+    "documentationPrecedence": ["README.md"],
+    "commandAliases": [],
+    "safeStatusCommands": [],
+    "requiredEvidence": ["project root", "adapter scope", "deployment config", "not-verified provider areas"],
+    "expectedRuntimeManagers": [],
+    "expectedPackageManagers": ["npm"]
+  },
+  "approvalRequirements": [],
+  "inheritance": {
+    "sharedRestrictions": "required",
+    "deniedOperationCategories": [
+      "file-write",
+      "package-install",
+      "deployment",
+      "git-mutation",
+      "unrestricted-scan",
+      "secret-read",
+      "process-mutation",
+      "service-mutation",
+      "migration-apply",
+      "privileged-api"
+    ],
+    "allowRestrictionRemoval": false,
+    "allowModeOverride": false,
+    "allowFailureSuppression": false,
+    "allowCompletionOverride": false,
+    "allowSecretExposure": false,
+    "allowRequiredEvidenceRemoval": false,
+    "allowScopeExpansionWithoutApproval": false
+  }
+}

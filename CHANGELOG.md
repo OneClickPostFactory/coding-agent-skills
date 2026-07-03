@@ -2,6 +2,28 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.15] - 2026-07-03
+
+### Added
+
+- `deployment-preflight` audit-only skill for static deployment readiness evidence
+  mapping before separately approved deployment work.
+- `coding-agent-skills deployment-preflight <project-root>` CLI command.
+- Dependency-free deployment preflight renderer for deployment config files, deployment
+  docs, package script keys without command values, platform indicators, static risk
+  indicators, adapter-limited scope, skipped paths, not-verified provider/runtime areas,
+  and safety refusals.
+- Synthetic deployment-preflight fixtures and release tests for generic static scans,
+  adapter-scoped scans, package script key detection, platform indicators, and
+  repo-map-only adapter skips.
+
+### Changed
+
+- Adapter schemas and validators now recognize `deployment-preflight` as an audit-only
+  skill while preserving the existing `0.2.3` adapter contract compatibility baseline.
+- Usage, release, safety, architecture, adapter, roadmap, ledger, and run-log docs now
+  describe the new static read-only deployment preflight command.
+
 ## [0.2.14] - 2026-07-03
 
 ### Added

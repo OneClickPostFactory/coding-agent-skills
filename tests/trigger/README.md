@@ -14,6 +14,8 @@
   deployment, or migration execution.
 - Local GitHub handoff evidence must trigger `github-handoff`, not publication,
   pull request creation, or Git mutation.
+- Static deployment readiness mapping must trigger `deployment-preflight`, not deployment,
+  provider API calls, or runtime mutation.
 - Local validation must trigger `build-verify` only when project-native checks are requested.
 - Git readiness must trigger `git-preflight`, not publication.
 - Process/listener/health questions must trigger `runtime-truth`, not restart behavior.

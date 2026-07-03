@@ -1,0 +1,60 @@
+{
+  "contractVersion": "1.0.0",
+  "skill": {"name": "deployment-preflight", "version": "0.2.3"},
+  "invocation": {
+    "id": "example-deployment-preflight",
+    "startedAt": "2026-07-03T12:00:00Z",
+    "endedAt": "2026-07-03T12:01:00Z"
+  },
+  "repository": {
+    "root": "/workspace/example-project",
+    "branch": "main",
+    "head": "0123456789abcdef",
+    "workingTreeState": "clean"
+  },
+  "userIntent": "Map static deployment readiness evidence before deployment planning.",
+  "declaredScope": ["/workspace/example-project"],
+  "projectAdapter": "example-deployment-preflight-adapter",
+  "environmentSummary": {"platform": "linux", "shell": "bash"},
+  "status": "complete",
+  "confidence": {
+    "level": "medium",
+    "reason": "Static deployment evidence was inspected, but provider credentials and deployed state were not verified."
+  },
+  "commands": [
+    {
+      "command": "coding-agent-skills deployment-preflight /workspace/example-project",
+      "family": "deployment-preflight-renderer",
+      "workingDirectory": "/workspace/example-project",
+      "startedAt": "2026-07-03T12:00:20Z",
+      "endedAt": "2026-07-03T12:00:21Z",
+      "exitStatus": 0,
+      "resultStatus": "success",
+      "safetyClass": "allowed",
+      "approvalReference": null,
+      "purpose": "Render a static deployment preflight report.",
+      "outputSummary": "Reported static deployment config files, docs, platform indicators, risk indicators, skipped items, and not-verified provider areas."
+    }
+  ],
+  "skippedChecks": [],
+  "findings": [
+    {
+      "summary": "Static deployment evidence was mapped without deployment behavior.",
+      "evidence": ["wrangler.toml", "docs/deployment.md"]
+    }
+  ],
+  "risks": [
+    {
+      "summary": "Provider and deployed service state may differ from static repository evidence.",
+      "evidence": ["provider APIs were not called", "runtime health checks were not performed"]
+    }
+  ],
+  "failures": [],
+  "unresolvedQuestions": [],
+  "changedState": {
+    "changed": false,
+    "summary": "No project, Git, dependency, runtime, service, database, cloud provider, remote, deployment, or generated-output state changed."
+  },
+  "handoffSummary": "Static deployment evidence is mapped; deployment execution and provider state remain unverified.",
+  "recommendedNextAction": "Review reported deployment surfaces before separately approving any platform-specific deployment work."
+}

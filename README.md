@@ -12,12 +12,13 @@ The pilot pack contains:
 - `api-contract-audit`: audit-only static API contract surface mapping.
 - `migration-review`: audit-only static migration and schema evidence review.
 - `github-handoff`: audit-only local Git handoff evidence before separately approved GitHub work.
+- `deployment-preflight`: audit-only static deployment readiness evidence mapping.
 - `build-verify`: controlled local validation using existing project commands.
 - `git-preflight`: audit-only Git readiness inspection.
 - `runtime-truth`: audit-only runtime evidence collection.
 - `llm-drift-control`: audit-only claim reconciliation.
 
-It does not contain deployment, package installation, Git publication, runtime mutation, migration, privileged API, platform-specific, or project-specific skills.
+It does not contain deployment execution, package installation, Git publication, runtime mutation, migration application, privileged API, platform-specific deployment automation, or project-specific skills.
 
 Project-specific adapters will live in their owning repositories and may narrow, but never weaken, shared safety rules.
 
@@ -50,6 +51,7 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 - Map static API contract surfaces with `coding-agent-skills api-contract-audit <project-root>`.
 - Review static migration and schema evidence with `coding-agent-skills migration-review <project-root>`.
 - Prepare local Git handoff evidence with `coding-agent-skills github-handoff <project-root>`.
+- Map static deployment readiness evidence with `coding-agent-skills deployment-preflight <project-root>`.
 - Validate project adapters against [the formal adapter schema](schemas/project-adapter.schema.json).
 - Review [external adapter discovery](docs/adapters/discovery.md).
 - Run `node scripts/validate-adapters.mjs <adapter-root>` for a disposable external root.
@@ -67,6 +69,8 @@ Every skill emits the evidence-pack contract. A command being attempted is never
   `node scripts/render-migration-review.mjs <project-root>`.
 - Render a local GitHub handoff report with
   `node scripts/render-github-handoff.mjs <project-root>`.
+- Render a static deployment preflight report with
+  `node scripts/render-deployment-preflight.mjs <project-root>`.
 - Review [adapter upgrade checks](docs/adapters/upgrades.md).
 - Run `node scripts/check-adapter-upgrade.mjs <before-project-root> <after-project-root>`
   for disposable project revisions.

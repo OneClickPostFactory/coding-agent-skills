@@ -22,7 +22,7 @@
 15. Smoke-test any new CLI command such as `coding-agent-skills route-trace`,
     `coding-agent-skills env-audit`, `coding-agent-skills secret-audit`,
     `coding-agent-skills api-contract-audit`, `coding-agent-skills migration-review`,
-    or `coding-agent-skills github-handoff`
+    `coding-agent-skills github-handoff`, or `coding-agent-skills deployment-preflight`
     against synthetic fixtures only unless a real project read-only smoke is explicitly
     approved.
 16. Review changelog, ledger, run evidence, and versioning impact.

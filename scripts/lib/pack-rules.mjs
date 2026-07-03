@@ -6,6 +6,7 @@ export const PILOT_SKILLS = [
   "api-contract-audit",
   "migration-review",
   "github-handoff",
+  "deployment-preflight",
   "build-verify",
   "git-preflight",
   "runtime-truth",
@@ -23,6 +24,7 @@ export const AUDIT_ONLY_SKILLS = [
   "api-contract-audit",
   "migration-review",
   "github-handoff",
+  "deployment-preflight",
   "git-preflight",
   "runtime-truth",
   "llm-drift-control",
@@ -340,6 +342,13 @@ export function classifyTrigger(prompt) {
   const text = prompt.toLowerCase();
 
   if (
+    /\b(?:deployment preflight|deploy preflight|pre-deploy audit|deployment readiness|deployment surface|deploy surface|static deployment evidence)\b/.test(
+      text,
+    )
+  ) {
+    return "deployment-preflight";
+  }
+  if (
     /\b(?:deploy|install|update the lockfile|commit these|publish the branch|restart|enable it|rewrite the documentation)\b/.test(
       text,
     )
@@ -557,7 +566,7 @@ function classifySegment(segment, options = {}) {
   }
   if (
     executable === "node" &&
-    !/^node\s+(?:--check\b|--test\b|scripts\/(?:validate-pack|validate-maintainer-loop|validate-adapters|validate-project-adapters|check-adapter-upgrade|check-adapter-upgrade-chain|verify-evidence-bundle|render-evidence-archive-report|render-adapter-repo-map|render-route-trace|render-env-audit|render-secret-audit|render-api-contract-audit|render-migration-review|render-github-handoff|test-pack)\.mjs\b)/.test(
+    !/^node\s+(?:--check\b|--test\b|scripts\/(?:validate-pack|validate-maintainer-loop|validate-adapters|validate-project-adapters|check-adapter-upgrade|check-adapter-upgrade-chain|verify-evidence-bundle|render-evidence-archive-report|render-adapter-repo-map|render-route-trace|render-env-audit|render-secret-audit|render-api-contract-audit|render-migration-review|render-github-handoff|render-deployment-preflight|test-pack)\.mjs\b)/.test(
       segment,
     )
   ) {
@@ -567,7 +576,7 @@ function classifySegment(segment, options = {}) {
     ["coding-agent-skills", "bin/coding-agent-skills", "./bin/coding-agent-skills"].includes(
       executable,
     ) &&
-    !/^(?:\.\/)?(?:bin\/)?coding-agent-skills\s+(?:validate-pack|validate-project\s+\S+|repo-map\s+\S+|route-trace\s+\S+|env-audit\s+\S+|secret-audit\s+\S+|api-contract-audit\s+\S+|migration-review\s+\S+|github-handoff\s+\S+|validate-adapters\s+\S+|help|--help|-h)\s*$/.test(
+    !/^(?:\.\/)?(?:bin\/)?coding-agent-skills\s+(?:validate-pack|validate-project\s+\S+|repo-map\s+\S+|route-trace\s+\S+|env-audit\s+\S+|secret-audit\s+\S+|api-contract-audit\s+\S+|migration-review\s+\S+|github-handoff\s+\S+|deployment-preflight\s+\S+|validate-adapters\s+\S+|help|--help|-h)\s*$/.test(
       segment,
     )
   ) {

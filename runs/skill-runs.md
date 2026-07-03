@@ -258,6 +258,25 @@ This file records bounded maintainer-loop runs. Entries must not contain secrets
 - Safety boundary: read-only local Git metadata only, no `.env` reads, no token reads, no
   remote URL printing, no commits, no pushes, no tags, no pull request creation, no GitHub
   API calls, and no target-project mutation.
+- Validation commands: full source validation, package dry-run, tarball smoke, registry
+  install smoke, npm exec, and GitHub Release verification.
+- Result: passed; `v0.2.14` was committed, pushed, tagged, published to npm, smoke-tested
+  from the registry, and released on GitHub.
+- Commit/tag/push status: complete.
+
+## implementation-v0.2.15-deployment-preflight
+
+- Run ID: `implementation-v0.2.15-deployment-preflight`
+- Repository: `/home/oneclickwebsitedesignfactory/coding-agent-skills`
+- Command used: `builder-mode approval for deployment-preflight-skill implementation and release`
+- Files changed: `deployment-preflight` skill, deployment preflight renderer and library,
+  CLI wrapper, adapter schemas, pack rules, release tests, synthetic deployment fixtures,
+  usage/release/safety/adapter docs, changelog, roadmap, work ledger, run log, and package
+  metadata.
+- Safety boundary: read-only static deployment evidence only, no `.env` reads, no provider
+  API calls, no provider CLI execution, no package installs, no builds, no tests, no
+  runtime checks, no service mutation, no deployments, no migrations, and no target-project
+  mutation.
 - Validation commands: pending final release validation matrix.
 - Result: pass pending final publication evidence.
 - Commit/tag/push status: pending approved release workflow.

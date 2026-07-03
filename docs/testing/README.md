@@ -75,6 +75,14 @@ summary, adapter-declared evidence metadata, and adapter-present-but-not-enabled
 Tests must never commit to the shared repository, push, tag shared history, create pull
 requests, call GitHub APIs, print remote URLs, read tokens, or read `.env` files.
 
+## Deployment Preflight
+
+Synthetic deployment-preflight projects cover deployment config detection, deployment docs,
+package script keys without command values, static platform indicators, risk indicators,
+adapter-declared scope, and adapter-present-but-not-enabled behavior. Tests must never
+deploy, call provider APIs, install packages, build, test, run services, migrate, or read
+`.env` files.
+
 ## Privacy And Redaction
 
 Sensitive shapes are stored as ordered synthetic parts and reconstructed only in memory. Tests verify type detection, redaction, and absence from reusable skill content without printing fixture values.

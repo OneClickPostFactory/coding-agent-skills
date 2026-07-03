@@ -101,6 +101,7 @@ const requiredRootFiles = [
   "scripts/render-api-contract-audit.mjs",
   "scripts/render-migration-review.mjs",
   "scripts/render-github-handoff.mjs",
+  "scripts/render-deployment-preflight.mjs",
   "scripts/check-adapter-upgrade.mjs",
   "scripts/check-adapter-upgrade-chain.mjs",
   "scripts/validate-adapters.mjs",
@@ -112,6 +113,7 @@ const requiredRootFiles = [
   "scripts/lib/api-contract-audit.mjs",
   "scripts/lib/migration-review.mjs",
   "scripts/lib/github-handoff.mjs",
+  "scripts/lib/deployment-preflight.mjs",
   "scripts/lib/adapter-upgrade.mjs",
   "scripts/lib/adapter-upgrade-chain.mjs",
   "scripts/lib/adapter-discovery.mjs",
@@ -685,8 +687,8 @@ if (packageJson) {
   if (packageJson.name !== "coding-agent-skills") {
     failures.push("package.json has unexpected package name");
   }
-  if (packageJson.version !== "0.2.14") {
-    failures.push("package.json version must be 0.2.14 for public package validation");
+  if (packageJson.version !== "0.2.15") {
+    failures.push("package.json version must be 0.2.15 for public package validation");
   }
   if (packageJson.type !== "module") failures.push("package.json must preserve ESM mode");
   if (packageJson.private !== false) {
@@ -710,6 +712,7 @@ if (packageJson) {
       "api-contract-audit",
       "migration-review",
       "github-handoff",
+      "deployment-preflight",
       "project-adapters",
       "code-validation",
       "cli",

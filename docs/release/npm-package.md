@@ -7,7 +7,7 @@ safety model.
 ## Current Package Shape
 
 - Package name: `coding-agent-skills`.
-- Package version: `0.2.14`.
+- Package version: `0.2.15`.
 - CLI bin: `coding-agent-skills` mapped to `bin/coding-agent-skills`.
 - Module type: `module`.
 - Dependencies: none.
@@ -33,6 +33,7 @@ coding-agent-skills secret-audit /path/to/project
 coding-agent-skills api-contract-audit /path/to/project
 coding-agent-skills migration-review /path/to/project
 coding-agent-skills github-handoff /path/to/project
+coding-agent-skills deployment-preflight /path/to/project
 coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 
@@ -60,6 +61,10 @@ secrets.
 `github-handoff` is local Git metadata only; it reports branch state, HEAD, tags at HEAD,
 remote names, and changed-file summaries without printing remote URLs, reading tokens,
 creating pull requests, committing, pushing, tagging, or calling GitHub APIs.
+`deployment-preflight` is static and audit-only; it reports deployment config files,
+deployment docs, package script keys, platform indicators, risk indicators, and
+not-verified provider/runtime behavior without deploying, calling provider APIs,
+installing packages, building, testing, or reading secrets.
 
 `coding-agent-skills validate-pack` is package-aware. In a source checkout, it keeps
 source-only checks such as `.gitignore` validation. In an installed package tree, where
@@ -95,7 +100,7 @@ included.
 The public CLI remains read-only for target projects unless a specific underlying skill
 already permits a bounded local validation action. The installed `repo-map`,
 `route-trace`, `env-audit`, `secret-audit`, `api-contract-audit`, `migration-review`,
-`github-handoff`, and adapter flows do not:
+`github-handoff`, `deployment-preflight`, and adapter flows do not:
 
 - deploy
 - run migrations

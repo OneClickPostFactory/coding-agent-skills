@@ -73,6 +73,11 @@ import {
   renderGithubHandoffReport,
 } from "./lib/github-handoff.mjs";
 import {
+  buildDeploymentPreflightReport,
+  deploymentPreflightCliResult,
+  renderDeploymentPreflightReport,
+} from "./lib/deployment-preflight.mjs";
+import {
   adapterUpgradeCliResult,
   checkAdapterUpgrade,
   formatAdapterUpgradeSummary,
@@ -313,6 +318,7 @@ test("local CLI maps approved commands to existing safe scripts", () => {
   assert.ok(cliText.includes("scripts/render-api-contract-audit.mjs"));
   assert.ok(cliText.includes("scripts/render-migration-review.mjs"));
   assert.ok(cliText.includes("scripts/render-github-handoff.mjs"));
+  assert.ok(cliText.includes("scripts/render-deployment-preflight.mjs"));
   assert.ok(cliText.includes("scripts/validate-adapters.mjs"));
   assert.ok(!cliText.includes(".env"));
 
@@ -363,6 +369,10 @@ test("local CLI maps approved commands to existing safe scripts", () => {
       ["github-handoff", githubHandoffFixture],
       /# GitHub Handoff Report/,
     ],
+    [
+      ["deployment-preflight", path.join(fixtureRoot, "deployment-preflight", "static-project")],
+      /# Deployment Preflight Report/,
+    ],
   ];
 
   for (const [args, expected] of commands) {
@@ -387,7 +397,7 @@ test("local CLI maps approved commands to existing safe scripts", () => {
 test("npm package metadata is public-ready and dependency-free", () => {
   const packageJson = readJson("package.json");
   assert.equal(packageJson.name, "coding-agent-skills");
-  assert.equal(packageJson.version, "0.2.14");
+  assert.equal(packageJson.version, "0.2.15");
   assert.equal(
     packageJson.description,
     "Evidence-first, read-only coding-agent skills and project adapter tooling.",
@@ -405,6 +415,7 @@ test("npm package metadata is public-ready and dependency-free", () => {
     "api-contract-audit",
     "migration-review",
     "github-handoff",
+    "deployment-preflight",
     "project-adapters",
     "code-validation",
     "cli",
@@ -794,6 +805,54 @@ test("github-handoff does not broaden a repo-map-only project adapter", () => {
   assert.equal(result.changedFiles.length, 0);
   assert.equal(result.changeSummary.total, 0);
   assert.match(renderGithubHandoffReport(result), /github-handoff is not enabled/);
+});
+
+test("deployment-preflight maps static deployment surfaces without deployment behavior", () => {
+  const result = buildDeploymentPreflightReport(
+    path.join(root, "tests", "fixtures", "deployment-preflight", "static-project"),
+    { coreRoot: root },
+  );
+
+  assert.equal(result.status, "complete");
+  assert.ok(result.configFiles.some((record) => record.path === "wrangler.toml"));
+  assert.ok(result.configFiles.some((record) => record.path === "Dockerfile"));
+  assert.ok(result.deploymentDocs.some((record) => record.path === "docs/deployment.md"));
+  assert.ok(result.packageScriptKeys.some((record) => record.key === "deploy"));
+  assert.ok(result.platformIndicators.some((record) => record.platform === "cloudflare"));
+  assert.ok(result.riskIndicators.some((record) => record.type === "production-reference"));
+  assert.match(renderDeploymentPreflightReport(result), /No deployment, cloud provider API call/);
+});
+
+test("deployment-preflight respects adapter-declared scope", () => {
+  const result = buildDeploymentPreflightReport(
+    path.join(root, "tests", "fixtures", "deployment-preflight", "adapter-project"),
+    { coreRoot: root },
+  );
+
+  assert.equal(result.status, "complete");
+  assert.equal(result.adapter.enabled, true);
+  assert.deepEqual(result.scopePaths, ["deploy"]);
+  assert.deepEqual(result.filesScanned, ["deploy/netlify.toml"]);
+  assert.ok(result.configFiles.some((record) => record.path === "deploy/netlify.toml"));
+  assert.ok(result.warnings.includes("deployment-preflight used adapter-declared safe read paths only"));
+  const cli = deploymentPreflightCliResult(
+    path.join(root, "tests", "fixtures", "deployment-preflight", "adapter-project"),
+    { coreRoot: root },
+  );
+  assert.equal(cli.exitCode, 0);
+  assert.match(cli.lines.join("\n"), /Deployment-preflight enabled: yes/);
+});
+
+test("deployment-preflight does not broaden a repo-map-only project adapter", () => {
+  const result = buildDeploymentPreflightReport(
+    path.join(root, "tests", "fixtures", "project-adapter-installation", "valid-exact-pin"),
+    { coreRoot: root },
+  );
+
+  assert.equal(result.status, "partial");
+  assert.equal(result.filesScanned.length, 0);
+  assert.equal(result.configFiles.length, 0);
+  assert.match(renderDeploymentPreflightReport(result), /deployment-preflight is not enabled/);
 });
 
 test("validate-pack accepts installed package trees without source-only gitignore", () => {

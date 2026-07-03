@@ -1,0 +1,3 @@
+display_name: Deployment Preflight
+short_description: Map static deployment readiness evidence without deploying or calling provider APIs.
+default_prompt: Review this repository's static deployment readiness evidence as an audit-only pass without modifying files, deploying, calling provider APIs, installing packages, building, testing, mutating services, or reading secrets.

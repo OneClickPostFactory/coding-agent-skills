@@ -182,6 +182,20 @@ When enabled, it reports local Git metadata and changed-file summaries without p
 remote URLs, reading tokens, creating pull requests, committing, pushing, tagging, calling
 GitHub APIs, or changing project files.
 
+A project-owned adapter can also enable read-only `deployment-preflight` context:
+
+```bash
+node scripts/render-deployment-preflight.mjs <project-root>
+```
+
+The deployment preflight renderer validates the project declaration when present. If the
+adapter is present but does not enable `deployment-preflight`, it reports an
+adapter-limited skip. When enabled, it reads only adapter-declared safe paths and reports
+static deployment config files, deployment docs, package script keys, platform indicators,
+risk indicators, and not-verified provider/runtime behavior without deploying, calling
+provider APIs, installing packages, building, testing, running services, or reading
+secrets.
+
 ## Safety Boundary
 
 Project adapters are extension-only. They cannot remove denied operations, change an

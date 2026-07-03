@@ -138,6 +138,24 @@ tags at HEAD, remote names, and changed-file summaries. It never prints remote U
 reads tokens, creates pull requests, commits, pushes, tags, calls GitHub APIs, or mutates
 project files.
 
+## Adapter-Aware Deployment Preflight Consumption
+
+The shared pack can consume a validated project-owned adapter as bounded context for
+`deployment-preflight`:
+
+```bash
+node scripts/render-deployment-preflight.mjs <project-root>
+```
+
+The renderer validates the project declaration when present. If an adapter is present but
+does not enable `deployment-preflight`, it reports an adapter-limited skip instead of
+broadening scope. When enabled, it reads only adapter-declared safe paths, excludes `.env`,
+secret-bearing files, generated output, dependency paths, build output, runtime output,
+and oversized files, then reports deployment config files, deployment docs, package
+script keys, platform indicators, risk indicators, skipped paths, and not-verified
+provider/runtime behavior. It never deploys, calls provider APIs, installs packages,
+builds, tests, runs services, migrates, or mutates project files.
+
 ## What Adapters May Do
 
 - Add bounded relative read paths and ignored paths.
@@ -153,6 +171,9 @@ project files.
   files while relying on the shared reviewer to exclude secret-bearing paths.
 - Add github-handoff required evidence labels and ignored path labels while relying on the
   shared renderer to avoid remote URLs, tokens, and GitHub mutation.
+- Add deployment-preflight safe read paths for static deployment config, docs, and package
+  metadata while relying on the shared preflight renderer to exclude secret-bearing paths
+  and avoid deployment behavior.
 - Add command aliases that already satisfy the shared command policy.
 - Add status-only runtime commands and manager hints.
 - Require additional evidence or named approval for exceptional reads.

@@ -92,6 +92,18 @@
       "notSkills": ["runtime-truth", "deployment-preflight"]
     },
     {
+      "id": "deployment-preflight-static",
+      "prompt": "Run a deployment preflight and map static deployment config, docs, and package script keys without deploying.",
+      "expectedSkill": "deployment-preflight",
+      "notSkills": ["runtime-truth", "build-verify"]
+    },
+    {
+      "id": "deployment-preflight-readiness",
+      "prompt": "Map deployment readiness evidence before release, but do not call provider APIs or run builds.",
+      "expectedSkill": "deployment-preflight",
+      "notSkills": ["github-handoff", "migration-review"]
+    },
+    {
       "id": "build-after-implementation",
       "prompt": "The implementation is finished. Run the existing typecheck, tests, and build.",
       "expectedSkill": "build-verify",
@@ -143,7 +155,7 @@
       "id": "negative-deploy",
       "prompt": "Deploy this application to production.",
       "expectedSkill": null,
-      "notSkills": ["repo-map", "route-trace", "env-audit", "secret-audit", "api-contract-audit", "migration-review", "github-handoff", "build-verify", "git-preflight", "runtime-truth", "llm-drift-control"]
+      "notSkills": ["repo-map", "route-trace", "env-audit", "secret-audit", "api-contract-audit", "migration-review", "github-handoff", "deployment-preflight", "build-verify", "git-preflight", "runtime-truth", "llm-drift-control"]
     },
     {
       "id": "negative-install",
