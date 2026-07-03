@@ -68,6 +68,18 @@
       "notSkills": ["build-verify", "llm-drift-control"]
     },
     {
+      "id": "migration-review-static",
+      "prompt": "Review database migrations and schema files without connecting to the database.",
+      "expectedSkill": "migration-review",
+      "notSkills": ["runtime-truth", "build-verify"]
+    },
+    {
+      "id": "migration-review-rollback",
+      "prompt": "Map Prisma migrations and rollback review concerns from static files before handoff.",
+      "expectedSkill": "migration-review",
+      "notSkills": ["deployment-preflight", "runtime-truth"]
+    },
+    {
       "id": "build-after-implementation",
       "prompt": "The implementation is finished. Run the existing typecheck, tests, and build.",
       "expectedSkill": "build-verify",
@@ -119,7 +131,7 @@
       "id": "negative-deploy",
       "prompt": "Deploy this application to production.",
       "expectedSkill": null,
-      "notSkills": ["repo-map", "route-trace", "env-audit", "secret-audit", "api-contract-audit", "build-verify", "git-preflight", "runtime-truth", "llm-drift-control"]
+      "notSkills": ["repo-map", "route-trace", "env-audit", "secret-audit", "api-contract-audit", "migration-review", "build-verify", "git-preflight", "runtime-truth", "llm-drift-control"]
     },
     {
       "id": "negative-install",

@@ -1,0 +1,70 @@
+{
+  "version": "0.2.3",
+  "mode": "audit-only",
+  "parserPolicy": {
+    "inspectEverySegment": true,
+    "inspectScriptBodies": true,
+    "rejectUnknownExecutables": true,
+    "rejectShellWrappers": true,
+    "rejectHeredocs": true,
+    "rejectRedirection": true,
+    "providerSpecificNpx": true,
+    "authenticatedCurlRequiresApproval": true,
+    "boundedReadsRequired": true,
+    "allowedComposition": "read-only"
+  },
+  "allowedFamilies": [
+    {
+      "name": "bounded-migration-review-inspection",
+      "executables": ["pwd", "ls", "rg", "find", "sed", "head"],
+      "argumentPolicy": {
+        "strategy": "pattern",
+        "allowedPatterns": ["bounded repository-local static migration, schema, and config inspection"],
+        "deniedPatterns": ["database access, migration execution, ORM generation, secret files, credential stores, and unbounded traversal"]
+      },
+      "constraints": [
+        "Remain inside the declared project scope.",
+        "Bound traversal depth and output.",
+        "Exclude .env, secret-bearing, generated, dependency, build, and runtime-output paths."
+      ]
+    },
+    {
+      "name": "git-identity-inspection",
+      "executables": ["git"],
+      "argumentPolicy": {
+        "strategy": "exact",
+        "allowedPatterns": ["rev-parse and status --short --branch"],
+        "deniedPatterns": ["all Git mutation and publication subcommands"]
+      },
+      "constraints": ["Allow only read-only repository identity and branch-state inspection."]
+    },
+    {
+      "name": "migration-review-renderer",
+      "executables": ["node", "coding-agent-skills"],
+      "argumentPolicy": {
+        "strategy": "exact",
+        "allowedPatterns": ["node scripts/render-migration-review.mjs <project-root>; coding-agent-skills migration-review <project-root>"],
+        "deniedPatterns": ["database access, migration execution, ORM generation, builds, tests, deployment, package installation, and secret-file reads"]
+      },
+      "constraints": [
+        "The renderer must remain static and read-only.",
+        "Do not connect to databases, apply migrations, or generate ORM clients."
+      ]
+    }
+  ],
+  "restrictedCategories": [
+    "file-write",
+    "package-install",
+    "deployment",
+    "git-mutation",
+    "unrestricted-scan",
+    "secret-read",
+    "process-mutation",
+    "service-mutation",
+    "migration-apply",
+    "privileged-api"
+  ],
+  "approvalExceptions": [
+    "A named-file approval may permit one otherwise excluded non-mutating static read when the file is not secret-bearing."
+  ]
+}

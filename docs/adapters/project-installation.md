@@ -157,6 +157,19 @@ skip. When enabled, it reads only adapter-declared safe paths and reports static
 files, endpoint declarations, client-call patterns, schema/type files, and not-verified
 runtime behavior without running servers, calling APIs, or generating code.
 
+A project-owned adapter can also enable read-only `migration-review` context:
+
+```bash
+node scripts/render-migration-review.mjs <project-root>
+```
+
+The migration review renderer validates the project declaration when present. If the
+adapter is present but does not enable `migration-review`, it reports an adapter-limited
+skip. When enabled, it reads only adapter-declared safe paths and reports static migration
+files, schema/config files, package script keys, static risk indicators, and not-verified
+database behavior without connecting to databases, applying migrations, generating ORM
+clients, or running package scripts.
+
 ## Safety Boundary
 
 Project adapters are extension-only. They cannot remove denied operations, change an

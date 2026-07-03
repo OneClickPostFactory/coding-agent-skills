@@ -59,6 +59,14 @@ declarations, client-call patterns, schema/type files, adapter-declared scope, a
 adapter-present-but-not-enabled behavior. Tests must never run servers, call endpoints,
 generate schemas or clients, build, test, deploy, migrate, or read `.env` files.
 
+## Migration Review
+
+Synthetic migration-review projects cover migration file detection, schema/config file
+detection, package script keys without command values, static risk indicators,
+adapter-declared scope, and adapter-present-but-not-enabled behavior. Tests must never
+connect to databases, apply migrations, generate ORM clients, run package scripts, build,
+test, deploy, or read `.env` files.
+
 ## Privacy And Redaction
 
 Sensitive shapes are stored as ordered synthetic parts and reconstructed only in memory. Tests verify type detection, redaction, and absence from reusable skill content without printing fixture values.

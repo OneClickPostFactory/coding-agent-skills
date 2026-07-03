@@ -1,0 +1,7 @@
+{
+  "name": "fixture-migration-review-static",
+  "scripts": {
+    "db:migrate": "prisma migrate deploy",
+    "db:generate": "prisma generate"
+  }
+}

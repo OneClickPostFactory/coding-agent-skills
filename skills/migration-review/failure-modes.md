@@ -1,0 +1,5 @@
+- Missing migration directories: report uncertainty instead of assuming no database exists.
+- Adapter present without `migration-review`: return `partial` and read no target files.
+- Secret-bearing paths: skip and record the exclusion without printing values.
+- Destructive-looking SQL: report the static indicator without judging production safety.
+- Requested database state or rollback proof: stop at the approval boundary because this skill is static only.

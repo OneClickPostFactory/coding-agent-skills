@@ -2,6 +2,27 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.13] - 2026-07-03
+
+### Added
+
+- `migration-review` audit-only skill for static database migration and schema evidence
+  review.
+- `coding-agent-skills migration-review <project-root>` CLI command.
+- Dependency-free migration review renderer for migration files, schema/config files,
+  package script keys without command values, static risk indicators, skipped paths,
+  not-verified database behavior, adapter-limited scope, and safety refusals.
+- Synthetic migration-review fixtures and release tests for generic static scans,
+  adapter-scoped scans, destructive-looking SQL indicators, package script key detection,
+  and repo-map-only adapter skips.
+
+### Changed
+
+- Adapter schemas and validators now recognize `migration-review` as an audit-only skill
+  while preserving the existing `0.2.3` adapter contract compatibility baseline.
+- Usage, release, safety, architecture, adapter, roadmap, ledger, and run-log docs now
+  describe the new static read-only migration review command.
+
 ## [0.2.12] - 2026-07-03
 
 ### Added

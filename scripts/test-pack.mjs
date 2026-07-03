@@ -63,6 +63,11 @@ import {
   renderApiContractAuditReport,
 } from "./lib/api-contract-audit.mjs";
 import {
+  buildMigrationReviewReport,
+  migrationReviewCliResult,
+  renderMigrationReviewReport,
+} from "./lib/migration-review.mjs";
+import {
   adapterUpgradeCliResult,
   checkAdapterUpgrade,
   formatAdapterUpgradeSummary,
@@ -280,6 +285,7 @@ test("local CLI maps approved commands to existing safe scripts", () => {
   assert.ok(cliText.includes("scripts/render-env-audit.mjs"));
   assert.ok(cliText.includes("scripts/render-secret-audit.mjs"));
   assert.ok(cliText.includes("scripts/render-api-contract-audit.mjs"));
+  assert.ok(cliText.includes("scripts/render-migration-review.mjs"));
   assert.ok(cliText.includes("scripts/validate-adapters.mjs"));
   assert.ok(!cliText.includes(".env"));
 
@@ -317,6 +323,10 @@ test("local CLI maps approved commands to existing safe scripts", () => {
       ["api-contract-audit", path.join(fixtureRoot, "api-contract-audit", "static-project")],
       /# API Contract Audit Report/,
     ],
+    [
+      ["migration-review", path.join(fixtureRoot, "migration-review", "static-project")],
+      /# Migration Review Report/,
+    ],
   ];
 
   for (const [args, expected] of commands) {
@@ -341,7 +351,7 @@ test("local CLI maps approved commands to existing safe scripts", () => {
 test("npm package metadata is public-ready and dependency-free", () => {
   const packageJson = readJson("package.json");
   assert.equal(packageJson.name, "coding-agent-skills");
-  assert.equal(packageJson.version, "0.2.12");
+  assert.equal(packageJson.version, "0.2.13");
   assert.equal(
     packageJson.description,
     "Evidence-first, read-only coding-agent skills and project adapter tooling.",
@@ -357,6 +367,7 @@ test("npm package metadata is public-ready and dependency-free", () => {
     "env-audit",
     "secret-audit",
     "api-contract-audit",
+    "migration-review",
     "project-adapters",
     "code-validation",
     "cli",
@@ -648,6 +659,53 @@ test("api-contract-audit does not broaden a repo-map-only project adapter", () =
   assert.equal(result.filesScanned.length, 0);
   assert.equal(result.endpointDeclarations.length, 0);
   assert.match(renderApiContractAuditReport(result), /api-contract-audit is not enabled/);
+});
+
+test("migration-review maps static migration surfaces without database access", () => {
+  const result = buildMigrationReviewReport(
+    path.join(root, "tests", "fixtures", "migration-review", "static-project"),
+    { coreRoot: root },
+  );
+
+  assert.equal(result.status, "complete");
+  assert.ok(result.migrationFiles.some((record) => record.path === "prisma/migrations/20260703010101_init/migration.sql"));
+  assert.ok(result.schemaFiles.some((record) => record.path === "prisma/schema.prisma"));
+  assert.ok(result.configFiles.some((record) => record.path === "drizzle.config.ts"));
+  assert.ok(result.packageScriptKeys.some((record) => record.key === "db:migrate"));
+  assert.ok(result.riskIndicators.some((record) => record.type === "drop-column"));
+  assert.match(renderMigrationReviewReport(result), /No database connection/);
+});
+
+test("migration-review respects adapter-declared scope", () => {
+  const result = buildMigrationReviewReport(
+    path.join(root, "tests", "fixtures", "migration-review", "adapter-project"),
+    { coreRoot: root },
+  );
+
+  assert.equal(result.status, "complete");
+  assert.equal(result.adapter.enabled, true);
+  assert.deepEqual(result.scopePaths, ["db"]);
+  assert.deepEqual(result.filesScanned, ["db/migrations/001_create_accounts.sql"]);
+  assert.ok(result.migrationFiles.some((record) => record.path === "db/migrations/001_create_accounts.sql"));
+  assert.ok(result.warnings.includes("migration-review used adapter-declared safe read paths only"));
+  const cli = migrationReviewCliResult(
+    path.join(root, "tests", "fixtures", "migration-review", "adapter-project"),
+    { coreRoot: root },
+  );
+  assert.equal(cli.exitCode, 0);
+  assert.match(cli.lines.join("\n"), /Migration-review enabled: yes/);
+});
+
+test("migration-review does not broaden a repo-map-only project adapter", () => {
+  const result = buildMigrationReviewReport(
+    path.join(root, "tests", "fixtures", "project-adapter-installation", "valid-exact-pin"),
+    { coreRoot: root },
+  );
+
+  assert.equal(result.status, "partial");
+  assert.equal(result.filesScanned.length, 0);
+  assert.equal(result.migrationFiles.length, 0);
+  assert.match(renderMigrationReviewReport(result), /migration-review is not enabled/);
 });
 
 test("validate-pack accepts installed package trees without source-only gitignore", () => {

@@ -10,6 +10,7 @@ The pilot pack contains:
 - `env-audit`: audit-only environment variable name mapping without values.
 - `secret-audit`: audit-only high-confidence secret exposure detection without values.
 - `api-contract-audit`: audit-only static API contract surface mapping.
+- `migration-review`: audit-only static migration and schema evidence review.
 - `build-verify`: controlled local validation using existing project commands.
 - `git-preflight`: audit-only Git readiness inspection.
 - `runtime-truth`: audit-only runtime evidence collection.
@@ -46,6 +47,7 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 - Map environment variable names with `coding-agent-skills env-audit <project-root>`.
 - Find redacted secret exposure risks with `coding-agent-skills secret-audit <project-root>`.
 - Map static API contract surfaces with `coding-agent-skills api-contract-audit <project-root>`.
+- Review static migration and schema evidence with `coding-agent-skills migration-review <project-root>`.
 - Validate project adapters against [the formal adapter schema](schemas/project-adapter.schema.json).
 - Review [external adapter discovery](docs/adapters/discovery.md).
 - Run `node scripts/validate-adapters.mjs <adapter-root>` for a disposable external root.
@@ -59,6 +61,8 @@ Every skill emits the evidence-pack contract. A command being attempted is never
   `node scripts/render-secret-audit.mjs <project-root>`.
 - Render a static API contract audit report with
   `node scripts/render-api-contract-audit.mjs <project-root>`.
+- Render a static migration review report with
+  `node scripts/render-migration-review.mjs <project-root>`.
 - Review [adapter upgrade checks](docs/adapters/upgrades.md).
 - Run `node scripts/check-adapter-upgrade.mjs <before-project-root> <after-project-root>`
   for disposable project revisions.

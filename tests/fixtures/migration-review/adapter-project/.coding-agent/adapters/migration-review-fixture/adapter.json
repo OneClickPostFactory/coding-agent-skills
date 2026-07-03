@@ -1,0 +1,56 @@
+{
+  "adapterId": "migration-review-fixture",
+  "adapterVersion": "1.0.0",
+  "project": {
+    "id": "fixture-migration-review",
+    "detection": {
+      "rootMarkers": [
+        {"kind": "file", "path": "package.json"},
+        {"kind": "file", "path": "README.md"}
+      ],
+      "maximumDepth": 1,
+      "scope": "declared-project-root",
+      "requireApprovalOutsideScope": true
+    }
+  },
+  "supportedSkills": [
+    {
+      "id": "migration-review",
+      "compatibleVersions": ["0.2.3", "0.2.x"],
+      "declaredMode": "audit-only"
+    }
+  ],
+  "extensions": {
+    "safeReadPaths": ["db"],
+    "ignoredPaths": ["ignored", "node_modules", "dist", "build"],
+    "documentationPrecedence": ["README.md"],
+    "commandAliases": [],
+    "safeStatusCommands": [],
+    "requiredEvidence": ["project root", "adapter scope", "migration files", "not-verified database areas"],
+    "expectedRuntimeManagers": [],
+    "expectedPackageManagers": ["npm"]
+  },
+  "approvalRequirements": [],
+  "inheritance": {
+    "sharedRestrictions": "required",
+    "deniedOperationCategories": [
+      "file-write",
+      "package-install",
+      "deployment",
+      "git-mutation",
+      "unrestricted-scan",
+      "secret-read",
+      "process-mutation",
+      "service-mutation",
+      "migration-apply",
+      "privileged-api"
+    ],
+    "allowRestrictionRemoval": false,
+    "allowModeOverride": false,
+    "allowFailureSuppression": false,
+    "allowCompletionOverride": false,
+    "allowSecretExposure": false,
+    "allowRequiredEvidenceRemoval": false,
+    "allowScopeExpansionWithoutApproval": false
+  }
+}

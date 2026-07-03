@@ -1,0 +1,3 @@
+display_name: Migration Review
+short_description: Review static migration and schema evidence without database access.
+default_prompt: Review this repository's migration and schema evidence as an audit-only pass without modifying files, applying migrations, connecting to databases, generating ORM clients, or reading secrets.

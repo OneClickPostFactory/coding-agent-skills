@@ -16,6 +16,7 @@ Audit-only:
 - `env-audit`
 - `secret-audit`
 - `api-contract-audit`
+- `migration-review`
 - `git-preflight`
 - `runtime-truth`
 - `llm-drift-control`

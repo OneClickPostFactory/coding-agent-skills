@@ -47,6 +47,12 @@ const commands = {
     usage: "coding-agent-skills api-contract-audit <project-root>",
     requiredArgs: 1,
   },
+  "migration-review": {
+    script: "scripts/render-migration-review.mjs",
+    args: ([projectRoot]) => [projectRoot],
+    usage: "coding-agent-skills migration-review <project-root>",
+    requiredArgs: 1,
+  },
   "validate-adapters": {
     script: "scripts/validate-adapters.mjs",
     args: ([adapterRoot]) => [adapterRoot],
@@ -67,6 +73,7 @@ function usage(exitCode = 0) {
     "  env-audit <project-root>",
     "  secret-audit <project-root>",
     "  api-contract-audit <project-root>",
+    "  migration-review <project-root>",
     "  validate-adapters <adapter-root>",
     "",
     "local wrapper for the published coding-agent-skills package",

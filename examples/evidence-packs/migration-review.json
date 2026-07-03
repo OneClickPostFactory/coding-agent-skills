@@ -1,0 +1,60 @@
+{
+  "contractVersion": "1.0.0",
+  "skill": {"name": "migration-review", "version": "0.2.3"},
+  "invocation": {
+    "id": "example-migration-review",
+    "startedAt": "2026-07-03T12:00:00Z",
+    "endedAt": "2026-07-03T12:01:00Z"
+  },
+  "repository": {
+    "root": "/workspace/example-project",
+    "branch": "main",
+    "head": "0123456789abcdef",
+    "workingTreeState": "clean"
+  },
+  "userIntent": "Map static migration and schema evidence before database handoff.",
+  "declaredScope": ["/workspace/example-project"],
+  "projectAdapter": "example-migration-review-adapter",
+  "environmentSummary": {"platform": "linux", "shell": "bash"},
+  "status": "complete",
+  "confidence": {
+    "level": "medium",
+    "reason": "Static migration and schema files were inspected, but database state was not verified."
+  },
+  "commands": [
+    {
+      "command": "coding-agent-skills migration-review /workspace/example-project",
+      "family": "migration-review-renderer",
+      "workingDirectory": "/workspace/example-project",
+      "startedAt": "2026-07-03T12:00:20Z",
+      "endedAt": "2026-07-03T12:00:21Z",
+      "exitStatus": 0,
+      "resultStatus": "success",
+      "safetyClass": "allowed",
+      "approvalReference": null,
+      "purpose": "Render a static migration review report.",
+      "outputSummary": "Reported static migration files, schema files, config files, risk indicators, skipped items, and not-verified database areas."
+    }
+  ],
+  "skippedChecks": [],
+  "findings": [
+    {
+      "summary": "Static migration evidence was mapped without database access.",
+      "evidence": ["prisma/migrations/example/migration.sql", "prisma/schema.prisma"]
+    }
+  ],
+  "risks": [
+    {
+      "summary": "Database state may differ from static migration evidence.",
+      "evidence": ["applied migration history was not queried", "runtime database connectivity was not tested"]
+    }
+  ],
+  "failures": [],
+  "unresolvedQuestions": [],
+  "changedState": {
+    "changed": false,
+    "summary": "No project, Git, dependency, runtime, database, generated-code, service, or remote state changed."
+  },
+  "handoffSummary": "Static migration evidence is mapped; applied database state remains unverified.",
+  "recommendedNextAction": "Review reported migration surfaces before editing database schema or migration files."
+}

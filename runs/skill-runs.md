@@ -229,3 +229,19 @@ This file records bounded maintainer-loop runs. Entries must not contain secrets
 - Validation commands: pending final release validation matrix.
 - Result: pass pending final publication evidence.
 - Commit/tag/push status: pending approved release workflow.
+
+## implementation-v0.2.13-migration-review
+
+- Run ID: `implementation-v0.2.13-migration-review`
+- Repository: `/home/oneclickwebsitedesignfactory/coding-agent-skills`
+- Command used: `builder-mode approval for migration-review-skill implementation and release`
+- Files changed: `migration-review` skill, migration review renderer and library,
+  CLI wrapper, adapter schemas, pack rules, release tests, synthetic migration fixtures,
+  usage/release/safety/adapter docs, changelog, roadmap, work ledger, run log, and package
+  metadata.
+- Safety boundary: read-only, static-analysis only, no `.env` reads, no database
+  connections, no migration execution, no ORM generation, no package scripts, no builds,
+  no tests in target projects, no deploys, and no target-project mutation.
+- Validation commands: pending final release validation matrix.
+- Result: pass pending final publication evidence.
+- Commit/tag/push status: pending approved release workflow.

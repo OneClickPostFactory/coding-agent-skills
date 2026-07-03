@@ -21,8 +21,9 @@
 14. Install the tarball into a temporary npm prefix and smoke-test the installed CLI.
 15. Smoke-test any new CLI command such as `coding-agent-skills route-trace`,
     `coding-agent-skills env-audit`, `coding-agent-skills secret-audit`, or
-    `coding-agent-skills api-contract-audit` against synthetic fixtures only unless a real project
-    read-only smoke is explicitly approved.
+    `coding-agent-skills api-contract-audit`, or `coding-agent-skills migration-review`
+    against synthetic fixtures only unless a real project read-only smoke is explicitly
+    approved.
 16. Review changelog, ledger, run evidence, and versioning impact.
 17. Commit with approved identity.
 18. Push `main` using credential-free remotes.

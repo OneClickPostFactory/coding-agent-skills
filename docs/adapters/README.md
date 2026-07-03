@@ -104,6 +104,24 @@ reports contract files, endpoint declarations, client-call patterns, schema/type
 skipped paths, and not-verified runtime behavior. It never runs servers, calls APIs,
 generates schemas or clients, builds, tests, deploys, migrates, or mutates project files.
 
+## Adapter-Aware Migration Review Consumption
+
+The shared pack can consume a validated project-owned adapter as bounded context for
+`migration-review`:
+
+```bash
+node scripts/render-migration-review.mjs <project-root>
+```
+
+The renderer validates the project declaration when present. If an adapter is present but
+does not enable `migration-review`, it reports an adapter-limited skip instead of
+broadening scope. When enabled, it reads only adapter-declared safe paths, excludes `.env`,
+secret-bearing files, generated output, dependency paths, and oversized files, then
+reports migration files, schema/config files, package script keys, static risk indicators,
+skipped paths, and not-verified database behavior. It never connects to databases,
+executes migrations, generates ORM clients, builds, tests, deploys, or mutates project
+files.
+
 ## What Adapters May Do
 
 - Add bounded relative read paths and ignored paths.
@@ -115,6 +133,8 @@ generates schemas or clients, builds, tests, deploys, migrates, or mutates proje
   while relying on the shared scanner to exclude secret-bearing paths.
 - Add api-contract-audit safe read paths for static API docs, contract files, route
   handlers, client calls, and schema/type files.
+- Add migration-review safe read paths for static migration, schema, config, and package
+  files while relying on the shared reviewer to exclude secret-bearing paths.
 - Add command aliases that already satisfy the shared command policy.
 - Add status-only runtime commands and manager hints.
 - Require additional evidence or named approval for exceptional reads.

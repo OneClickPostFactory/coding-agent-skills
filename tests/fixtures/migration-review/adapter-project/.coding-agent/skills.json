@@ -1,0 +1,23 @@
+{
+  "declarationVersion": "1.0.0",
+  "projectId": "fixture-migration-review",
+  "adapterRoot": ".coding-agent/adapters",
+  "adapterSchemaVersion": "1.0.0",
+  "core": {
+    "id": "coding-agent-skills",
+    "expectedVersion": "0.2.3",
+    "versionPin": ">=0.2.3 <0.3.0"
+  },
+  "compatibleSkillIds": ["migration-review"],
+  "adapters": [
+    {
+      "id": "migration-review-fixture",
+      "version": "1.0.0",
+      "skillIds": ["migration-review"]
+    }
+  ],
+  "validationCommand": "node <shared-core>/scripts/validate-project-adapters.mjs <project-root>",
+  "evidenceOutput": ".coding-agent/evidence",
+  "approvalPolicyReference": ".coding-agent/approval-policy.md",
+  "noSecrets": true
+}

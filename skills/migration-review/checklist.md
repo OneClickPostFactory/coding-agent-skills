@@ -1,0 +1,8 @@
+- Confirm the project root and declared static scope.
+- Validate any project adapter before reading adapter metadata.
+- Stop with `partial` if an adapter is present but does not enable `migration-review`.
+- Exclude `.env`, secret-bearing, dependency, generated, output, and oversized files.
+- Report migration files, schema files, config files, package script keys, and risk indicators.
+- Do not print package script command values.
+- Record not-verified database state, rollback, generated-client, and production gaps.
+- Declare that no database connection, migration execution, ORM generation, build, test, deploy, package install, secret read, or write occurred.

@@ -1,0 +1,14 @@
+{
+  "name": "migration-review",
+  "version": "0.2.3",
+  "mode": "audit-only",
+  "evidenceContract": "../../contracts/evidence-pack/evidence-pack.schema.json",
+  "commandPolicy": "../command-policies/migration-review.json",
+  "adapterSchema": "../../schemas/project-adapter.schema.json",
+  "adapterCompatibility": {
+    "contractVersion": "1.0.0",
+    "compatibleAdapterVersions": ["1.0.0"]
+  },
+  "adapterInterface": "../../skills/migration-review/adapter-interface.md",
+  "description": "Map static database migration and schema evidence without database access."
+}
