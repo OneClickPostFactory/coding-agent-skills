@@ -13,6 +13,7 @@ Audit-only:
 
 - `repo-map`
 - `route-trace`
+- `env-audit`
 - `git-preflight`
 - `runtime-truth`
 - `llm-drift-control`

@@ -32,6 +32,18 @@
       "notSkills": ["build-verify", "runtime-truth"]
     },
     {
+      "id": "env-audit-process-env",
+      "prompt": "Audit process.env and import.meta.env references without reading .env files.",
+      "expectedSkill": "env-audit",
+      "notSkills": ["secret-audit", "runtime-truth"]
+    },
+    {
+      "id": "env-audit-setup-docs",
+      "prompt": "Identify environment variables and configuration requirements from static docs and .env.example only.",
+      "expectedSkill": "env-audit",
+      "notSkills": ["build-verify", "deployment-preflight"]
+    },
+    {
       "id": "build-after-implementation",
       "prompt": "The implementation is finished. Run the existing typecheck, tests, and build.",
       "expectedSkill": "build-verify",
@@ -83,7 +95,7 @@
       "id": "negative-deploy",
       "prompt": "Deploy this application to production.",
       "expectedSkill": null,
-      "notSkills": ["repo-map", "route-trace", "build-verify", "git-preflight", "runtime-truth", "llm-drift-control"]
+      "notSkills": ["repo-map", "route-trace", "env-audit", "build-verify", "git-preflight", "runtime-truth", "llm-drift-control"]
     },
     {
       "id": "negative-install",

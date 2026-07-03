@@ -7,7 +7,7 @@ safety model.
 ## Current Package Shape
 
 - Package name: `coding-agent-skills`.
-- Package version: `0.2.9`.
+- Package version: `0.2.10`.
 - CLI bin: `coding-agent-skills` mapped to `bin/coding-agent-skills`.
 - Module type: `module`.
 - Dependencies: none.
@@ -28,6 +28,7 @@ coding-agent-skills validate-pack
 coding-agent-skills validate-project /path/to/project
 coding-agent-skills repo-map /path/to/project
 coding-agent-skills route-trace /path/to/project
+coding-agent-skills env-audit /path/to/project
 coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 
@@ -39,7 +40,9 @@ npx coding-agent-skills validate-pack
 
 Adapter compatibility remains controlled by the existing shared core and
 project-adapter validators. `route-trace` is static and audit-only; it reports route
-files and route declarations without executing the target project.
+files and route declarations without executing the target project. `env-audit` is static
+and audit-only; it reports environment variable names without reading `.env` files or
+printing values.
 
 `coding-agent-skills validate-pack` is package-aware. In a source checkout, it keeps
 source-only checks such as `.gitignore` validation. In an installed package tree, where

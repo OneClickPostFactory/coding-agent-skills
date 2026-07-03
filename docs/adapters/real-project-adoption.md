@@ -21,7 +21,8 @@ project repository is touched:
 - The project can declare exactly one installation file: `.coding-agent/skills.json` or
   `coding-agent.skills.json`.
 - The adapter need is bounded to existing pilot skills: `repo-map`, `route-trace`,
-  `build-verify`, `git-preflight`, `runtime-truth`, or `llm-drift-control`.
+  `env-audit`, `build-verify`, `git-preflight`, `runtime-truth`, or
+  `llm-drift-control`.
 - The adapter can narrow context with relative paths, documentation precedence, safe
   aliases, status-only hints, or extra evidence requirements.
 - The adapter does not require deployment, migration, package installation, Git

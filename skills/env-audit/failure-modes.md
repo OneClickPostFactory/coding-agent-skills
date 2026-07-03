@@ -1,0 +1,5 @@
+- **Adapter not enabled:** report `partial` and do not broaden target-project scanning.
+- **Secret-bearing path requested:** skip the file and record the safety exclusion.
+- **Dynamic variable names:** report as not verified instead of guessing.
+- **Large or unreadable files:** skip with consequence and continue bounded scanning.
+- **Credential validation requested:** refuse and explain that only names are in scope.

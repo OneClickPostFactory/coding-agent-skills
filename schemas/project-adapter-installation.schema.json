@@ -66,6 +66,7 @@
         "enum": [
           "repo-map",
           "route-trace",
+          "env-audit",
           "build-verify",
           "git-preflight",
           "runtime-truth",
@@ -99,6 +100,7 @@
               "enum": [
               "repo-map",
               "route-trace",
+              "env-audit",
               "build-verify",
               "git-preflight",
                 "runtime-truth",

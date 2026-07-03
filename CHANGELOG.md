@@ -2,6 +2,25 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.10] - 2026-07-03
+
+### Added
+
+- `env-audit` audit-only skill for static environment variable name mapping without values.
+- `coding-agent-skills env-audit <project-root>` CLI command.
+- Dependency-free env audit renderer for variable names, classifications, sample files,
+  skipped secret-bearing paths, not-verified runtime stores, adapter-limited scope, and
+  safety refusals.
+- Synthetic env-audit fixtures and release tests for generic static scans, adapter-scoped
+  scans, `.env` exclusion, `.env.example` inspection, and repo-map-only adapter skips.
+
+### Changed
+
+- Adapter schemas and validators now recognize `env-audit` as an audit-only skill while
+  preserving the existing `0.2.3` adapter contract compatibility baseline.
+- Builder-mode approval for completing the remaining read-only skill wave is recorded in
+  the roadmap, ledger, and run log.
+
 ## [0.2.9] - 2026-07-03
 
 ### Added

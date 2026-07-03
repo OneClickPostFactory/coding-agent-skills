@@ -4,26 +4,29 @@
 
 - Repository: `coding-agent-skills`
 - Branch: `main`
-- Pilot skills: `repo-map`, `route-trace`, `build-verify`, `git-preflight`, `runtime-truth`, `llm-drift-control`
+- Pilot skills: `repo-map`, `route-trace`, `env-audit`, `build-verify`, `git-preflight`, `runtime-truth`, `llm-drift-control`
 - Adapter discovery, project adapter installation, stale-pin detection, upgrade evidence, compatibility-chain validation, evidence-bundle verification, retention policy, provenance design, archive-report rendering, archive-index fixtures, retention-expiry advisory reporting, and detached-signature verification planning are implemented.
 - Real-project adapter adoption readiness is documented as a planning-only approval gate.
 - First external project-owned adapter adoption completed for `/home/oneclickwebsitedesignfactory/tax-lien-platform` at candidate commit `c548b1a6cbb3455a70b89d0e301e22435bfccac9`.
 - The adopted adapter is `repo-map` only, docs/metadata-only, and contains no commands, runtime checks, build/test/package behavior, platform/deployment behavior, or secret-aware behavior.
 - The shared repository does not contain real adapter manifests; real project adapters remain owned by their project repositories.
-- Public npm package release `v0.2.9` exposes the dependency-free
+- Public npm package release `v0.2.10` exposes the dependency-free
   `coding-agent-skills` CLI under MIT license.
-- `route-trace` is implemented as an audit-only static route tracing skill. Additional new
-  skills are not approved.
+- `route-trace` is implemented as an audit-only static route tracing skill.
+- `env-audit` is implemented as an audit-only value-free environment variable name mapping
+  skill.
+- Builder-mode approval: complete the remaining read-only skill wave for
+  `coding-agent-skills` itself. Real-world project execution constraints remain unchanged.
 
 ## Last Completed Version
 
-`v0.2.9`
+`v0.2.10`
 
 ## Current Recommended Milestone
 
-The `route-trace` public npm release is complete for the approved CLI surface. No further
-real adapters, adapter expansion, new skills, platform skills, deployment/preflight work,
-signing infrastructure, or evidence-harness milestone is approved.
+The `env-audit` public npm release is in progress under builder-mode approval. Continue the
+remaining read-only skill wave one release at a time unless a real safety, validation,
+publication, or authentication boundary appears.
 
 ## Allowed Next Actions
 
@@ -41,7 +44,7 @@ signing infrastructure, or evidence-harness milestone is approved.
 
 ## Blocked Actions
 
-- Adding more new skills.
+- Adding skills outside the approved builder-mode read-only wave.
 - Creating real project adapters.
 - Modifying real project repositories.
 - Publishing release artifacts without explicit approval.
@@ -73,14 +76,15 @@ signing infrastructure, or evidence-harness milestone is approved.
 - Implementing the next evidence-retention or provenance milestone.
 - Selecting a real project adapter candidate.
 - Gathering evidence from a real project repository.
-- Creating, changing, or removing skills.
+- Creating, changing, or removing skills outside the approved builder-mode read-only wave.
 - Adding real project adapters.
 - Expanding the adopted `tax-lien-platform` adapter beyond `repo-map`.
 - Enabling candidate repo package scripts, build verification, runtime checks, or command aliases.
 - Allowing or bypassing project Git hooks during future adapter publication.
 - Touching real project repositories.
 - Changing release publication behavior.
-- Publishing a new npm version beyond the approved release.
+- Publishing a new npm version outside the approved builder-mode read-only wave or another
+  explicitly approved release.
 - Commit, tag, or push operations.
 - Any action not listed in the allowed next actions above.
 
@@ -93,6 +97,15 @@ No next runner command is currently queued.
 ## Maintainer Decisions
 
 No autonomous maintainer-loop run has been recorded yet.
+
+### 2026-07-03T10:00:00Z
+
+- Latest tag observed: `v0.2.9`
+- Implemented milestone: `env-audit` audit-only environment variable name mapping skill and CLI command.
+- Required permission: `builder-mode-skill-implementation`
+- Validation result: pass pending final publication evidence
+- Next recommended milestone: continue builder-mode wave with `secret-audit-skill` after
+  `v0.2.10` publication completes.
 
 
 ### 2026-06-19T00:00:00Z

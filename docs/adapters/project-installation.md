@@ -122,6 +122,17 @@ patterns, skipped paths, and not-verified runtime-dependent route classes. It do
 servers, hit URLs, execute app code, build, test, deploy, migrate, inspect databases, read
 `.env` files, or modify project state.
 
+A project-owned adapter can also enable read-only `env-audit` context:
+
+```bash
+node scripts/render-env-audit.mjs <project-root>
+```
+
+The env-audit renderer validates the project declaration when present. If the adapter is
+present but does not enable `env-audit`, it reports an adapter-limited skip. When enabled,
+it reads only adapter-declared safe paths, refuses `.env` and secret-bearing files, and
+reports environment variable names without values.
+
 ## Safety Boundary
 
 Project adapters are extension-only. They cannot remove denied operations, change an

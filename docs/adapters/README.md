@@ -54,12 +54,29 @@ statically reports verified route files, inferred route patterns, skipped items,
 not-verified runtime-dependent routing classes. It does not execute target code, run
 servers, hit URLs, build, test, deploy, migrate, inspect databases, or read `.env` files.
 
+## Adapter-Aware Env Audit Consumption
+
+The shared pack can consume a validated project-owned adapter as bounded context for
+`env-audit`:
+
+```bash
+node scripts/render-env-audit.mjs <project-root>
+```
+
+The renderer validates the project declaration when present. If an adapter is present but
+does not enable `env-audit`, it reports an adapter-limited skip instead of broadening
+scope. When enabled, it reads only adapter-declared safe paths, excludes `.env` and
+secret-bearing files, and reports variable names, classifications, sample files inspected,
+skipped items, and not-verified runtime or credential stores. It never prints values or
+validates credentials.
+
 ## What Adapters May Do
 
 - Add bounded relative read paths and ignored paths.
 - Declare project-root markers and a bounded detection depth.
 - Add documentation precedence and package-manager hints.
 - Add route-trace safe read paths for static route files and route config.
+- Add env-audit safe read paths for static source, docs, sample, and config files.
 - Add command aliases that already satisfy the shared command policy.
 - Add status-only runtime commands and manager hints.
 - Require additional evidence or named approval for exceptional reads.

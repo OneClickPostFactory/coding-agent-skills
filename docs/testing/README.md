@@ -37,6 +37,13 @@ skipped paths, not-verified runtime route classes, and repo-map-only adapter ski
 Route-trace tests must never run a target project, hit URLs, build, test, deploy, migrate,
 or read `.env` files.
 
+## Env Audit
+
+Synthetic env-audit projects cover value-free variable-name detection, `.env` exclusion,
+`.env.example` inspection, adapter-declared scope, and adapter-present-but-not-enabled
+behavior. Env-audit tests must never print values, validate credentials, contact APIs,
+run target projects, build, test, deploy, migrate, or read `.env` files.
+
 ## Privacy And Redaction
 
 Sensitive shapes are stored as ordered synthetic parts and reconstructed only in memory. Tests verify type detection, redaction, and absence from reusable skill content without printing fixture values.

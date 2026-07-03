@@ -1,0 +1,55 @@
+{
+  "contractVersion": "1.0.0",
+  "skill": {"name": "env-audit", "version": "0.2.3"},
+  "invocation": {
+    "id": "example-env-audit",
+    "startedAt": "2026-07-03T10:00:00Z",
+    "endedAt": "2026-07-03T10:01:00Z"
+  },
+  "repository": {
+    "root": "/workspace/example-project",
+    "branch": "main",
+    "head": "0123456789abcdef",
+    "workingTreeState": "clean"
+  },
+  "userIntent": "Identify environment variable names before updating setup documentation.",
+  "declaredScope": ["/workspace/example-project"],
+  "projectAdapter": "example-env-adapter",
+  "environmentSummary": {"platform": "linux", "shell": "bash"},
+  "status": "complete",
+  "confidence": {
+    "level": "high",
+    "reason": "Static env references, sample files, skipped secret paths, and not-verified runtime stores were recorded without values."
+  },
+  "commands": [
+    {
+      "command": "coding-agent-skills env-audit /workspace/example-project",
+      "family": "env-audit-renderer",
+      "workingDirectory": "/workspace/example-project",
+      "startedAt": "2026-07-03T10:00:20Z",
+      "endedAt": "2026-07-03T10:00:21Z",
+      "exitStatus": 0,
+      "resultStatus": "success",
+      "safetyClass": "allowed",
+      "approvalReference": null,
+      "purpose": "Render a value-free static env audit report.",
+      "outputSummary": "Found env variable names and sample declarations without reading .env files or printing values."
+    }
+  ],
+  "skippedChecks": [],
+  "findings": [
+    {
+      "summary": "Environment variable names were identified from static references and .env.example only.",
+      "evidence": ["src/config.ts", ".env.example"]
+    }
+  ],
+  "risks": [],
+  "failures": [],
+  "unresolvedQuestions": [],
+  "changedState": {
+    "changed": false,
+    "summary": "No project, Git, dependency, runtime, service, or remote state changed."
+  },
+  "handoffSummary": "Environment variable names are mapped without values; runtime stores remain unverified.",
+  "recommendedNextAction": "Review the reported names before updating documentation."
+}

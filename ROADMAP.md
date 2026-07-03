@@ -1,7 +1,8 @@
 # Roadmap
 
-The public package now contains six approved shared skills. Future work requires separate
-design and approval.
+The public package now contains seven approved shared skills. Builder-mode approval is
+active for the remaining read-only skill wave in this repository; real-world project
+execution constraints remain unchanged.
 
 ## Released Harness Milestones
 
@@ -29,15 +30,16 @@ design and approval.
   install smoke coverage.
 - `v0.2.9`: audit-only `route-trace` skill and CLI renderer for static route surface
   tracing.
+- `v0.2.10`: audit-only `env-audit` skill and CLI renderer for value-free environment
+  variable name mapping.
 
 The next milestone is recorded in [work-ledger.md](work-ledger.md). The
 [maintainer loop](RUNBOOK.md) may select and evidence that milestone, but it must stop
 before implementation until the relevant human approval is granted.
 
-No evidence-harness milestone is queued after `v0.2.3`. Additional real project adapters,
-new skills beyond `route-trace`, platform work, deployment/preflight work, and signing infrastructure remain
-separately gated. The public npm package exposes the existing read-only CLI surface; it
-does not approve new skills or target-project mutation.
+No evidence-harness milestone is queued after `v0.2.3`. Builder-mode approval permits the
+listed read-only skill wave inside this repository. Real project adapters, target-project
+mutation, signing infrastructure, and action-capable platform work remain separately gated.
 
 ## Planning Gates
 
@@ -71,20 +73,21 @@ Next safe milestone options:
 | Candidate | Scope | Mode | Current gate |
 |---|---|---|---|
 | `route-trace-skill` | General | Audit-only | Implemented in `v0.2.9` |
-| `env-audit-skill` | General | Audit-only | Needs more evidence |
-| `secret-audit-skill` | General | Audit-only | Blocked on privacy and approval model |
-| `deployment-preflight-skill` | General | Audit-only | Needs design review |
-| `cloudflare-preflight-skill` | Platform-specific | Audit-only | Needs more evidence |
+| `env-audit-skill` | General | Audit-only | Implemented in `v0.2.10` |
+| `secret-audit-skill` | General | Audit-only | Builder-mode approved; queued after `env-audit` |
+| `deployment-preflight-skill` | General | Audit-only | Builder-mode approved; later in wave |
+| `cloudflare-preflight-skill` | Platform-specific | Audit-only | Builder-mode approved; later in wave |
 | `cloudflare-deploy-skill` | Platform-specific | Action-capable | Blocked on approval model |
-| `supabase-rls-audit-skill` | Platform-specific | Audit-only | Needs more evidence |
-| `migration-review-skill` | General with platform adapters | Audit-only | Needs design review |
-| `api-contract-audit-skill` | General | Audit-only | Needs design review |
+| `supabase-rls-audit-skill` | Platform-specific | Audit-only | Builder-mode approved; later in wave |
+| `migration-review-skill` | General with platform adapters | Audit-only | Builder-mode approved; later in wave |
+| `api-contract-audit-skill` | General | Audit-only | Builder-mode approved; later in wave |
 | `repo-knowledge-sync-skill` | General | Action-capable | Blocked on write approval model |
 | `security-hardening-review-skill` | General coordinator | Audit-only | Needs more evidence |
 | `worker-queue-debug-skill` | General core with project adapters | Audit-only first | Needs more evidence |
 | `devvit-ingest-debug-skill` | Project-specific | Audit-only | Needs project evidence |
-| `github-handoff-skill` | Platform-specific | Action-capable | Blocked on approval model |
+| `github-handoff-skill` | General | Audit-only | Builder-mode approved; later in wave |
 | `session-extractor-skill` | General tooling | Action-capable | Blocked on privacy policy and more evidence |
 | `command-redaction-skill` | General tooling | Action-capable | Needs more evidence |
 
-No roadmap item is implicitly approved for implementation.
+Builder-mode approval applies only to the named read-only wave. No other roadmap item is
+implicitly approved for implementation.

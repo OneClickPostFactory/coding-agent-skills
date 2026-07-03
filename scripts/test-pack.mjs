@@ -48,6 +48,11 @@ import {
   routeTraceCliResult,
 } from "./lib/route-trace.mjs";
 import {
+  buildEnvAuditReport,
+  envAuditCliResult,
+  renderEnvAuditReport,
+} from "./lib/env-audit.mjs";
+import {
   adapterUpgradeCliResult,
   checkAdapterUpgrade,
   formatAdapterUpgradeSummary,
@@ -262,6 +267,7 @@ test("local CLI maps approved commands to existing safe scripts", () => {
   assert.ok(cliText.includes("scripts/validate-project-adapters.mjs"));
   assert.ok(cliText.includes("scripts/render-adapter-repo-map.mjs"));
   assert.ok(cliText.includes("scripts/render-route-trace.mjs"));
+  assert.ok(cliText.includes("scripts/render-env-audit.mjs"));
   assert.ok(cliText.includes("scripts/validate-adapters.mjs"));
   assert.ok(!cliText.includes(".env"));
 
@@ -287,6 +293,10 @@ test("local CLI maps approved commands to existing safe scripts", () => {
       ["route-trace", path.join(fixtureRoot, "route-trace", "static-project")],
       /# Route Trace Report/,
     ],
+    [
+      ["env-audit", path.join(fixtureRoot, "env-audit", "static-project")],
+      /# Env Audit Report/,
+    ],
   ];
 
   for (const [args, expected] of commands) {
@@ -311,7 +321,7 @@ test("local CLI maps approved commands to existing safe scripts", () => {
 test("npm package metadata is public-ready and dependency-free", () => {
   const packageJson = readJson("package.json");
   assert.equal(packageJson.name, "coding-agent-skills");
-  assert.equal(packageJson.version, "0.2.9");
+  assert.equal(packageJson.version, "0.2.10");
   assert.equal(
     packageJson.description,
     "Evidence-first, read-only coding-agent skills and project adapter tooling.",
@@ -324,6 +334,7 @@ test("npm package metadata is public-ready and dependency-free", () => {
     "agent-skills",
     "repo-map",
     "route-trace",
+    "env-audit",
     "project-adapters",
     "code-validation",
     "cli",
@@ -449,6 +460,65 @@ test("route-trace does not broaden a repo-map-only project adapter", () => {
   assert.equal(result.adapter.enabled, false);
   assert.deepEqual(result.scannedFiles, []);
   assert.match(renderRouteTraceReport(result), /route-trace is not enabled/);
+});
+
+test("env-audit identifies variable names without reading .env values", () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "env-audit-fixture-"));
+  fs.cpSync(path.join(root, "tests", "fixtures", "env-audit", "static-project"), temporary, {
+    recursive: true,
+  });
+  fs.writeFileSync(path.join(temporary, ".env"), "SHOULD_NOT_BE_READ=synthetic-fixture-value\n");
+
+  const result = buildEnvAuditReport(
+    temporary,
+    { coreRoot: root },
+  );
+
+  assert.equal(result.status, "complete");
+  assert.ok(result.filesScanned.includes(".env.example"));
+  assert.ok(!result.filesScanned.includes(".env"));
+  assert.ok(result.skipped.some((item) => item.path === ".env"));
+  const names = result.variables.map((variable) => variable.name);
+  assert.ok(names.includes("DATABASE_URL"));
+  assert.ok(names.includes("NEXT_PUBLIC_APP_URL"));
+  assert.ok(names.includes("PORT"));
+  assert.ok(names.includes("SERVICE_TOKEN"));
+  assert.ok(names.includes("DENO_REGION"));
+  const rendered = renderEnvAuditReport(result);
+  assert.match(rendered, /DATABASE_URL/);
+  assert.doesNotMatch(rendered, /synthetic-fixture-value/);
+});
+
+test("env-audit respects adapter-declared scope", () => {
+  const result = buildEnvAuditReport(
+    path.join(root, "tests", "fixtures", "env-audit", "adapter-project"),
+    { coreRoot: root },
+  );
+
+  assert.equal(result.status, "complete");
+  assert.equal(result.adapter.enabled, true);
+  assert.deepEqual(result.scopePaths, ["src"]);
+  assert.deepEqual(result.filesScanned, ["src/config.ts"]);
+  assert.ok(result.variables.some((variable) => variable.name === "ADAPTER_ONLY_VALUE"));
+  assert.ok(result.warnings.includes("env-audit used adapter-declared safe read paths only"));
+  const cli = envAuditCliResult(
+    path.join(root, "tests", "fixtures", "env-audit", "adapter-project"),
+    { coreRoot: root },
+  );
+  assert.equal(cli.exitCode, 0);
+  assert.match(cli.lines.join("\n"), /Env-audit enabled: yes/);
+});
+
+test("env-audit does not broaden a repo-map-only project adapter", () => {
+  const result = buildEnvAuditReport(
+    path.join(root, "tests", "fixtures", "project-adapter-installation", "valid-exact-pin"),
+    { coreRoot: root },
+  );
+
+  assert.equal(result.status, "partial");
+  assert.equal(result.filesScanned.length, 0);
+  assert.equal(result.variables.length, 0);
+  assert.match(renderEnvAuditReport(result), /env-audit is not enabled/);
 });
 
 test("validate-pack accepts installed package trees without source-only gitignore", () => {

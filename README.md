@@ -7,6 +7,7 @@ The pilot pack contains:
 - Shared evidence-pack contract.
 - `repo-map`: audit-only repository orientation.
 - `route-trace`: audit-only static route surface tracing.
+- `env-audit`: audit-only environment variable name mapping without values.
 - `build-verify`: controlled local validation using existing project commands.
 - `git-preflight`: audit-only Git readiness inspection.
 - `runtime-truth`: audit-only runtime evidence collection.
@@ -40,6 +41,7 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 - Run `npx coding-agent-skills validate-pack` when a one-off npm execution is preferred.
 - From a clone, the same wrapper is available as `bin/coding-agent-skills validate-pack`.
 - Trace static route surfaces with `coding-agent-skills route-trace <project-root>`.
+- Map environment variable names with `coding-agent-skills env-audit <project-root>`.
 - Validate project adapters against [the formal adapter schema](schemas/project-adapter.schema.json).
 - Review [external adapter discovery](docs/adapters/discovery.md).
 - Run `node scripts/validate-adapters.mjs <adapter-root>` for a disposable external root.

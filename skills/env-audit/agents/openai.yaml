@@ -1,0 +1,4 @@
+interface:
+  display_name: "Env Audit"
+  short_description: "Map env variable names without reading values"
+  default_prompt: "Audit the statically visible environment variable names in this repository without changing project state. Do not read .env files or print values."
