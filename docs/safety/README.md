@@ -2,7 +2,7 @@
 
 ## Audit-Only Rule
 
-`repo-map`, `route-trace`, `env-audit`, `secret-audit`, `git-preflight`, `runtime-truth`, and `llm-drift-control` must not alter project files, Git state, dependencies, processes, services, databases, remote systems, or deployment state.
+`repo-map`, `route-trace`, `env-audit`, `secret-audit`, `api-contract-audit`, `git-preflight`, `runtime-truth`, and `llm-drift-control` must not alter project files, Git state, dependencies, processes, services, databases, remote systems, or deployment state.
 
 `route-trace` is static only. It may read bounded non-secret route files and route
 configuration, but it must not execute app code, run servers, hit URLs, claim runtime
@@ -16,6 +16,11 @@ credentials, contact APIs, or inspect secret stores.
 files and report high-confidence secret-like finding paths, types, and counts, but it must
 not print matched values, read `.env` or secret-bearing files, inspect credential stores,
 validate or rotate credentials, contact APIs, or broaden adapter scope.
+
+`api-contract-audit` is static only. It may read bounded non-secret API docs, contract
+files, route handlers, client calls, and schema/type files, but it must not run servers,
+call APIs, probe URLs, generate schemas or clients, build, test, deploy, migrate, inspect
+databases, or broaden adapter scope.
 
 `build-verify` may run existing project-native validation commands. Build or test tools may create their normal local artifacts, but the skill must declare observed changes and must reject installation, fix modes, snapshot updates, deployment, migration, or unknown scripts.
 

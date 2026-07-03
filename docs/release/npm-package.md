@@ -7,7 +7,7 @@ safety model.
 ## Current Package Shape
 
 - Package name: `coding-agent-skills`.
-- Package version: `0.2.11`.
+- Package version: `0.2.12`.
 - CLI bin: `coding-agent-skills` mapped to `bin/coding-agent-skills`.
 - Module type: `module`.
 - Dependencies: none.
@@ -30,6 +30,7 @@ coding-agent-skills repo-map /path/to/project
 coding-agent-skills route-trace /path/to/project
 coding-agent-skills env-audit /path/to/project
 coding-agent-skills secret-audit /path/to/project
+coding-agent-skills api-contract-audit /path/to/project
 coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 
@@ -47,6 +48,9 @@ printing values.
 `secret-audit` is static and audit-only; it reports high-confidence secret-like finding
 paths, types, and counts without printing matched values, reading `.env` files, or
 validating credentials.
+`api-contract-audit` is static and audit-only; it reports contract files, endpoint
+declarations, client-call patterns, schema/type files, and not-verified runtime behavior
+without running servers, calling APIs, or generating clients or schemas.
 
 `coding-agent-skills validate-pack` is package-aware. In a source checkout, it keeps
 source-only checks such as `.gitignore` validation. In an installed package tree, where
@@ -81,7 +85,7 @@ included.
 
 The public CLI remains read-only for target projects unless a specific underlying skill
 already permits a bounded local validation action. The installed `repo-map`,
-`route-trace`, `env-audit`, `secret-audit`, and adapter flows do not:
+`route-trace`, `env-audit`, `secret-audit`, `api-contract-audit`, and adapter flows do not:
 
 - deploy
 - run migrations

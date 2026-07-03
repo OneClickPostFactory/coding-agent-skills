@@ -1,6 +1,6 @@
 # Roadmap
 
-The public package now contains eight approved shared skills. Builder-mode approval is
+The public package now contains nine approved shared skills. Builder-mode approval is
 active for the remaining read-only skill wave in this repository; real-world project
 execution constraints remain unchanged.
 
@@ -34,6 +34,8 @@ execution constraints remain unchanged.
   variable name mapping.
 - `v0.2.11`: audit-only `secret-audit` skill and CLI renderer for redacted secret
   exposure detection.
+- `v0.2.12`: audit-only `api-contract-audit` skill and CLI renderer for static API
+  contract surface mapping.
 
 The next milestone is recorded in [work-ledger.md](work-ledger.md). The
 [maintainer loop](RUNBOOK.md) may select and evidence that milestone, but it must stop
@@ -77,8 +79,8 @@ Next safe milestone options:
 | `route-trace-skill` | General | Audit-only | Implemented in `v0.2.9` |
 | `env-audit-skill` | General | Audit-only | Implemented in `v0.2.10` |
 | `secret-audit-skill` | General | Audit-only | Implemented in `v0.2.11` |
-| `api-contract-audit-skill` | General | Audit-only | Builder-mode approved; next in wave |
-| `migration-review-skill` | General with platform adapters | Audit-only | Builder-mode approved; later in wave |
+| `api-contract-audit-skill` | General | Audit-only | Implemented in `v0.2.12` |
+| `migration-review-skill` | General with platform adapters | Audit-only | Builder-mode approved; next in wave |
 | `github-handoff-skill` | General | Audit-only | Builder-mode approved; later in wave |
 | `deployment-preflight-skill` | General | Audit-only | Builder-mode approved; later in wave |
 | `cloudflare-preflight-skill` | Platform-specific | Audit-only | Builder-mode approved; later in wave |

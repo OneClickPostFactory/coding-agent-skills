@@ -1,0 +1,13 @@
+- Skill: `api-contract-audit`
+- Status: `complete`, `partial`, `failed`, or `blocked`
+- Project root and branch state
+- Adapter present/enabled state
+- Scope paths and ignored paths
+- Files scanned
+- Contract files found
+- Endpoint declarations found
+- Client-call patterns found
+- Schema/type files found
+- Skipped items and reasons
+- Not-verified runtime, deployment, database, auth, generation, and semantic-equivalence gaps
+- Changed-state declaration: no project, Git, dependency, runtime, service, remote, generated-code, or deployment state changed

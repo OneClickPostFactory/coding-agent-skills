@@ -1,0 +1,60 @@
+{
+  "contractVersion": "1.0.0",
+  "skill": {"name": "api-contract-audit", "version": "0.2.3"},
+  "invocation": {
+    "id": "example-api-contract-audit",
+    "startedAt": "2026-07-03T12:00:00Z",
+    "endedAt": "2026-07-03T12:01:00Z"
+  },
+  "repository": {
+    "root": "/workspace/example-project",
+    "branch": "main",
+    "head": "0123456789abcdef",
+    "workingTreeState": "clean"
+  },
+  "userIntent": "Map static API contract surfaces before API handoff.",
+  "declaredScope": ["/workspace/example-project"],
+  "projectAdapter": "example-api-contract-adapter",
+  "environmentSummary": {"platform": "linux", "shell": "bash"},
+  "status": "complete",
+  "confidence": {
+    "level": "medium",
+    "reason": "Static contract, route, client, and schema files were inspected, but runtime behavior was not verified."
+  },
+  "commands": [
+    {
+      "command": "coding-agent-skills api-contract-audit /workspace/example-project",
+      "family": "api-contract-audit-renderer",
+      "workingDirectory": "/workspace/example-project",
+      "startedAt": "2026-07-03T12:00:20Z",
+      "endedAt": "2026-07-03T12:00:21Z",
+      "exitStatus": 0,
+      "resultStatus": "success",
+      "safetyClass": "allowed",
+      "approvalReference": null,
+      "purpose": "Render a static API contract audit report.",
+      "outputSummary": "Reported static contract files, endpoint declarations, client calls, schemas, skipped items, and not-verified runtime areas."
+    }
+  ],
+  "skippedChecks": [],
+  "findings": [
+    {
+      "summary": "Static API contract surfaces were mapped without runtime verification.",
+      "evidence": ["docs/openapi.yaml", "app/api/example/route.ts", "src/client.ts"]
+    }
+  ],
+  "risks": [
+    {
+      "summary": "Runtime API behavior may differ from static contract evidence.",
+      "evidence": ["runtime route registration was not executed", "deployed API behavior was not probed"]
+    }
+  ],
+  "failures": [],
+  "unresolvedQuestions": [],
+  "changedState": {
+    "changed": false,
+    "summary": "No project, Git, dependency, runtime, generated-code, service, or remote state changed."
+  },
+  "handoffSummary": "Static API contract evidence is mapped; runtime equivalence remains unverified.",
+  "recommendedNextAction": "Review reported contract surfaces before editing API handlers or clients."
+}

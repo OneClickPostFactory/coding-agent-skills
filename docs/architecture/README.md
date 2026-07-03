@@ -15,6 +15,7 @@ Audit-only:
 - `route-trace`
 - `env-audit`
 - `secret-audit`
+- `api-contract-audit`
 - `git-preflight`
 - `runtime-truth`
 - `llm-drift-control`

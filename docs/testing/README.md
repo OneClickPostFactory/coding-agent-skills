@@ -52,6 +52,13 @@ behavior. Secret-audit tests construct synthetic secret-like values only in temp
 directories and assert that rendered reports include paths, types, and counts without
 printing matched values.
 
+## API Contract Audit
+
+Synthetic api-contract-audit projects cover OpenAPI file detection, static route handler
+declarations, client-call patterns, schema/type files, adapter-declared scope, and
+adapter-present-but-not-enabled behavior. Tests must never run servers, call endpoints,
+generate schemas or clients, build, test, deploy, migrate, or read `.env` files.
+
 ## Privacy And Redaction
 
 Sensitive shapes are stored as ordered synthetic parts and reconstructed only in memory. Tests verify type detection, redaction, and absence from reusable skill content without printing fixture values.

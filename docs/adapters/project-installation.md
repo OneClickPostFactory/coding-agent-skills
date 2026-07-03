@@ -145,6 +145,18 @@ enabled, it reads only adapter-declared safe paths, refuses `.env` and secret-be
 files, and reports high-confidence finding paths, types, and counts without matched
 values or credential validation.
 
+A project-owned adapter can also enable read-only `api-contract-audit` context:
+
+```bash
+node scripts/render-api-contract-audit.mjs <project-root>
+```
+
+The API contract audit renderer validates the project declaration when present. If the
+adapter is present but does not enable `api-contract-audit`, it reports an adapter-limited
+skip. When enabled, it reads only adapter-declared safe paths and reports static contract
+files, endpoint declarations, client-call patterns, schema/type files, and not-verified
+runtime behavior without running servers, calling APIs, or generating code.
+
 ## Safety Boundary
 
 Project adapters are extension-only. They cannot remove denied operations, change an

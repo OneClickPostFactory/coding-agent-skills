@@ -1,0 +1,5 @@
+- Adapter present but missing `api-contract-audit`: report `partial` and read no target files.
+- No contract file found: report the absence as static evidence, not proof that no API exists.
+- Route declarations are dynamic: record not-verified runtime behavior.
+- Client calls use variables or generated clients: report the limitation without executing code.
+- Requested proof requires runtime, network, database, generation, build, test, or secret access: stop or report blocked.

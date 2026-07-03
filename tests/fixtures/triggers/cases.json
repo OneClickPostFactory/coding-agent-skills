@@ -56,6 +56,18 @@
       "notSkills": ["repo-map", "build-verify"]
     },
     {
+      "id": "api-contract-audit-openapi",
+      "prompt": "Audit the OpenAPI file, endpoint declarations, client calls, and API schema files without running the server.",
+      "expectedSkill": "api-contract-audit",
+      "notSkills": ["route-trace", "runtime-truth"]
+    },
+    {
+      "id": "api-contract-audit-drift",
+      "prompt": "Map possible API contract drift between static route handlers and client calls before handoff.",
+      "expectedSkill": "api-contract-audit",
+      "notSkills": ["build-verify", "llm-drift-control"]
+    },
+    {
       "id": "build-after-implementation",
       "prompt": "The implementation is finished. Run the existing typecheck, tests, and build.",
       "expectedSkill": "build-verify",
@@ -107,7 +119,7 @@
       "id": "negative-deploy",
       "prompt": "Deploy this application to production.",
       "expectedSkill": null,
-      "notSkills": ["repo-map", "route-trace", "env-audit", "secret-audit", "build-verify", "git-preflight", "runtime-truth", "llm-drift-control"]
+      "notSkills": ["repo-map", "route-trace", "env-audit", "secret-audit", "api-contract-audit", "build-verify", "git-preflight", "runtime-truth", "llm-drift-control"]
     },
     {
       "id": "negative-install",

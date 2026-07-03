@@ -1,0 +1,14 @@
+{
+  "name": "api-contract-audit",
+  "version": "0.2.3",
+  "mode": "audit-only",
+  "evidenceContract": "../../contracts/evidence-pack/evidence-pack.schema.json",
+  "commandPolicy": "../command-policies/api-contract-audit.json",
+  "adapterSchema": "../../schemas/project-adapter.schema.json",
+  "adapterCompatibility": {
+    "contractVersion": "1.0.0",
+    "compatibleAdapterVersions": ["1.0.0"]
+  },
+  "adapterInterface": "../../skills/api-contract-audit/adapter-interface.md",
+  "description": "Map static API contract surfaces without runtime calls or generation."
+}

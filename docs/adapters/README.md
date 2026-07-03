@@ -87,6 +87,23 @@ reports finding paths, types, and counts. It never prints matched values, valida
 credentials, rotates secrets, contacts APIs, deploys, migrates, builds, tests, or mutates
 project files.
 
+## Adapter-Aware API Contract Audit Consumption
+
+The shared pack can consume a validated project-owned adapter as bounded context for
+`api-contract-audit`:
+
+```bash
+node scripts/render-api-contract-audit.mjs <project-root>
+```
+
+The renderer validates the project declaration when present. If an adapter is present but
+does not enable `api-contract-audit`, it reports an adapter-limited skip instead of
+broadening scope. When enabled, it reads only adapter-declared safe paths, excludes `.env`,
+secret-bearing files, generated output, dependency paths, and oversized files, then
+reports contract files, endpoint declarations, client-call patterns, schema/type files,
+skipped paths, and not-verified runtime behavior. It never runs servers, calls APIs,
+generates schemas or clients, builds, tests, deploys, migrates, or mutates project files.
+
 ## What Adapters May Do
 
 - Add bounded relative read paths and ignored paths.
@@ -96,6 +113,8 @@ project files.
 - Add env-audit safe read paths for static source, docs, sample, and config files.
 - Add secret-audit safe read paths for static source, docs, sample, and config files
   while relying on the shared scanner to exclude secret-bearing paths.
+- Add api-contract-audit safe read paths for static API docs, contract files, route
+  handlers, client calls, and schema/type files.
 - Add command aliases that already satisfy the shared command policy.
 - Add status-only runtime commands and manager hints.
 - Require additional evidence or named approval for exceptional reads.

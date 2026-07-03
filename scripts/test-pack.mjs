@@ -58,6 +58,11 @@ import {
   secretAuditCliResult,
 } from "./lib/secret-audit.mjs";
 import {
+  apiContractAuditCliResult,
+  buildApiContractAuditReport,
+  renderApiContractAuditReport,
+} from "./lib/api-contract-audit.mjs";
+import {
   adapterUpgradeCliResult,
   checkAdapterUpgrade,
   formatAdapterUpgradeSummary,
@@ -274,6 +279,7 @@ test("local CLI maps approved commands to existing safe scripts", () => {
   assert.ok(cliText.includes("scripts/render-route-trace.mjs"));
   assert.ok(cliText.includes("scripts/render-env-audit.mjs"));
   assert.ok(cliText.includes("scripts/render-secret-audit.mjs"));
+  assert.ok(cliText.includes("scripts/render-api-contract-audit.mjs"));
   assert.ok(cliText.includes("scripts/validate-adapters.mjs"));
   assert.ok(!cliText.includes(".env"));
 
@@ -307,6 +313,10 @@ test("local CLI maps approved commands to existing safe scripts", () => {
       ["secret-audit", path.join(fixtureRoot, "secret-audit", "static-project")],
       /# Secret Audit Report/,
     ],
+    [
+      ["api-contract-audit", path.join(fixtureRoot, "api-contract-audit", "static-project")],
+      /# API Contract Audit Report/,
+    ],
   ];
 
   for (const [args, expected] of commands) {
@@ -331,7 +341,7 @@ test("local CLI maps approved commands to existing safe scripts", () => {
 test("npm package metadata is public-ready and dependency-free", () => {
   const packageJson = readJson("package.json");
   assert.equal(packageJson.name, "coding-agent-skills");
-  assert.equal(packageJson.version, "0.2.11");
+  assert.equal(packageJson.version, "0.2.12");
   assert.equal(
     packageJson.description,
     "Evidence-first, read-only coding-agent skills and project adapter tooling.",
@@ -346,6 +356,7 @@ test("npm package metadata is public-ready and dependency-free", () => {
     "route-trace",
     "env-audit",
     "secret-audit",
+    "api-contract-audit",
     "project-adapters",
     "code-validation",
     "cli",
@@ -587,6 +598,56 @@ test("secret-audit does not broaden a repo-map-only project adapter", () => {
   assert.equal(result.filesScanned.length, 0);
   assert.equal(result.findings.length, 0);
   assert.match(renderSecretAuditReport(result), /secret-audit is not enabled/);
+});
+
+test("api-contract-audit maps static contract surfaces without runtime behavior", () => {
+  const result = buildApiContractAuditReport(
+    path.join(root, "tests", "fixtures", "api-contract-audit", "static-project"),
+    { coreRoot: root },
+  );
+
+  assert.equal(result.status, "complete");
+  assert.ok(result.contractFiles.some((record) => record.path === "docs/openapi.yaml"));
+  assert.ok(
+    result.endpointDeclarations.some(
+      (record) => record.route === "/api/users" && record.method === "GET",
+    ),
+  );
+  assert.ok(result.clientCalls.some((record) => record.target === "/api/users"));
+  assert.ok(result.schemaFiles.some((record) => record.path === "schemas/user.schema.ts"));
+  assert.match(renderApiContractAuditReport(result), /No target project build/);
+});
+
+test("api-contract-audit respects adapter-declared scope", () => {
+  const result = buildApiContractAuditReport(
+    path.join(root, "tests", "fixtures", "api-contract-audit", "adapter-project"),
+    { coreRoot: root },
+  );
+
+  assert.equal(result.status, "complete");
+  assert.equal(result.adapter.enabled, true);
+  assert.deepEqual(result.scopePaths, ["src"]);
+  assert.deepEqual(result.filesScanned, ["src/routes.ts"]);
+  assert.ok(result.endpointDeclarations.some((record) => record.route === "/api/adapter-items"));
+  assert.ok(result.warnings.includes("api-contract-audit used adapter-declared safe read paths only"));
+  const cli = apiContractAuditCliResult(
+    path.join(root, "tests", "fixtures", "api-contract-audit", "adapter-project"),
+    { coreRoot: root },
+  );
+  assert.equal(cli.exitCode, 0);
+  assert.match(cli.lines.join("\n"), /API-contract-audit enabled: yes/);
+});
+
+test("api-contract-audit does not broaden a repo-map-only project adapter", () => {
+  const result = buildApiContractAuditReport(
+    path.join(root, "tests", "fixtures", "project-adapter-installation", "valid-exact-pin"),
+    { coreRoot: root },
+  );
+
+  assert.equal(result.status, "partial");
+  assert.equal(result.filesScanned.length, 0);
+  assert.equal(result.endpointDeclarations.length, 0);
+  assert.match(renderApiContractAuditReport(result), /api-contract-audit is not enabled/);
 });
 
 test("validate-pack accepts installed package trees without source-only gitignore", () => {

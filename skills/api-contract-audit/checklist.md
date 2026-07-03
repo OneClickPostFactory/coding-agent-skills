@@ -1,0 +1,7 @@
+- Confirm the project root and declared static scope.
+- Validate any project adapter before reading adapter metadata.
+- Stop with `partial` if an adapter is present but does not enable `api-contract-audit`.
+- Exclude `.env`, secret-bearing, dependency, generated, output, and oversized files.
+- Report contract files, endpoint declarations, client calls, and schema/type files.
+- Record not-verified runtime, deployment, database, auth, and semantic equivalence gaps.
+- Declare that no build, test, runtime, URL probe, API call, generation, deployment, migration, package install, secret read, or write occurred.

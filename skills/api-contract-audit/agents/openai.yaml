@@ -1,0 +1,4 @@
+interface:
+  display_name: "API Contract Audit"
+  short_description: "Map static API contract surfaces without runtime calls"
+  default_prompt: "Audit static API contract surfaces in this repository without changing project state. Do not run servers, call APIs, generate clients or schemas, read .env files, or run builds/tests."

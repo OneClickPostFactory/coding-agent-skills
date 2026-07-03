@@ -8,6 +8,8 @@
   secret-value inspection.
 - Redacted high-confidence secret exposure detection must trigger `secret-audit`, not
   environment variable mapping or runtime truth.
+- Static API contract mapping must trigger `api-contract-audit`, not runtime truth or
+  build verification.
 - Local validation must trigger `build-verify` only when project-native checks are requested.
 - Git readiness must trigger `git-preflight`, not publication.
 - Process/listener/health questions must trigger `runtime-truth`, not restart behavior.

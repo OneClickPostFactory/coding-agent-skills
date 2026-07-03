@@ -1,0 +1,23 @@
+{
+  "declarationVersion": "1.0.0",
+  "projectId": "api-contract-audit-fixture",
+  "adapterRoot": ".coding-agent/adapters",
+  "adapterSchemaVersion": "1.0.0",
+  "core": {
+    "id": "coding-agent-skills",
+    "expectedVersion": "0.2.3",
+    "versionPin": ">=0.2.2 <0.3.0"
+  },
+  "compatibleSkillIds": ["api-contract-audit"],
+  "adapters": [
+    {
+      "id": "api-contract-audit-fixture",
+      "version": "1.0.0",
+      "skillIds": ["api-contract-audit"]
+    }
+  ],
+  "validationCommand": "node <shared-core>/scripts/validate-project-adapters.mjs <project-root>",
+  "evidenceOutput": ".coding-agent/evidence",
+  "approvalPolicyReference": ".coding-agent/approval-policy.md",
+  "noSecrets": true
+}

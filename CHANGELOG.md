@@ -2,6 +2,26 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.12] - 2026-07-03
+
+### Added
+
+- `api-contract-audit` audit-only skill for static API contract surface mapping.
+- `coding-agent-skills api-contract-audit <project-root>` CLI command.
+- Dependency-free API contract audit renderer for contract files, endpoint declarations,
+  client-call patterns, schema/type files, skipped paths, not-verified runtime behavior,
+  adapter-limited scope, and safety refusals.
+- Synthetic API contract fixtures and release tests for generic static scans,
+  adapter-scoped scans, OpenAPI files, route handlers, client calls, schema/type files,
+  and repo-map-only adapter skips.
+
+### Changed
+
+- Adapter schemas and validators now recognize `api-contract-audit` as an audit-only skill
+  while preserving the existing `0.2.3` adapter contract compatibility baseline.
+- Usage, release, safety, architecture, adapter, roadmap, ledger, and run-log docs now
+  describe the new static read-only API contract audit command.
+
 ## [0.2.11] - 2026-07-03
 
 ### Added
