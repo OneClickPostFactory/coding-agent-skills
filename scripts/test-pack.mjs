@@ -221,7 +221,7 @@ function snapshotAbsoluteDirectory(directory) {
   return digest.digest("hex");
 }
 
-function assertOpenClawJsonContract(value, command, packageVersion = "0.2.16") {
+function assertOpenClawJsonContract(value, command, packageVersion = "0.2.17") {
   assert.equal(value.tool, "coding-agent-skills");
   assert.equal(value.command, command);
   assert.equal(value.packageVersion, packageVersion);
@@ -379,6 +379,10 @@ test("local CLI maps approved commands to existing safe scripts", () => {
       /# Adapter-Aware Repo Map/,
     ],
     [
+      ["repo-map", path.join(fixtureRoot, "sample-repo")],
+      /generic-safe-discovery/,
+    ],
+    [
       ["route-trace", path.join(fixtureRoot, "route-trace", "static-project")],
       /# Route Trace Report/,
     ],
@@ -443,6 +447,7 @@ test("local CLI emits OpenClaw-compatible JSON for public commands", () => {
       path.join(fixtureRoot, "project-adapter-installation", "valid-exact-pin"),
     ],
     ["repo-map", path.join(fixtureRoot, "project-adapter-installation", "valid-exact-pin")],
+    ["repo-map", path.join(fixtureRoot, "sample-repo")],
     ["route-trace", path.join(fixtureRoot, "route-trace", "static-project")],
     ["env-audit", path.join(fixtureRoot, "env-audit", "static-project")],
     ["secret-audit", path.join(fixtureRoot, "secret-audit", "static-project")],
@@ -488,7 +493,7 @@ test("local CLI emits OpenClaw-compatible JSON for public commands", () => {
 test("npm package metadata is public-ready and dependency-free", () => {
   const packageJson = readJson("package.json");
   assert.equal(packageJson.name, "coding-agent-skills");
-  assert.equal(packageJson.version, "0.2.16");
+  assert.equal(packageJson.version, "0.2.17");
   assert.equal(
     packageJson.description,
     "Evidence-first, read-only coding-agent skills and project adapter tooling.",
@@ -1767,6 +1772,42 @@ test("adapter-aware repo-map consumes validated project adapter metadata", () =>
   assert.match(rendered, /README\.md/);
   assert.match(rendered, /## Ignored Paths/);
   assert.match(rendered, /No target project build, test, runtime, deployment/);
+});
+
+test("repo-map supports generic safe discovery without a project adapter", () => {
+  const report = buildAdapterRepoMapReport(
+    path.join(root, "tests", "fixtures", "sample-repo"),
+    { coreRoot: root },
+  );
+
+  assert.equal(report.ok, true, report.codes?.join(","));
+  assert.equal(report.adapter.present, false);
+  assert.equal(report.adapter.enabled, false);
+  assert.equal(report.mode, "generic-safe-discovery");
+  assert.equal(report.confidence, "reduced");
+  assert.equal(report.adapterPresent, false);
+  assert.ok(report.validation.codes.includes("missing-project-declaration"));
+  assert.ok(report.warnings.includes("adapterPresent: false"));
+  assert.ok(report.warnings.includes("mode: generic-safe-discovery"));
+  assert.ok(report.warnings.includes("no secrets read"));
+  assert.ok(report.ignoredPaths.includes(".env"));
+  assert.ok(report.ignoredPaths.includes(".env.*"));
+  assert.ok(
+    report.documentationPrecedence.some((record) => record.path === "README.md"),
+  );
+
+  const rendered = renderAdapterRepoMapReport(report);
+  assert.match(rendered, /Adapter present: no/);
+  assert.match(rendered, /Mode: generic-safe-discovery/);
+  assert.match(rendered, /Confidence: reduced/);
+  assert.match(rendered, /No secrets were read/);
+
+  const cli = adapterRepoMapCliResult(path.join(root, "tests", "fixtures", "sample-repo"), {
+    coreRoot: root,
+  });
+  assert.equal(cli.exitCode, 0);
+  assert.equal(cli.stream, "stdout");
+  assert.match(cli.lines.join("\n"), /generic-safe-discovery/);
 });
 
 test("adapter-aware repo-map fails closed without repo-map compatibility", () => {

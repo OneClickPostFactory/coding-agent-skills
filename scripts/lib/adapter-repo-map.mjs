@@ -30,6 +30,87 @@ const REFUSED_BEHAVIOR = [
   "no project writes",
 ];
 
+const GENERIC_IGNORED_PATHS = [
+  ".git",
+  ".env",
+  ".env.*",
+  ".next",
+  ".nuxt",
+  ".output",
+  ".turbo",
+  ".cache",
+  "node_modules",
+  "dist",
+  "build",
+  "coverage",
+  "validation-output",
+  "supabase/.temp",
+  "secrets",
+  "tokens",
+  "credentials",
+  "private",
+];
+
+const GENERIC_DOCUMENTATION_PRECEDENCE = [
+  "README.md",
+  "docs/README.md",
+  "docs/kb/README.md",
+  "AGENTS.md",
+  "CLAUDE.md",
+  "RUNBOOK.md",
+  "CONTRIBUTING.md",
+];
+
+const GENERIC_SAFE_READ_PATHS = [
+  "README.md",
+  "docs",
+  "app",
+  "apps",
+  "src",
+  "lib",
+  "pages",
+  "components",
+  "server",
+  "api",
+  "routes",
+  "services",
+  "packages",
+  "schemas",
+  "scripts",
+  "tests",
+  "package.json",
+  "tsconfig.json",
+  "vite.config.ts",
+  "vite.config.js",
+  "next.config.ts",
+  "next.config.js",
+];
+
+const GENERIC_ROOT_MARKERS = [
+  "README.md",
+  "package.json",
+  "pnpm-lock.yaml",
+  "package-lock.json",
+  "yarn.lock",
+  "bun.lockb",
+  "tsconfig.json",
+  "vite.config.ts",
+  "vite.config.js",
+  "next.config.ts",
+  "next.config.js",
+  "pyproject.toml",
+  "Cargo.toml",
+  "go.mod",
+];
+
+const PACKAGE_MANAGER_MARKERS = [
+  ["pnpm-lock.yaml", "pnpm"],
+  ["package-lock.json", "npm"],
+  ["yarn.lock", "yarn"],
+  ["bun.lockb", "bun"],
+  ["package.json", "npm-compatible"],
+];
+
 function inside(root, candidate) {
   const relative = path.relative(root, candidate);
   return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
@@ -88,6 +169,28 @@ function describeApprovedPath(projectRoot, relativePath) {
     status: "present",
     type: stat.isDirectory() ? "directory" : stat.isFile() ? "file" : "other",
   };
+}
+
+function existingPathRecords(projectRoot, candidates) {
+  return candidates
+    .map((relativePath) => describeApprovedPath(projectRoot, relativePath))
+    .filter((record) => record.status === "present");
+}
+
+function genericRootMarkers(projectRoot) {
+  return GENERIC_ROOT_MARKERS
+    .map((relativePath) => describeApprovedPath(projectRoot, relativePath))
+    .filter((record) => record.status === "present")
+    .map((record) => ({
+      kind: record.type,
+      path: record.path,
+    }));
+}
+
+function genericPackageManagers(projectRoot) {
+  return PACKAGE_MANAGER_MARKERS
+    .filter(([relativePath]) => describeApprovedPath(projectRoot, relativePath).status === "present")
+    .map(([, manager]) => manager);
 }
 
 function gitSummary(projectRoot) {
@@ -174,7 +277,79 @@ function loadRepoMapAdapters(loaded) {
 
 export function buildAdapterRepoMapReport(projectRootInput, options = {}) {
   const coreRoot = path.resolve(options.coreRoot ?? DEFAULT_CORE_ROOT);
-  const validation = validateProjectAdapters(projectRootInput, { coreRoot });
+  const loaded = readProjectAdapterDeclaration(projectRootInput);
+  if (!loaded.ok) {
+    if (loaded.codes.length === 1 && loaded.codes[0] === "missing-project-declaration") {
+      const projectRoot = fs.realpathSync(path.resolve(projectRootInput));
+      const git = gitSummary(projectRoot);
+      return {
+        ok: true,
+        status: "complete",
+        coreVersion: PILOT_VERSION,
+        projectRoot,
+        declarationPath: "not present",
+        adapterRoot: "not present",
+        projectId: "not declared",
+        adapterIds: [],
+        manifestPaths: [],
+        enabledSkills: ["repo-map"],
+        adapter: {
+          present: false,
+          enabled: false,
+          mode: "generic-safe-discovery",
+          codes: ["missing-project-declaration"],
+        },
+        adapterPresent: false,
+        mode: "generic-safe-discovery",
+        confidence: "reduced",
+        rootMarkers: genericRootMarkers(projectRoot),
+        maximumDepth: 2,
+        scope: "generic-project-root",
+        requireApprovalOutsideScope: true,
+        documentationPrecedence: existingPathRecords(projectRoot, GENERIC_DOCUMENTATION_PRECEDENCE),
+        safeReadPaths: existingPathRecords(projectRoot, GENERIC_SAFE_READ_PATHS),
+        ignoredPaths: GENERIC_IGNORED_PATHS,
+        requiredEvidence: [
+          "repository root markers",
+          "bounded generic file/directory inventory",
+          "adapter absence evidence",
+        ],
+        packageManagers: unique(genericPackageManagers(projectRoot)),
+        git,
+        warnings: unique([
+          ...git.warnings,
+          "adapterPresent: false",
+          "mode: generic-safe-discovery",
+          "reduced confidence; adapter-provided project intent is unavailable",
+          "no project adapter declaration found; repo-map used generic bounded discovery",
+          "no target project build, test, runtime, deployment, migration, package, or secret-reading command was performed",
+          "no secrets read",
+        ]),
+        refusedBehavior: REFUSED_BEHAVIOR,
+        validation: {
+          ok: false,
+          status: "failed",
+          acceptedAdapters: 0,
+          acceptedSkills: [],
+          codes: ["missing-project-declaration"],
+        },
+      };
+    }
+    return {
+      ok: false,
+      status: "failed",
+      codes: loaded.codes,
+      validation: {
+        ok: false,
+        status: "failed",
+        acceptedAdapters: 0,
+        acceptedSkills: [],
+        codes: loaded.codes,
+      },
+    };
+  }
+
+  const validation = validateProjectAdapters(loaded.projectRoot, { coreRoot });
   if (!validation.ok) {
     return {
       ok: false,
@@ -188,16 +363,6 @@ export function buildAdapterRepoMapReport(projectRootInput, options = {}) {
       ok: false,
       status: "failed",
       codes: ["repo-map-not-enabled"],
-      validation,
-    };
-  }
-
-  const loaded = readProjectAdapterDeclaration(projectRootInput);
-  if (!loaded.ok) {
-    return {
-      ok: false,
-      status: "failed",
-      codes: loaded.codes,
       validation,
     };
   }
@@ -246,6 +411,15 @@ export function buildAdapterRepoMapReport(projectRootInput, options = {}) {
     adapterIds: adapters.map((adapter) => adapter.manifest.adapterId).sort(),
     manifestPaths: adapters.map((adapter) => adapter.manifestPath).sort(),
     enabledSkills: ["repo-map"],
+    adapter: {
+      present: true,
+      enabled: true,
+      mode: "adapter-limited",
+      codes: [],
+    },
+    adapterPresent: true,
+    mode: "adapter-limited",
+    confidence: "adapter-declared",
     rootMarkers,
     maximumDepth,
     scope: "declared-project-root",
@@ -294,9 +468,15 @@ export function renderAdapterRepoMapReport(report) {
     `Project root: ${redactSensitiveText(report.projectRoot)}`,
     `Declaration: ${report.declarationPath}`,
     `Adapter root: ${report.adapterRoot}`,
-    `Adapter IDs: ${report.adapterIds.join(", ")}`,
-    `Adapter manifests: ${report.manifestPaths.join(", ")}`,
+    `Adapter IDs: ${report.adapterIds.length ? report.adapterIds.join(", ") : "none"}`,
+    `Adapter manifests: ${report.manifestPaths.length ? report.manifestPaths.join(", ") : "none"}`,
     `Enabled skills: ${report.enabledSkills.join(", ")}`,
+    "",
+    "## Adapter Scope",
+    `- Adapter present: ${report.adapterPresent ? "yes" : "no"}`,
+    `- Repo-map enabled: ${report.adapter?.enabled ? "yes" : "generic fallback"}`,
+    `- Mode: ${report.mode}`,
+    `- Confidence: ${report.confidence}`,
     "",
     "## Git State",
     `- Git root: ${redactSensitiveText(report.git.root ?? "not detected")}`,
@@ -334,6 +514,8 @@ export function renderAdapterRepoMapReport(report) {
     ...formatList("Refused Behavior", report.refusedBehavior),
     "",
     "No target project build, test, runtime, deployment, migration, package installation, or secret-file read was performed.",
+    "No project commands beyond safe repository metadata inspection were performed.",
+    "No secrets were read.",
   ];
 
   return lines.join("\n");

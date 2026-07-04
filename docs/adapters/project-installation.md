@@ -109,6 +109,12 @@ The renderer is metadata-only. It does not read target project file contents, ru
 project tests, run builds, install packages, perform runtime checks, deploy, migrate, read
 `.env` files, or modify project state.
 
+Project adapters are optional hints. If no project declaration exists, `repo-map` still
+runs a bounded `generic-safe-discovery` report with `adapterPresent: false`, reduced
+confidence, built-in ignored paths, and explicit no-secret/no-build/no-runtime safety
+warnings. A declared adapter that is invalid, unsafe, or incompatible remains a hard
+failure.
+
 A project-owned adapter can also enable read-only `route-trace` context:
 
 ```bash

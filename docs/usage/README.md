@@ -41,16 +41,18 @@ Select the least-privileged skill that matches the request:
 
 Every skill emits an evidence pack. Read `status`, skipped checks, failures, confidence, and changed state before relying on a completion claim.
 
-When a project owns a compatible adapter, render read-only adapter-aware `repo-map` context
-with:
+Render read-only `repo-map` context with:
 
 ```bash
 node scripts/render-adapter-repo-map.mjs <project-root>
 ```
 
-This validates the project adapter first, then reports adapter-declared documentation
-precedence, safe read paths, ignored paths, and required evidence. It is not a build,
-test, runtime, deployment, migration, package-install, or secret-reading flow.
+When a project owns a compatible adapter, this validates the adapter first and reports
+adapter-declared documentation precedence, safe read paths, ignored paths, and required
+evidence. When no `.coding-agent` declaration exists, adapters remain optional: `repo-map`
+uses `generic-safe-discovery`, reports `adapterPresent: false`, reduces confidence, and
+still refuses builds, tests, runtime checks, deployments, migrations, package installs, and
+secret-file reads.
 
 See [examples](../../examples/README.md) for safe concrete inputs and outputs.
 
@@ -85,8 +87,8 @@ npx coding-agent-skills validate-pack
 ```
 
 These commands wrap the same validated scripts shipped in the repository. `repo-map`
-validates the project adapter first, then renders adapter-declared documentation
-precedence, safe read paths, ignored paths, and required evidence.
+uses adapter metadata when present and valid; otherwise it falls back to generic safe
+discovery with reduced confidence and clear adapter-absence warnings.
 `route-trace` validates a project adapter when present, uses adapter-declared safe paths
 when enabled, and statically reports verified route files, inferred route declarations,
 skipped items, and not-verified runtime-dependent route classes.

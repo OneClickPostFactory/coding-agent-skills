@@ -35,6 +35,12 @@ ignored paths, required evidence, package-manager hints, repository bounds, and 
 Git branch state. It does not read target project file contents, run project tests or
 builds, install packages, perform runtime checks, deploy, migrate, or read `.env` files.
 
+Adapters are optional hints, not mandatory gates. If no `.coding-agent` declaration is
+present, `repo-map` falls back to `generic-safe-discovery`, reports `adapterPresent: false`,
+uses reduced confidence, applies built-in ignored paths, and still refuses target project
+builds, tests, runtime checks, deployments, migrations, package installs, and secret-file
+reads. Invalid or weakening adapters still fail closed.
+
 This is agent context for safer repository understanding. It is not target-application
 product behavior.
 

@@ -2,6 +2,15 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.17] - 2026-07-04
+
+### Changed
+
+- `repo-map` now supports generic safe discovery when no `.coding-agent` project declaration exists.
+- JSON output now reports `adapterPresent: false`, `mode: generic-safe-discovery`, reduced confidence, `changedState: false`, no target-project commands, and no secret-file reads for no-adapter repo-map runs.
+- Invalid or unsafe project adapters still fail closed instead of falling back silently.
+- Usage, adapter, and release documentation now clarify that adapters are optional hints, not mandatory requirements.
+
 ## [0.2.16] - 2026-07-03
 
 ### Added

@@ -60,7 +60,8 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 - Run `node scripts/validate-adapters.mjs <adapter-root>` for a disposable external root.
 - Review [project-owned installation and pinning](docs/adapters/project-installation.md).
 - Run `node scripts/validate-project-adapters.mjs <project-root>` for a declared project root.
-- Render adapter-aware `repo-map` orientation with
+- Render repo-map orientation with optional adapter hints and generic safe
+  discovery when no adapter is present:
   `node scripts/render-adapter-repo-map.mjs <project-root>`.
 - Render a static route-trace report with
   `node scripts/render-route-trace.mjs <project-root>`.
@@ -117,6 +118,12 @@ and `recommendedNextAction`. Exit codes follow the public contract:
 OpenClaw should remain the owner of memory, routing, permissions, scheduling, user
 interaction, and workflow state. `coding-agent-skills` is a safe callable evidence
 producer, not an orchestrator.
+
+Adapters are optional hints, not a prerequisite for safe orientation. `repo-map`
+falls back to `generic-safe-discovery` when no `.coding-agent` declaration exists,
+marks `adapterPresent: false`, reduces confidence, and still refuses target project
+builds, tests, runtime checks, deploys, migrations, package installs, and secret-file
+reads.
 
 ## Autonomous Maintainer Loop
 

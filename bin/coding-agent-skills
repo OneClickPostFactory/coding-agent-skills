@@ -42,8 +42,8 @@ const commandMetadata = {
     skillId: "repo-map",
     mode: "audit-only",
     next: {
-      label: "Review adapter-declared repo boundaries",
-      reason: "Use the reported docs, safe paths, ignored paths, and evidence requirements before choosing another action.",
+      label: "Review reported repo boundaries",
+      reason: "Use the reported docs, safe paths, ignored paths, adapter status, confidence, and evidence requirements before choosing another action.",
       requiresApproval: false,
     },
   },
