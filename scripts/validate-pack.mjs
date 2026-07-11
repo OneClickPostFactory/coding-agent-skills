@@ -20,6 +20,11 @@ import {
   restrictedShellReason,
 } from "./lib/pack-rules.mjs";
 import { validateProjectAdapters } from "./lib/project-adapter-installation.mjs";
+import {
+  buildCliResult,
+  PUBLIC_COMMAND_METADATA,
+  validateCliResult,
+} from "./lib/cli-result.mjs";
 import { validateValue } from "./lib/schema-validator.mjs";
 
 const root = path.resolve(process.argv[2] ?? ".");
@@ -81,6 +86,7 @@ const requiredRootFiles = [
   "schemas/evidence-bundle.schema.json",
   "schemas/archive-report.schema.json",
   "schemas/archive-index.schema.json",
+  "schemas/cli-result.schema.json",
   "examples/upgrade-evidence/README.md",
   "examples/upgrade-evidence/valid-upgrade.evidence.json",
   "examples/upgrade-evidence/stale-pin.evidence.json",
@@ -102,6 +108,7 @@ const requiredRootFiles = [
   "scripts/render-migration-review.mjs",
   "scripts/render-github-handoff.mjs",
   "scripts/render-deployment-preflight.mjs",
+  "scripts/render-audit-bundle.mjs",
   "scripts/check-adapter-upgrade.mjs",
   "scripts/check-adapter-upgrade-chain.mjs",
   "scripts/validate-adapters.mjs",
@@ -114,6 +121,8 @@ const requiredRootFiles = [
   "scripts/lib/migration-review.mjs",
   "scripts/lib/github-handoff.mjs",
   "scripts/lib/deployment-preflight.mjs",
+  "scripts/lib/audit-bundle.mjs",
+  "scripts/lib/cli-result.mjs",
   "scripts/lib/adapter-upgrade.mjs",
   "scripts/lib/adapter-upgrade-chain.mjs",
   "scripts/lib/adapter-discovery.mjs",
@@ -469,6 +478,7 @@ const upgradeEvidenceSchema = readJson(
 const evidenceBundleSchema = readJson("schemas/evidence-bundle.schema.json");
 const evidenceArchiveReportSchema = readJson("schemas/archive-report.schema.json");
 const evidenceArchiveIndexSchema = readJson("schemas/archive-index.schema.json");
+const cliResultSchema = readJson("schemas/cli-result.schema.json");
 
 if (
   manifestSchema &&
@@ -479,7 +489,8 @@ if (
   upgradeEvidenceSchema &&
   evidenceBundleSchema &&
   evidenceArchiveReportSchema &&
-  evidenceArchiveIndexSchema
+  evidenceArchiveIndexSchema &&
+  cliResultSchema
 ) {
   const policiesBySkill = Object.fromEntries(
     PILOT_SKILLS.map((skill) => [
@@ -687,8 +698,8 @@ if (packageJson) {
   if (packageJson.name !== "coding-agent-skills") {
     failures.push("package.json has unexpected package name");
   }
-  if (packageJson.version !== "0.2.17") {
-    failures.push("package.json version must be 0.2.17 for public package validation");
+  if (packageJson.version !== "0.2.18") {
+    failures.push("package.json version must be 0.2.18 for public package validation");
   }
   if (packageJson.type !== "module") failures.push("package.json must preserve ESM mode");
   if (packageJson.private !== false) {
@@ -766,6 +777,17 @@ if (packageJson) {
   }
   if (packageJson.scripts?.["pack:dry-run"] !== "npm pack --dry-run") {
     failures.push("package.json must expose a dry-run pack script only");
+  }
+  if (cliResultSchema) {
+    const sampleCliResult = buildCliResult(
+      "repo-map",
+      ["synthetic-project"],
+      { exitCode: 0, lines: ["Status: complete"], report: { status: "complete" } },
+      { packageVersion: packageJson.version, commandMetadata: PUBLIC_COMMAND_METADATA },
+    );
+    for (const error of validateCliResult(cliResultSchema, sampleCliResult, packageJson.version)) {
+      failures.push(`public CLI result contract: ${error}`);
+    }
   }
 }
 

@@ -12,6 +12,7 @@ Select the least-privileged skill that matches the request:
 | Review static migration and schema evidence | `migration-review` |
 | Prepare local GitHub handoff evidence | `github-handoff` |
 | Map static deployment readiness evidence | `deployment-preflight` |
+| Collect one deterministic static evidence bundle | `audit` |
 | Run existing local validation checks | `build-verify` |
 | Assess Git handoff readiness | `git-preflight` |
 | Determine what is actually running | `runtime-truth` |
@@ -77,6 +78,7 @@ coding-agent-skills api-contract-audit /path/to/project
 coding-agent-skills migration-review /path/to/project
 coding-agent-skills github-handoff /path/to/project
 coding-agent-skills deployment-preflight /path/to/project
+coding-agent-skills audit /path/to/project
 coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 
@@ -114,6 +116,10 @@ or reading tokens.
 safe paths when enabled, and statically reports deployment config files, deployment docs,
 package script keys, platform indicators, risk indicators, skipped paths, and
 not-verified provider/runtime behavior without deploying or calling provider APIs.
+`audit` executes the eight existing safe static audit libraries in fixed order and
+returns one concise human report or one structured JSON envelope. Non-applicable
+adapter-limited audits are marked partial/skipped; missing adapters use generic safe
+discovery; invalid or unsafe adapters fail closed.
 
 The installed CLI does not run target project builds or tests, perform runtime checks,
 deploy, migrate, mutate services or processes, or read `.env` files. Project adapters
@@ -126,6 +132,7 @@ Every public CLI command accepts optional `--json` for OpenClaw-style tool calle
 ```bash
 coding-agent-skills repo-map /path/to/project --json
 coding-agent-skills validate-pack --json
+coding-agent-skills audit /path/to/project --json
 ```
 
 The default human-readable output is unchanged. JSON output is sanitized and includes:
@@ -150,6 +157,11 @@ The default human-readable output is unchanged. JSON output is sanitized and inc
 - `safety`
 - `exitCode`
 - `exitCodeMeaning`
+- command-specific `details`, `results`, `metrics`, or `evidence` when applicable
+
+The normative contract is [cli-result.schema.json](../../schemas/cli-result.schema.json).
+Semantic validation additionally requires package-version agreement, immutable read-only
+safety flags, consistent completion state, and stable missing-input/safety-refusal codes.
 
 Exit-code semantics:
 
@@ -178,6 +190,7 @@ bin/coding-agent-skills api-contract-audit /path/to/project
 bin/coding-agent-skills migration-review /path/to/project
 bin/coding-agent-skills github-handoff /path/to/project
 bin/coding-agent-skills deployment-preflight /path/to/project
+bin/coding-agent-skills audit /path/to/project
 bin/coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 
@@ -195,6 +208,7 @@ coding-agent-skills api-contract-audit /path/to/project
 coding-agent-skills migration-review /path/to/project
 coding-agent-skills github-handoff /path/to/project
 coding-agent-skills deployment-preflight /path/to/project
+coding-agent-skills audit /path/to/project
 coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 

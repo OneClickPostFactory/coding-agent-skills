@@ -2,6 +2,30 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.18] - 2026-07-11
+
+### Added
+
+- Formal `schemas/cli-result.schema.json` contract with semantic safety validation for
+  every public machine-readable CLI result.
+- `coding-agent-skills audit <project-root> [--json]` for deterministic aggregation of
+  the eight existing safe static repository audits.
+- Synthetic aggregate-audit fixtures covering routes, environment names, API contracts,
+  migrations, package-script non-execution, adapter-free discovery, partial adapter
+  applicability, and unsafe-adapter rejection.
+
+### Fixed
+
+- Missing or non-directory project roots now return process and JSON exit code `4` with
+  `missing_required_input` rather than a generic runtime failure.
+- Unsafe adapter failures now return exit code `3` with `safety_refusal`.
+
+### Safety
+
+- Aggregate audits remain read-only, never execute target project commands, never read
+  secret or `.env` files, and never deploy, migrate, install, build, test, or mutate the
+  inspected repository.
+
 ## [0.2.17] - 2026-07-04
 
 ### Changed

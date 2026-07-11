@@ -7,7 +7,7 @@ safety model.
 ## Current Package Shape
 
 - Package name: `coding-agent-skills`.
-- Package version: `0.2.17`.
+- Package version: `0.2.18`.
 - CLI bin: `coding-agent-skills` mapped to `bin/coding-agent-skills`.
 - Module type: `module`.
 - Dependencies: none.
@@ -34,6 +34,7 @@ coding-agent-skills api-contract-audit /path/to/project
 coding-agent-skills migration-review /path/to/project
 coding-agent-skills github-handoff /path/to/project
 coding-agent-skills deployment-preflight /path/to/project
+coding-agent-skills audit /path/to/project
 coding-agent-skills validate-adapters /path/to/adapter-root
 ```
 
@@ -41,13 +42,15 @@ Each public command also supports optional machine-readable output:
 
 ```bash
 coding-agent-skills repo-map /path/to/project --json
+coding-agent-skills audit /path/to/project --json
 ```
 
 The JSON contract is intended for OpenClaw-style orchestrators that already own memory,
 routing, approvals, scheduling, and workflow state. It includes `success`, `status`,
 `command`, `skillId`, `packageVersion`, sanitized findings and warnings, safety flags,
 `recommendedNextAction`, and `exitCodeMeaning`. The default human-readable output is
-unchanged.
+unchanged. `schemas/cli-result.schema.json` is the normative structural contract, with
+additional semantic checks for package-version agreement and read-only safety invariants.
 
 The package can also be executed without a repo-local install:
 
@@ -77,6 +80,9 @@ creating pull requests, committing, pushing, tagging, or calling GitHub APIs.
 deployment docs, package script keys, platform indicators, risk indicators, and
 not-verified provider/runtime behavior without deploying, calling provider APIs,
 installing packages, building, testing, or reading secrets.
+`audit` calls those eight public static audit libraries in deterministic order and returns
+one sanitized evidence envelope. It supports adapter-limited or generic safe discovery,
+marks non-applicable checks partial, and runs no target-project command.
 
 `coding-agent-skills validate-pack` is package-aware. In a source checkout, it keeps
 source-only checks such as `.gitignore` validation. In an installed package tree, where

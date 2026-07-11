@@ -128,11 +128,19 @@ snapshots. Chain summaries use ordinal revision labels rather than directory nam
 
 ## OpenClaw-Compatible CLI JSON
 
-Public CLI tests exercise `--json` for every exposed command. The contract must remain
+Public CLI tests exercise `--json` for every exposed command and validate each result
+against `schemas/cli-result.schema.json`. The contract must remain
 valid JSON, preserve default human-readable output, include safety flags and
 `recommendedNextAction`, use handled exit semantics for successful/partial audit results,
 redact local home paths, and avoid token, private-key, authorization-header, or `.env`
 contents.
+
+## Aggregate Audit
+
+The aggregate-audit fixture combines static routes, environment-name references, API
+contract files, migration files, and package-script keys. Tests prove fixed command
+ordering, adapter and no-adapter behavior, fail-closed unsafe adapters, stable exit codes,
+schema validity, target-command non-execution, sanitization, and unchanged fixture state.
 
 ## Evidence Bundles
 

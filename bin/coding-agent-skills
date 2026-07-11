@@ -7,6 +7,13 @@ import { fileURLToPath } from "node:url";
 import { externalAdapterCliResult } from "../scripts/lib/adapter-discovery.mjs";
 import { adapterRepoMapCliResult } from "../scripts/lib/adapter-repo-map.mjs";
 import { apiContractAuditCliResult } from "../scripts/lib/api-contract-audit.mjs";
+import { auditBundleCliResult } from "../scripts/lib/audit-bundle.mjs";
+import {
+  buildCliResult as buildSharedCliResult,
+  normalizedOutcomeExitCode,
+  PUBLIC_COMMAND_METADATA,
+  validateCliResult,
+} from "../scripts/lib/cli-result.mjs";
 import { deploymentPreflightCliResult } from "../scripts/lib/deployment-preflight.mjs";
 import { envAuditCliResult } from "../scripts/lib/env-audit.mjs";
 import { githubHandoffCliResult } from "../scripts/lib/github-handoff.mjs";
@@ -18,6 +25,9 @@ import { secretAuditCliResult } from "../scripts/lib/secret-audit.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, "package.json"), "utf8"));
+const cliResultSchema = JSON.parse(
+  fs.readFileSync(path.join(repoRoot, "schemas", "cli-result.schema.json"), "utf8"),
+);
 
 const commandMetadata = {
   "validate-pack": {
@@ -181,6 +191,12 @@ const commands = {
     usage: "coding-agent-skills deployment-preflight <project-root>",
     requiredArgs: 1,
   },
+  audit: {
+    script: "scripts/render-audit-bundle.mjs",
+    args: ([projectRoot]) => [projectRoot],
+    usage: "coding-agent-skills audit <project-root>",
+    requiredArgs: 1,
+  },
   "validate-adapters": {
     script: "scripts/validate-adapters.mjs",
     args: ([adapterRoot]) => [adapterRoot],
@@ -199,6 +215,10 @@ const jsonHandlers = {
   "migration-review": ([projectRoot]) => migrationReviewCliResult(projectRoot, { coreRoot: repoRoot }),
   "github-handoff": ([projectRoot]) => githubHandoffCliResult(projectRoot, { coreRoot: repoRoot }),
   "deployment-preflight": ([projectRoot]) => deploymentPreflightCliResult(projectRoot, { coreRoot: repoRoot }),
+  audit: ([projectRoot]) => auditBundleCliResult(projectRoot, {
+    coreRoot: repoRoot,
+    packageVersion: packageJson.version,
+  }),
   "validate-adapters": ([adapterRoot]) => externalAdapterCliResult(adapterRoot, { coreRoot: repoRoot }),
 };
 
@@ -227,6 +247,7 @@ function usage(exitCode = 0) {
     "  migration-review <project-root>",
     "  github-handoff <project-root>",
     "  deployment-preflight <project-root>",
+    "  audit <project-root>",
     "  validate-adapters <adapter-root>",
     "",
     "local wrapper for the published coding-agent-skills package",
@@ -350,6 +371,32 @@ function normalizeOutcome(outcome) {
 }
 
 function buildJsonResult(commandName, args, outcome) {
+  const result = buildSharedCliResult(commandName, args, outcome, {
+    packageVersion: packageJson.version,
+    commandMetadata: PUBLIC_COMMAND_METADATA,
+  });
+  const issues = validateCliResult(cliResultSchema, result, packageJson.version);
+  if (issues.length === 0) return result;
+  return {
+    ...result,
+    success: false,
+    status: "failed",
+    summary: ["internal CLI result contract validation failed"],
+    findings: [],
+    warnings: ["the command result did not satisfy the public CLI result contract"],
+    risks: [],
+    skipped: [],
+    notVerified: [],
+    exitCode: 5,
+    exitCodeMeaning: "unexpected_internal_or_runtime_failure",
+    recommendedNextAction: {
+      label: "Report the CLI contract failure",
+      reason: "The package must be repaired before this result is used as evidence.",
+      requiresApproval: false,
+    },
+  };
+
+  /* Legacy parsing remains below for compatibility reference; this return is authoritative. */
   const normalized = normalizeOutcome(outcome);
   const lines = normalized.lines;
   const metadata = commandMetadata[commandName] ?? {
@@ -416,6 +463,43 @@ function buildJsonResult(commandName, args, outcome) {
   };
 }
 
+const DIRECTORY_COMMANDS = new Set([
+  "validate-project",
+  "repo-map",
+  "route-trace",
+  "env-audit",
+  "secret-audit",
+  "api-contract-audit",
+  "migration-review",
+  "github-handoff",
+  "deployment-preflight",
+  "audit",
+  "validate-adapters",
+]);
+
+function missingDirectoryOutcome(commandName, args) {
+  if (!DIRECTORY_COMMANDS.has(commandName) || args.length !== 1) return null;
+  const target = path.resolve(args[0]);
+  if (fs.existsSync(target) && fs.statSync(target).isDirectory()) return null;
+  const kind = fs.existsSync(target) ? "project-root-not-directory" : "project-root-not-found";
+  const label = commandName === "validate-adapters" ? "adapter root" : "project root";
+  return {
+    exitCode: 4,
+    stream: "stderr",
+    lines: [`${label} is missing or is not a directory`],
+    report: {
+      status: "failed",
+      codes: [kind],
+      warnings: [`a valid ${label} directory is required`],
+      recommendedNextAction: {
+        label: `Provide a valid ${label}`,
+        reason: `${commandName} requires an existing directory and did not inspect the missing target.`,
+        requiresApproval: false,
+      },
+    },
+  };
+}
+
 function printJson(value) {
   process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
 }
@@ -430,12 +514,37 @@ if (!commandName || commandName === "help" || commandName === "--help" || comman
 } else {
   const command = commands[commandName];
   if ((command.requiredArgs ?? 0) !== args.length) {
-    process.stderr.write(`usage: ${command.usage}\n`);
+    const outcome = {
+      exitCode: 2,
+      stream: "stderr",
+      lines: [`usage: ${command.usage}`],
+      report: {
+        status: "failed",
+        recommendedNextAction: {
+          label: "Correct the command arguments",
+          reason: `Use the documented command shape: ${command.usage}`,
+          requiresApproval: false,
+        },
+      },
+    };
+    if (json) printJson(buildJsonResult(commandName, args, outcome));
+    else process.stderr.write(`usage: ${command.usage}\n`);
     process.exitCode = 2;
+  } else if (missingDirectoryOutcome(commandName, args)) {
+    const outcome = missingDirectoryOutcome(commandName, args);
+    if (json) printJson(buildJsonResult(commandName, args, outcome));
+    else process.stderr.write(`${outcome.lines.join("\n")}\n`);
+    process.exitCode = 4;
   } else if (json && jsonHandlers[commandName]) {
     const outcome = jsonHandlers[commandName](args);
-    printJson(buildJsonResult(commandName, args, outcome));
-    process.exitCode = outcome.exitCode ?? 5;
+    const result = buildJsonResult(commandName, args, outcome);
+    printJson(result);
+    process.exitCode = result.exitCode;
+  } else if (jsonHandlers[commandName]) {
+    const outcome = jsonHandlers[commandName](args);
+    const stream = outcome.stream === "stderr" ? process.stderr : process.stdout;
+    stream.write(`${outcome.lines.join("\n")}\n`);
+    process.exitCode = normalizedOutcomeExitCode(outcome);
   } else {
     const result = spawnSync(
       process.execPath,
@@ -448,8 +557,11 @@ if (!commandName || commandName === "help" || commandName === "--help" || comman
       },
     );
     if (json) {
-      printJson(buildJsonResult(commandName, args, result));
+      const output = buildJsonResult(commandName, args, result);
+      printJson(output);
+      process.exitCode = output.exitCode;
+    } else {
+      process.exitCode = result.status ?? 1;
     }
-    process.exitCode = result.status ?? 1;
   }
 }

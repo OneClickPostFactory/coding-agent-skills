@@ -78,6 +78,17 @@ import {
   renderDeploymentPreflightReport,
 } from "./lib/deployment-preflight.mjs";
 import {
+  AUDIT_BUNDLE_COMMANDS,
+  auditBundleCliResult,
+  buildAuditBundleReport,
+} from "./lib/audit-bundle.mjs";
+import {
+  buildCliResult,
+  cliResultSemanticIssues,
+  PUBLIC_COMMAND_METADATA,
+  validateCliResult,
+} from "./lib/cli-result.mjs";
+import {
   adapterUpgradeCliResult,
   checkAdapterUpgrade,
   formatAdapterUpgradeSummary,
@@ -122,6 +133,10 @@ const requiredReleaseFiles = [
   "bin/coding-agent-skills",
   "scripts/run-next",
   "scripts/validate-maintainer-loop.mjs",
+  "schemas/cli-result.schema.json",
+  "scripts/render-audit-bundle.mjs",
+  "scripts/lib/audit-bundle.mjs",
+  "scripts/lib/cli-result.mjs",
   "docs/versioning/README.md",
   "docs/privacy/README.md",
   "docs/adapters/README.md",
@@ -221,7 +236,7 @@ function snapshotAbsoluteDirectory(directory) {
   return digest.digest("hex");
 }
 
-function assertOpenClawJsonContract(value, command, packageVersion = "0.2.17") {
+function assertOpenClawJsonContract(value, command, packageVersion = "0.2.18") {
   assert.equal(value.tool, "coding-agent-skills");
   assert.equal(value.command, command);
   assert.equal(value.packageVersion, packageVersion);
@@ -266,6 +281,7 @@ const upgradeEvidenceSchema = readJson(
 const evidenceBundleSchema = readJson("schemas/evidence-bundle.schema.json");
 const evidenceArchiveReportSchema = readJson("schemas/archive-report.schema.json");
 const evidenceArchiveIndexSchema = readJson("schemas/archive-index.schema.json");
+const cliResultSchema = readJson("schemas/cli-result.schema.json");
 const evidenceSchema = readJson("contracts/evidence-pack/evidence-pack.schema.json");
 const policiesBySkill = Object.fromEntries(
   PILOT_SKILLS.map((skill) => [
@@ -352,6 +368,7 @@ test("local CLI maps approved commands to existing safe scripts", () => {
   assert.ok(cliText.includes("scripts/render-migration-review.mjs"));
   assert.ok(cliText.includes("scripts/render-github-handoff.mjs"));
   assert.ok(cliText.includes("scripts/render-deployment-preflight.mjs"));
+  assert.ok(cliText.includes("scripts/render-audit-bundle.mjs"));
   assert.ok(cliText.includes("scripts/validate-adapters.mjs"));
   assert.ok(!cliText.includes(".env"));
 
@@ -410,6 +427,10 @@ test("local CLI maps approved commands to existing safe scripts", () => {
       ["deployment-preflight", path.join(fixtureRoot, "deployment-preflight", "static-project")],
       /# Deployment Preflight Report/,
     ],
+    [
+      ["audit", githubHandoffFixture],
+      /# Aggregate Repository Audit/,
+    ],
   ];
 
   for (const [args, expected] of commands) {
@@ -455,6 +476,7 @@ test("local CLI emits OpenClaw-compatible JSON for public commands", () => {
     ["migration-review", path.join(fixtureRoot, "migration-review", "static-project")],
     ["github-handoff", githubHandoffFixture],
     ["deployment-preflight", path.join(fixtureRoot, "deployment-preflight", "static-project")],
+    ["audit", githubHandoffFixture],
   ];
 
   for (const args of commands) {
@@ -467,6 +489,7 @@ test("local CLI emits OpenClaw-compatible JSON for public commands", () => {
     assert.equal(result.stderr, "");
     const parsed = JSON.parse(result.stdout);
     assertOpenClawJsonContract(parsed, args[0]);
+    assert.deepEqual(validateCliResult(cliResultSchema, parsed, "0.2.18"), []);
   }
 
   const partial = spawnSync(
@@ -490,10 +513,122 @@ test("local CLI emits OpenClaw-compatible JSON for public commands", () => {
   assert.ok(parsedPartial.refusedBehavior.includes("no deployments"));
 });
 
+test("public CLI result schema and semantic rules cover success and controlled failures", () => {
+  const cliPath = path.join(root, "bin", "coding-agent-skills");
+  const fixtureRoot = path.join(root, "tests", "fixtures");
+  const cases = [
+    { args: ["repo-map", path.join(fixtureRoot, "sample-repo"), "--json"], exitCode: 0 },
+    { args: ["repo-map", "--json"], exitCode: 2 },
+    { args: ["repo-map", path.join(fixtureRoot, "missing-project"), "--json"], exitCode: 4 },
+    { args: ["repo-map", path.join(fixtureRoot, "sample-repo", "README.md"), "--json"], exitCode: 4 },
+    {
+      args: [
+        "repo-map",
+        path.join(fixtureRoot, "project-adapter-installation", "invalid-weakens-restrictions"),
+        "--json",
+      ],
+      exitCode: 3,
+    },
+    {
+      args: [
+        "validate-project",
+        path.join(fixtureRoot, "project-adapter-installation", "invalid-bad-semver"),
+        "--json",
+      ],
+      exitCode: 3,
+    },
+  ];
+
+  for (const item of cases) {
+    const result = spawnSync(cliPath, item.args, { cwd: root, encoding: "utf8", stdio: "pipe" });
+    assert.equal(result.status, item.exitCode, `${item.args.join(" ")}\n${result.stderr}`);
+    const parsed = JSON.parse(result.stdout);
+    assert.deepEqual(validateCliResult(cliResultSchema, parsed, "0.2.18"), []);
+    assert.equal(parsed.exitCode, item.exitCode);
+    assert.equal(parsed.changedState, false);
+    assert.equal(parsed.safety.secretsRead, false);
+    assert.equal(parsed.safety.targetCommandsRun, false);
+  }
+
+  const humanMissing = spawnSync(cliPath, ["repo-map", path.join(fixtureRoot, "missing-project")], {
+    cwd: root,
+    encoding: "utf8",
+    stdio: "pipe",
+  });
+  assert.equal(humanMissing.status, 4);
+  assert.match(humanMissing.stderr, /project root is missing/i);
+});
+
+test("aggregate audit is deterministic, adapter-optional, and mutation-free", () => {
+  const fixture = createGitFixture(path.join("tests", "fixtures", "audit-bundle", "static-project"));
+  const before = snapshotAbsoluteDirectory(fixture);
+  const first = buildAuditBundleReport(fixture, { coreRoot: root, packageVersion: "0.2.18" });
+  const second = buildAuditBundleReport(fixture, { coreRoot: root, packageVersion: "0.2.18" });
+  const after = snapshotAbsoluteDirectory(fixture);
+
+  assert.equal(before, after);
+  assert.equal(first.status, "complete");
+  assert.equal(first.details.adapterPresent, false);
+  assert.equal(first.details.mode, "generic-safe-discovery");
+  assert.deepEqual(first.details.commandOrder, AUDIT_BUNDLE_COMMANDS);
+  assert.deepEqual(first.results.map((result) => result.command), AUDIT_BUNDLE_COMMANDS);
+  assert.deepEqual(first, second);
+  assert.equal(fs.existsSync(path.join(fixture, "target-command-ran")), false);
+  assert.equal(fs.existsSync(path.join(fixture, "migration-command-ran")), false);
+  assert.equal(fs.existsSync(path.join(fixture, "deployment-command-ran")), false);
+
+  const outcome = auditBundleCliResult(fixture, { coreRoot: root, packageVersion: "0.2.18" });
+  const json = buildCliResult("audit", [fixture], outcome, {
+    packageVersion: "0.2.18",
+    commandMetadata: PUBLIC_COMMAND_METADATA,
+  });
+  assert.deepEqual(validateCliResult(cliResultSchema, json, "0.2.18"), []);
+  assert.equal(json.results.length, 8);
+  assert.equal(json.metrics.boundedOutput, true);
+  assert.ok(json.results.every((result) => result.metrics.boundedOutput === true));
+  assert.doesNotMatch(JSON.stringify(json), /target-command-ran|migration-command-ran|deployment-command-ran/);
+  assert.doesNotMatch(JSON.stringify(json), /\/home\/oneclickwebsitedesignfactory\//);
+});
+
+test("aggregate audit accepts valid adapters, marks partial applicability, and rejects unsafe adapters", () => {
+  const fixtureRoot = path.join(root, "tests", "fixtures", "project-adapter-installation");
+  const valid = auditBundleCliResult(path.join(fixtureRoot, "valid-exact-pin"), {
+    coreRoot: root,
+    packageVersion: "0.2.18",
+  });
+  assert.equal(valid.exitCode, 0);
+  assert.equal(valid.report.adapter.present, true);
+  assert.equal(valid.report.status, "partial");
+  assert.ok(valid.report.skipped.length > 0);
+
+  const unsafe = auditBundleCliResult(path.join(fixtureRoot, "invalid-weakens-restrictions"), {
+    coreRoot: root,
+    packageVersion: "0.2.18",
+  });
+  assert.equal(unsafe.exitCode, 3);
+  assert.equal(unsafe.report.status, "blocked");
+});
+
+test("CLI semantic validation rejects unsafe or contradictory evidence", () => {
+  const valid = {
+    packageVersion: "0.2.18",
+    changedState: false,
+    status: "complete",
+    exitCode: 0,
+    exitCodeMeaning: "handled",
+    recommendedNextAction: { label: "Review", reason: "Evidence only", requiresApproval: false },
+    safety: { readOnly: true, secretsRead: false, targetCommandsRun: false, mutationsPerformed: false },
+  };
+  assert.deepEqual(cliResultSemanticIssues(valid, "0.2.18"), []);
+  assert.ok(cliResultSemanticIssues({ ...valid, changedState: true }, "0.2.18").length > 0);
+  assert.ok(cliResultSemanticIssues({ ...valid, exitCode: 4 }, "0.2.18").length > 0);
+  assert.ok(cliResultSemanticIssues({ ...valid, packageVersion: "9.9.9" }, "0.2.18").length > 0);
+});
+
 test("npm package metadata is public-ready and dependency-free", () => {
   const packageJson = readJson("package.json");
   assert.equal(packageJson.name, "coding-agent-skills");
-  assert.equal(packageJson.version, "0.2.17");
+  assert.equal(packageJson.version, "0.2.18");
   assert.equal(
     packageJson.description,
     "Evidence-first, read-only coding-agent skills and project adapter tooling.",

@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://coding-agent-skills.invalid/schemas/cli-result.schema.json",
+  "title": "coding-agent-skills public CLI result",
+  "type": "object",
+  "required": [
+    "success",
+    "status",
+    "tool",
+    "command",
+    "skillId",
+    "packageVersion",
+    "mode",
+    "changedState",
+    "summary",
+    "findings",
+    "warnings",
+    "risks",
+    "skipped",
+    "notVerified",
+    "refusedBehavior",
+    "adapter",
+    "recommendedNextAction",
+    "safety",
+    "exitCode",
+    "exitCodeMeaning",
+    "invocation"
+  ],
+  "properties": {
+    "success": { "type": "boolean" },
+    "status": { "enum": ["complete", "partial", "failed", "blocked"] },
+    "tool": { "const": "coding-agent-skills" },
+    "command": { "type": "string", "minLength": 1 },
+    "skillId": { "type": ["string", "null"] },
+    "packageVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "mode": { "type": "string", "minLength": 1 },
+    "changedState": { "const": false },
+    "summary": { "$ref": "#/$defs/stringArray" },
+    "findings": { "$ref": "#/$defs/stringArray" },
+    "warnings": { "$ref": "#/$defs/stringArray" },
+    "risks": { "$ref": "#/$defs/stringArray" },
+    "skipped": { "$ref": "#/$defs/stringArray" },
+    "notVerified": { "$ref": "#/$defs/stringArray" },
+    "refusedBehavior": { "$ref": "#/$defs/stringArray" },
+    "adapter": { "type": "object", "additionalProperties": true },
+    "recommendedNextAction": { "$ref": "#/$defs/nextAction" },
+    "safety": { "$ref": "#/$defs/safety" },
+    "exitCode": { "enum": [0, 2, 3, 4, 5] },
+    "exitCodeMeaning": {
+      "enum": [
+        "handled",
+        "usage_error",
+        "safety_refusal",
+        "missing_required_input",
+        "unexpected_internal_or_runtime_failure"
+      ]
+    },
+    "invocation": { "type": "object", "additionalProperties": true },
+    "details": { "type": "object", "additionalProperties": true },
+    "evidence": { "type": ["object", "array"], "additionalProperties": true },
+    "results": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/subResult" }
+    },
+    "metrics": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "stringArray": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "nextAction": {
+      "type": "object",
+      "required": ["label", "reason", "requiresApproval"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 },
+        "requiresApproval": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "safety": {
+      "type": "object",
+      "required": ["readOnly", "secretsRead", "targetCommandsRun", "mutationsPerformed"],
+      "properties": {
+        "readOnly": { "const": true },
+        "secretsRead": { "const": false },
+        "targetCommandsRun": { "const": false },
+        "mutationsPerformed": { "const": false }
+      },
+      "additionalProperties": false
+    },
+    "subResult": {
+      "type": "object",
+      "required": [
+        "success",
+        "status",
+        "tool",
+        "command",
+        "skillId",
+        "packageVersion",
+        "mode",
+        "changedState",
+        "summary",
+        "findings",
+        "warnings",
+        "risks",
+        "skipped",
+        "notVerified",
+        "refusedBehavior",
+        "adapter",
+        "recommendedNextAction",
+        "safety",
+        "exitCode",
+        "exitCodeMeaning",
+        "invocation"
+      ],
+      "properties": {
+        "success": { "type": "boolean" },
+        "status": { "enum": ["complete", "partial", "failed", "blocked"] },
+        "tool": { "const": "coding-agent-skills" },
+        "command": { "type": "string", "minLength": 1 },
+        "skillId": { "type": ["string", "null"] },
+        "packageVersion": { "type": "string" },
+        "mode": { "type": "string" },
+        "changedState": { "const": false },
+        "summary": { "$ref": "#/$defs/stringArray" },
+        "findings": { "$ref": "#/$defs/stringArray" },
+        "warnings": { "$ref": "#/$defs/stringArray" },
+        "risks": { "$ref": "#/$defs/stringArray" },
+        "skipped": { "$ref": "#/$defs/stringArray" },
+        "notVerified": { "$ref": "#/$defs/stringArray" },
+        "refusedBehavior": { "$ref": "#/$defs/stringArray" },
+        "adapter": { "type": "object", "additionalProperties": true },
+        "recommendedNextAction": { "$ref": "#/$defs/nextAction" },
+        "safety": { "$ref": "#/$defs/safety" },
+        "exitCode": { "enum": [0, 2, 3, 4, 5] },
+        "exitCodeMeaning": { "type": "string" },
+        "invocation": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": true
+    }
+  }
+}

@@ -52,6 +52,7 @@ Every skill emits the evidence-pack contract. A command being attempted is never
 - Review static migration and schema evidence with `coding-agent-skills migration-review <project-root>`.
 - Prepare local Git handoff evidence with `coding-agent-skills github-handoff <project-root>`.
 - Map static deployment readiness evidence with `coding-agent-skills deployment-preflight <project-root>`.
+- Run the deterministic static bundle with `coding-agent-skills audit <project-root>`.
 - Add `--json` to any public CLI command when an OpenClaw-style orchestrator
   needs a sanitized machine-readable result with `success`, `status`,
   `recommendedNextAction`, safety flags, and exit-code meaning.
@@ -75,6 +76,8 @@ Every skill emits the evidence-pack contract. A command being attempted is never
   `node scripts/render-github-handoff.mjs <project-root>`.
 - Render a static deployment preflight report with
   `node scripts/render-deployment-preflight.mjs <project-root>`.
+- Render all eight safe static audits in deterministic order with
+  `node scripts/render-audit-bundle.mjs <project-root>`.
 - Review [adapter upgrade checks](docs/adapters/upgrades.md).
 - Run `node scripts/check-adapter-upgrade.mjs <before-project-root> <after-project-root>`
   for disposable project revisions.
@@ -103,9 +106,11 @@ structured result with `--json`:
 
 ```bash
 coding-agent-skills repo-map /path/to/project --json
+coding-agent-skills audit /path/to/project --json
 ```
 
-JSON output is read-only and sanitized. It includes command identity, package version,
+JSON output is validated against [the public CLI result schema](schemas/cli-result.schema.json),
+is read-only, and is sanitized. It includes command identity, package version,
 skill id, status, findings, warnings, skipped checks, refused behavior, safety flags,
 and `recommendedNextAction`. Exit codes follow the public contract:
 
@@ -124,6 +129,12 @@ falls back to `generic-safe-discovery` when no `.coding-agent` declaration exist
 marks `adapterPresent: false`, reduces confidence, and still refuses target project
 builds, tests, runtime checks, deploys, migrations, package installs, and secret-file
 reads.
+
+`audit` runs `repo-map`, `route-trace`, `env-audit`, `secret-audit`,
+`api-contract-audit`, `migration-review`, `github-handoff`, and
+`deployment-preflight` in that fixed order. It calls the existing in-process audit
+libraries and returns one envelope with sanitized sub-results. It works with validated
+adapter hints or generic safe discovery, and it does not run project commands.
 
 ## Autonomous Maintainer Loop
 

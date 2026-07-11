@@ -1,0 +1,9 @@
+{
+  "name": "synthetic-audit-bundle-project",
+  "private": true,
+  "scripts": {
+    "test": "touch target-command-ran",
+    "migrate": "touch migration-command-ran",
+    "deploy": "touch deployment-command-ran"
+  }
+}
