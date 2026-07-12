@@ -315,6 +315,11 @@ This file records bounded maintainer-loop runs. Entries must not contain secrets
   project writes.
 - Validation commands: full source, fixture, schema, tarball, installed-package, registry,
   npm exec, and OpenClaw plugin validation matrix.
-- Result: implementation, full source validation, package dry-run, tarball inspection,
-  and temporary installed-package smoke passed; publication pending npm authentication.
-- Commit/tag/push status: pending approved release workflow.
+- Result: passed; source validation, 95 release tests, package dry-run, bounded tarball
+  inspection, temporary install, npm publication, registry install, npm exec, GitHub
+  Release, OpenClaw extension tests, PR checks, merge, global install, gateway restart,
+  and post-restart 12-tool runtime inspection completed.
+- Package release: commit `d610704`, tag `v0.2.18`, npm `coding-agent-skills@0.2.18`.
+- OpenClaw integration: PR #2 merged as `88933d6`; `coding_audit` is optional and maps
+  only to `coding-agent-skills audit <projectRoot> --json`.
+- Commit/tag/push status: complete.

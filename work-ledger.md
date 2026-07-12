@@ -10,7 +10,7 @@
 - First external project-owned adapter adoption completed for `/home/oneclickwebsitedesignfactory/tax-lien-platform` at candidate commit `c548b1a6cbb3455a70b89d0e301e22435bfccac9`.
 - The adopted adapter is `repo-map` only, docs/metadata-only, and contains no commands, runtime checks, build/test/package behavior, platform/deployment behavior, or secret-aware behavior.
 - The shared repository does not contain real adapter manifests; real project adapters remain owned by their project repositories.
-- Public npm package release target `v0.2.18` exposes the dependency-free
+- Public npm package release `v0.2.18` exposes the dependency-free
   `coding-agent-skills` CLI under MIT license.
 - `v0.2.18` formalizes the public JSON result schema, corrects missing-input and
   safety-refusal semantics, and adds deterministic aggregate `audit` output.
@@ -30,13 +30,14 @@
 
 ## Last Completed Version
 
-`v0.2.18` (release validation in progress)
+`v0.2.18`
 
 ## Current Recommended Milestone
 
-The formal public CLI result schema and aggregate read-only audit command are the current
-release milestone. After `v0.2.18` is published and the OpenClaw wrapper exposes
-`coding_audit`, reassess the next read-only capability from current repository evidence.
+The formal public CLI result schema and aggregate read-only audit command are released.
+The OpenClaw wrapper exposes `coding_audit` as an optional ToolGate-controlled tool.
+Reassess the next read-only capability from current repository evidence before another
+implementation milestone.
 
 ## Allowed Next Actions
 
@@ -144,8 +145,9 @@ No autonomous maintainer-loop run has been recorded yet.
 - Implemented milestone: formal public CLI result schema, corrected missing-project and
   unsafe-adapter exit semantics, and deterministic aggregate `audit` command.
 - Required permission: approved end-to-end package and OpenClaw integration release.
-- Validation result: source, fixture, schema, tarball, and temporary installed-package
-  checks passed; registry, npm exec, and OpenClaw plugin checks remain after publication.
+- Validation result: passed; package commit `d610704`, tag `v0.2.18`, npm publication,
+  registry install, npm exec, GitHub Release, OpenClaw plugin PR #2, merge `88933d6`,
+  global install, gateway restart, and 12-tool runtime inspection completed.
 - Next recommended milestone: select from current evidence after `v0.2.18` publication
   and `coding_audit` registration complete.
 
