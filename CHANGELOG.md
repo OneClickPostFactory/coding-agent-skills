@@ -2,6 +2,20 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [0.2.19] - 2026-07-12
+
+### Fixed
+
+- Controlled empty adapter-root validation now normalizes the legacy `empty` state to the
+  public schema's `partial` state while preserving handled exit code `0`.
+- Controlled unsafe states normalize to `blocked`, keeping all public JSON output inside
+  the formal `complete|partial|failed|blocked` status contract.
+
+### Tests
+
+- Every public CLI command, including the empty-adapter result, is validated against
+  `schemas/cli-result.schema.json` and the semantic read-only invariants.
+
 ## [0.2.18] - 2026-07-11
 
 ### Added

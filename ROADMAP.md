@@ -47,6 +47,8 @@ execution constraints remain unchanged.
 - `v0.2.17`: adapter-optional generic safe discovery for `repo-map`.
 - `v0.2.18`: formal public CLI result schema, corrected missing-input and safety-refusal
   semantics, and deterministic aggregate `audit` command.
+- `v0.2.19`: compatibility patch normalizing controlled legacy empty/unsafe statuses into
+  the formal public CLI result schema.
 
 The next milestone is recorded in [work-ledger.md](work-ledger.md). The
 [maintainer loop](RUNBOOK.md) may select and evidence that milestone, but it must stop

@@ -323,3 +323,17 @@ This file records bounded maintainer-loop runs. Entries must not contain secrets
 - OpenClaw integration: PR #2 merged as `88933d6`; `coding_audit` is optional and maps
   only to `coding-agent-skills audit <projectRoot> --json`.
 - Commit/tag/push status: complete.
+
+## release-v0.2.19-cli-status-compatibility
+
+- Run ID: `release-v0.2.19-cli-status-compatibility`
+- Repository: `coding-agent-skills`
+- Trigger: post-publication contract edge check found a handled empty adapter root used
+  legacy `status: empty`, outside the formal public schema.
+- Fix: normalize controlled `empty` to `partial` and controlled `unsafe` to `blocked`
+  before schema and semantic validation.
+- Safety boundary: output-contract normalization and tests only; no target-project
+  commands, secret reads, deployments, migrations, runtime mutation, or OpenClaw wrapper
+  expansion.
+- Validation result: pending full source, tarball, registry, and npm exec checks.
+- Commit/tag/push status: pending.

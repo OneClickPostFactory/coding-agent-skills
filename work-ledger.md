@@ -10,7 +10,7 @@
 - First external project-owned adapter adoption completed for `/home/oneclickwebsitedesignfactory/tax-lien-platform` at candidate commit `c548b1a6cbb3455a70b89d0e301e22435bfccac9`.
 - The adopted adapter is `repo-map` only, docs/metadata-only, and contains no commands, runtime checks, build/test/package behavior, platform/deployment behavior, or secret-aware behavior.
 - The shared repository does not contain real adapter manifests; real project adapters remain owned by their project repositories.
-- Public npm package release `v0.2.18` exposes the dependency-free
+- Public npm package release target `v0.2.19` exposes the dependency-free
   `coding-agent-skills` CLI under MIT license.
 - `v0.2.18` formalizes the public JSON result schema, corrects missing-input and
   safety-refusal semantics, and adds deterministic aggregate `audit` output.
@@ -30,14 +30,14 @@
 
 ## Last Completed Version
 
-`v0.2.18`
+`v0.2.19` (compatibility patch validation in progress)
 
 ## Current Recommended Milestone
 
 The formal public CLI result schema and aggregate read-only audit command are released.
 The OpenClaw wrapper exposes `coding_audit` as an optional ToolGate-controlled tool.
-Reassess the next read-only capability from current repository evidence before another
-implementation milestone.
+The current bounded patch normalizes the legacy controlled empty-adapter state into the
+formal schema before reassessing another read-only capability.
 
 ## Allowed Next Actions
 
@@ -150,6 +150,15 @@ No autonomous maintainer-loop run has been recorded yet.
   global install, gateway restart, and 12-tool runtime inspection completed.
 - Next recommended milestone: select from current evidence after `v0.2.18` publication
   and `coding_audit` registration complete.
+
+### 2026-07-12T00:00:00Z
+
+- Latest tag observed: `v0.2.18`
+- Implemented milestone: normalize controlled legacy empty/unsafe CLI statuses into the
+  formal public result schema.
+- Required permission: bounded release compatibility fix.
+- Validation result: pending full patch validation and immutable npm patch publication.
+- Next recommended milestone: reassess current evidence after `v0.2.19` verification.
 
 ### 2026-07-03T12:00:00Z
 

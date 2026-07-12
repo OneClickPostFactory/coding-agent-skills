@@ -142,6 +142,13 @@ function detectedStatus(lines, exitCode) {
   return exitCode === 0 ? "complete" : "failed";
 }
 
+function normalizedPublicStatus(status, exitCode) {
+  if (status === "empty") return "partial";
+  if (status === "unsafe") return "blocked";
+  if (["complete", "partial", "failed", "blocked"].includes(status)) return status;
+  return exitCode === 0 ? "complete" : "failed";
+}
+
 function sanitizeStructured(value) {
   return JSON.parse(redactSensitiveText(JSON.stringify(value)));
 }
@@ -240,7 +247,10 @@ export function buildCliResult(commandName, args, outcome, options) {
     mode: "unknown",
     next: null,
   };
-  const status = report?.status ?? detectedStatus(lines, normalized.exitCode);
+  const status = normalizedPublicStatus(
+    report?.status ?? detectedStatus(lines, normalized.exitCode),
+    normalized.exitCode,
+  );
   const summary = summaryLines(lines);
   const warnings = [
     ...(Array.isArray(report?.warnings) ? serializeItems(report.warnings) : []),
