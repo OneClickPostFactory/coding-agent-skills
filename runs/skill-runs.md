@@ -348,3 +348,28 @@ This file records bounded maintainer-loop runs. Entries must not contain secrets
 - Commit/tag/push status: complete.
 - Next state: reassess current repository evidence before approving another bounded
   read-only capability.
+
+## repair-nested-ignore-timeouts-2026-07-16
+
+- Run ID: `repair-nested-ignore-timeouts-2026-07-16`
+- Repository: `coding-agent-skills`
+- Trigger: OpenClaw's `migration-review`, `env-audit`, and
+  `deployment-preflight` calls against `openclaw-operator` exceeded the configured
+  45-second wrapper timeout with empty captured output.
+- Root cause: basename-style default ignores matched only at the repository root,
+  so nested `node_modules`, `dist`, and other generated trees were recursively
+  scanned and serialized into the JSON result.
+- Files changed: six recursive static scanner libraries, shared release regression
+  tests, changelog, and this run log.
+- Safety boundary: local read-only scanner behavior and synthetic tests only; no
+  target commands, secret reads, deployment, migration, service mutation, package
+  installation, commit, push, tag, or publication.
+- Validation: `npm run validate` passed with 495 checked files. The exact
+  `migration-review` reproduction completed in 0.73 seconds; all public audits
+  against `openclaw-operator` completed inside 3.29 seconds and returned exit code
+  `0` under a 45-second bound.
+- Full-suite follow-up (2026-07-17): `npm test` passed end to end, including the
+  `scripts/run-next` fail-closed assertions, the nested-ignore regression, and the
+  complete Node test suite. The earlier transient stderr assertion could not be
+  reproduced and is no longer a completion blocker.
+- Commit/tag/push status: not requested.

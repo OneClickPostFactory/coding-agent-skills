@@ -138,7 +138,9 @@ function ignoredBy(relativePath, ignoredPaths) {
   const normalized = toPosix(relativePath);
   return ignoredPaths.some((ignored) => {
     const clean = toPosix(ignored).replace(/\/+$/g, "");
-    return normalized === clean || normalized.startsWith(`${clean}/`);
+    return clean.includes("/")
+      ? normalized === clean || normalized.startsWith(`${clean}/`)
+      : normalized.split("/").includes(clean);
   });
 }
 

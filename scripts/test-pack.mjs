@@ -743,6 +743,34 @@ test("route-trace renderer identifies static route files and inferred patterns",
   assert.ok(renderRouteTraceReport(result).includes("No target project build"));
 });
 
+test("static scanners skip ignored directories at any repository depth", () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "nested-ignored-directory-"));
+  const ignoredDirectory = path.join(temporary, "packages", "app", "node_modules");
+  fs.mkdirSync(ignoredDirectory, { recursive: true });
+  fs.writeFileSync(
+    path.join(ignoredDirectory, "should-not-be-scanned.ts"),
+    'export const DATABASE_URL = "synthetic";\nCREATE TABLE ignored (id int);\n',
+  );
+
+  const reports = [
+    [buildRouteTraceReport(temporary, { coreRoot: root }), "scannedFiles"],
+    [buildEnvAuditReport(temporary, { coreRoot: root }), "filesScanned"],
+    [buildSecretAuditReport(temporary, { coreRoot: root }), "filesScanned"],
+    [buildApiContractAuditReport(temporary, { coreRoot: root }), "filesScanned"],
+    [buildMigrationReviewReport(temporary, { coreRoot: root }), "filesScanned"],
+    [buildDeploymentPreflightReport(temporary, { coreRoot: root }), "filesScanned"],
+  ];
+
+  for (const [report, scannedFilesKey] of reports) {
+    assert.deepEqual(report[scannedFilesKey], []);
+    assert.ok(
+      report.skipped.some(
+        (item) => item.path === "packages/app/node_modules" && item.reason === "ignored path",
+      ),
+    );
+  }
+});
+
 test("route-trace renderer respects adapter-declared scope", () => {
   const result = buildRouteTraceReport(
     path.join(root, "tests", "fixtures", "route-trace", "adapter-project"),

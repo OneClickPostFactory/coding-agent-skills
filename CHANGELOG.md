@@ -2,6 +2,20 @@
 
 All notable changes follow [Semantic Versioning](docs/versioning/README.md).
 
+## [Unreleased]
+
+### Fixed
+
+- Static repository scanners now skip default ignored directories such as
+  `node_modules`, `dist`, and `build` at any repository depth. Large monorepos no
+  longer traverse nested dependency/build trees and exceed the OpenClaw wrapper's
+  bounded execution timeout.
+
+### Tests
+
+- Added shared regression coverage proving all six recursive static scanners skip
+  nested ignored directories.
+
 ## [0.2.19] - 2026-07-12
 
 ### Fixed
