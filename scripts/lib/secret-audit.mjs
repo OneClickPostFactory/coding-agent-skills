@@ -311,13 +311,26 @@ function walkPath(projectRoot, absolute, ignoredPaths, files, skipped) {
     skipped.push({ path: relative, reason: "secret-bearing path excluded" });
     return;
   }
-  const stat = fs.lstatSync(absolute);
+  let stat;
+  try {
+    stat = fs.lstatSync(absolute);
+  } catch {
+    skipped.push({ path: relative, reason: "unreadable path" });
+    return;
+  }
   if (stat.isSymbolicLink()) {
     skipped.push({ path: relative, reason: "symbolic link skipped" });
     return;
   }
   if (stat.isDirectory()) {
-    for (const entry of fs.readdirSync(absolute)) {
+    let entries;
+    try {
+      entries = fs.readdirSync(absolute);
+    } catch {
+      skipped.push({ path: relative, reason: "unreadable directory" });
+      return;
+    }
+    for (const entry of entries) {
       walkPath(projectRoot, path.join(absolute, entry), ignoredPaths, files, skipped);
     }
     return;

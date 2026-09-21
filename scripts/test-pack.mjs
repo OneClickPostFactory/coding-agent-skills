@@ -896,6 +896,35 @@ test("secret-audit reports high-confidence findings without printing values", ()
   assert.doesNotMatch(rendered, new RegExp(syntheticSecret));
 });
 
+test("secret-audit records and skips an unreadable directory", () => {
+  if (process.platform === "win32" || (typeof process.getuid === "function" && process.getuid() === 0)) {
+    return;
+  }
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "secret-audit-unreadable-"));
+  const readable = path.join(temporary, "src");
+  const unreadable = path.join(temporary, "protected");
+  fs.mkdirSync(readable);
+  fs.mkdirSync(unreadable);
+  fs.writeFileSync(path.join(readable, "config.ts"), 'export const mode = "safe";\n');
+  fs.writeFileSync(path.join(unreadable, "hidden.ts"), 'export const hidden = "not-read";\n');
+  fs.chmodSync(unreadable, 0o000);
+
+  try {
+    const result = buildSecretAuditReport(temporary, { coreRoot: root });
+    assert.equal(result.status, "complete");
+    assert.ok(result.filesScanned.includes("src/config.ts"));
+    assert.ok(!result.filesScanned.includes("protected/hidden.ts"));
+    assert.ok(
+      result.skipped.some(
+        (item) => item.path === "protected" && item.reason === "unreadable directory",
+      ),
+    );
+  } finally {
+    fs.chmodSync(unreadable, 0o700);
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
 test("secret-audit respects adapter-declared scope", () => {
   const result = buildSecretAuditReport(
     path.join(root, "tests", "fixtures", "secret-audit", "adapter-project"),
