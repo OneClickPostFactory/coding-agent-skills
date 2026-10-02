@@ -1,0 +1,4 @@
+interface:
+  display_name: "Frontend Product Design"
+  short_description: "Research-first product frontend design, a11y, performance, UX writing, usability"
+  default_prompt: "Use the frontend-product-design skill. Research comparable systems before writing a design document. Cover design systems, accessibility, performance, UX writing, and usability. Produce a milestone plan. Do not mutate the target project."
