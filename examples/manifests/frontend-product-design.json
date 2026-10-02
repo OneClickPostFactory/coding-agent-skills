@@ -1,0 +1,14 @@
+{
+  "name": "frontend-product-design",
+  "version": "0.1.0",
+  "mode": "audit-only",
+  "evidenceContract": "contracts/evidence-pack/evidence-pack.schema.json",
+  "commandPolicy": "examples/command-policies/repo-map.json",
+  "adapterSchema": "schemas/project-adapter.schema.json",
+  "adapterCompatibility": {
+    "contractVersion": "1.0.0",
+    "compatibleAdapterVersions": ["1.0.0"]
+  },
+  "adapterInterface": "skills/frontend-product-design/adapter-interface.md",
+  "description": "Research-first guidance for product frontend design, covering design systems, accessibility, performance, UX writing, and usability. Guidance/audit oriented; does not mutate target projects."
+}
